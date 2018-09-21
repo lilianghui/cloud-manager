@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8086
 servlet:
   jsp:
     class-name: org.apache.jasper.servlet.JspServlet

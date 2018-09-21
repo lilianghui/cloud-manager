@@ -19,7 +19,9 @@
         <module>fastdfs-server</module>
         <module>hystrix-server</module>
         <module>task-server</module>
+        <module>spring-boot-admin-server</module>
         <module>mybatis-generator</module>
+        <module>archetype-maven</module>
     </modules>
 
     <parent>
