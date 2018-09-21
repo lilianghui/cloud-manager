@@ -2,8 +2,8 @@ package com.lilianghui;
 
 import com.lilianghui.core.AbstractGenerator;
 import com.lilianghui.core.Generator2;
-import com.lilianghui.core.MainContext;
 import com.lilianghui.db.DataOperator;
+import com.lilianghui.db.JdbcUtils;
 import com.lilianghui.entity.Config;
 import com.lilianghui.entity.Table;
 import com.lilianghui.entity.TableRef;
@@ -14,7 +14,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import javax.swing.*;
 import java.util.*;
 
 @Mojo(name = "generator")
@@ -23,44 +22,96 @@ public class Generator extends AbstractMojo implements Config {
     public static Config config = null;
     private DataOperator dataOperator = new DataOperator();
 
+    public static void main(String[] args) throws Exception {
+        Generator generator = new Generator();
+        generator.before();
+        generator.execute();
+    }
+
+    public void before() throws Exception {
+        setJdbcDriver("com.mysql.jdbc.Driver");
+        setJdbcUrl("jdbc:mysql://127.0.0.1:3306/demo?useOldAliasMetadataBehavior=true");
+        setJdbcUser("root");
+        setJdbcPassword("123456");
+        setJdbcTablePrefix("m_");
+        setJdbcColumnPrefix("");
+        setFileSavePath("E:/");
+        setDatabaseType("MYSQL");
+        setControllerPath("com.walkiesoft.controller");
+        setEntityPath("com.walkiesoft.entity");
+        setServicePath("com.walkiesoft.service");
+        setDaoPath("com.walkiesoft.mapper");
+        setMapperPath("mapper");
+        setModularPath("com.walkiesoft.atmss.modular");
+        setControllerExtend("com.walkiesoft.commons.base.BasicController");
+        setEntityExtend("'com.walkiesoft.framework.mybatis.plugin.entity.BaseEntity");
+        setDaoExtend("com.walkiesoft.framework.tk.mybatis.mapper.common.Mapper");
+        setServiceExtend("com.walkiesoft.commons.base.BaseMapperService");
+        setServiceImplExtend("com.walkiesoft.commons.base.AbstractBaseMapperService");
+        setImportValueStyle("com.walkiesoft.framework.tk.mybatis.support.annotation.ValueStyle");
+        setController(true);
+        setEntity(true);
+        setService(true);
+        setDao(true);
+        setMapConfig(true);
+        setFrameWork(false);
+        setCollection(false);
+        setSeq(false);
+        setCamelCaseNamin(true);
+        setModular(false);
+        setGenerator(Generator2.class.getName());
+        setOgnl("@com.walkiesoft.framework.tk.mybatis.support.helper.Ognl@now()");
+        setColumnUpperCase(false);
+        setExUpdateColumns(new HashSet<>());
+    }
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             config = this;
-            setDatabaseType("MYSQL");
-            setJdbcDriver("com.mysql.jdbc.Driver");
-            setJdbcUrl("jdbc:mysql://127.0.0.1:3306/atmss?useOldAliasMetadataBehavior=true");
-            setJdbcUser("root");
-            setJdbcPassword("root");
-            setGenerator(Generator2.class.getName());
-            setFileSavePath("E:/");
+            getLog().info("参数：" + toString());
+            parse();
             generator();
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        new Generator().execute();
+    private void parse(){
+        if(StringUtils.isNotBlank(controllerPath)){
+            setControllerPath(controllerPath.replaceAll("/|\\\\","."));
+        }
+        if(StringUtils.isNotBlank(entityPath)){
+            setEntityPath(entityPath.replaceAll("/|\\\\","."));
+        }
+        if(StringUtils.isNotBlank(servicePath)){
+            setServicePath(servicePath.replaceAll("/|\\\\","."));
+        }
+        if(StringUtils.isNotBlank(daoPath)){
+            setDaoPath(daoPath.replaceAll("/|\\\\","."));
+        }
+        if(StringUtils.isNotBlank(mapperPath)){
+            setMapperPath(mapperPath.replaceAll("/|\\\\","."));
+        }
+        if(StringUtils.isNotBlank(modularPath)){
+            setModularPath(modularPath.replaceAll("/|\\\\","."));
+        }
     }
 
     private void generator() throws Exception {
         Vector<Vector<String>> arrayList = dataOperator.getTableName(this);
-//        getLog().info(data.toString());
-//        List<Map<String, String>> arrayList = new ArrayList<>();
         if (arrayList == null || arrayList.size() == 0) {
+            getLog().info("当前连接没查询到表数据");
             return;
         } // 生成类
         Set<String> tables = new HashSet<String>();
         Set<String> Alltables = new HashSet<String>();
         Map<String, Table> map = new HashMap<String, Table>();
-
         for (int i = 0; i < arrayList.size(); i++) {
             try {
                 Vector<String> vector = arrayList.get(i);
                 String tableName = vector.get(1);
                 String tableComment = vector.get(2);
-
                 String key = vector.get(3);
                 String identityTmp = vector.get(4);
                 boolean identity = false;
@@ -119,37 +170,54 @@ public class Generator extends AbstractMojo implements Config {
             return;
         }
 
+        Set<String> includeTables = new HashSet<>();
+        Set<String> excludeTables = new HashSet<>();
+        if (StringUtils.isNotBlank(includeTable)) {
+            Collections.addAll(includeTables, includeTable.split(","));
+        }
+        if (StringUtils.isNotBlank(excludeTable)) {
+            Collections.addAll(excludeTables, excludeTable.split(","));
+        }
         for (Table table : map.values()) {
             try {
                 if (tables.contains(table.getTable())) {
+                    if ((includeTables != null && includeTables.size() > 0 && !includeTables.contains(table.getTable()))
+                            || (excludeTables != null && excludeTables.size() > 0 && excludeTables.contains(table.getTable()))) {
+                        continue;
+                    }
                     table.setMany(many.get(table.getTable()));
                     table.setOne(one.get(table.getTable()));
                     AbstractGenerator abstractGenerator = (AbstractGenerator) Class.forName(this.getGenerator())
                             .getConstructor(Config.class, Table.class).newInstance(this, table);
                     abstractGenerator.generator();
+                    getLog().info("生成" + table.getTable());
                 }
             } catch (Exception e1) {
                 e1.printStackTrace();
                 return;
             }
         }
+
+        JdbcUtils.closeAll();
     }
 
-    @Parameter
+    @Parameter(required = true)
     private String jdbcDriver;
-    @Parameter
+    @Parameter(required = true)
     private String jdbcUrl;
-    @Parameter
+    @Parameter(required = true)
     private String jdbcUser;
-    @Parameter
+    @Parameter(required = true)
     private String jdbcPassword;
     @Parameter(defaultValue = "m_")
     private String jdbcTablePrefix;
     @Parameter
     private String jdbcColumnPrefix;
     @Parameter
-    private String fileSavePath;
+    private String ignorePrefix;
     @Parameter
+    private String fileSavePath;
+    @Parameter(defaultValue = "MYSQL")
     private String databaseType;
     @Parameter(defaultValue = "com.walkiesoft.controller")
     private String controllerPath;
@@ -201,6 +269,10 @@ public class Generator extends AbstractMojo implements Config {
     private String ognl;
     @Parameter(defaultValue = "false")
     private boolean columnUpperCase;
+    @Parameter
+    private String excludeTable;
+    @Parameter
+    private String includeTable;
 
     private Set<String> exUpdateColumns = new HashSet<>();
 
@@ -490,4 +562,85 @@ public class Generator extends AbstractMojo implements Config {
         this.exUpdateColumns = exUpdateColumns;
     }
 
+    public static Config getConfig() {
+        return config;
+    }
+
+    public static void setConfig(Config config) {
+        Generator.config = config;
+    }
+
+    public DataOperator getDataOperator() {
+        return dataOperator;
+    }
+
+    public void setDataOperator(DataOperator dataOperator) {
+        this.dataOperator = dataOperator;
+    }
+
+    public String getExcludeTable() {
+        return excludeTable;
+    }
+
+    public void setExcludeTable(String excludeTable) {
+        this.excludeTable = excludeTable;
+    }
+
+    public String getIncludeTable() {
+        return includeTable;
+    }
+
+    public void setIncludeTable(String includeTable) {
+        this.includeTable = includeTable;
+    }
+
+    @Override
+    public String getIgnorePrefix() {
+        return ignorePrefix;
+    }
+
+    public void setIgnorePrefix(String ignorePrefix) {
+        this.ignorePrefix = ignorePrefix;
+    }
+
+    @Override
+    public String toString() {
+        return "Generator{" +
+                "jdbcDriver='" + jdbcDriver + '\'' +
+                ", jdbcUrl='" + jdbcUrl + '\'' +
+                ", jdbcUser='" + jdbcUser + '\'' +
+                ", jdbcPassword='" + jdbcPassword + '\'' +
+                ", jdbcTablePrefix='" + jdbcTablePrefix + '\'' +
+                ", jdbcColumnPrefix='" + jdbcColumnPrefix + '\'' +
+                ", ignorePrefix='" + ignorePrefix + '\'' +
+                ", fileSavePath='" + fileSavePath + '\'' +
+                ", databaseType='" + databaseType + '\'' +
+                ", controllerPath='" + controllerPath + '\'' +
+                ", entityPath='" + entityPath + '\'' +
+                ", servicePath='" + servicePath + '\'' +
+                ", daoPath='" + daoPath + '\'' +
+                ", mapperPath='" + mapperPath + '\'' +
+                ", modularPath='" + modularPath + '\'' +
+                ", controllerExtend='" + controllerExtend + '\'' +
+                ", entityExtend='" + entityExtend + '\'' +
+                ", daoExtend='" + daoExtend + '\'' +
+                ", serviceExtend='" + serviceExtend + '\'' +
+                ", serviceImplExtend='" + serviceImplExtend + '\'' +
+                ", importValueStyle='" + importValueStyle + '\'' +
+                ", controller=" + controller +
+                ", entity=" + entity +
+                ", service=" + service +
+                ", dao=" + dao +
+                ", mapConfig=" + mapConfig +
+                ", frameWork=" + frameWork +
+                ", collection=" + collection +
+                ", seq=" + seq +
+                ", camelCaseNamin=" + camelCaseNamin +
+                ", modular=" + modular +
+                ", generator='" + generator + '\'' +
+                ", ognl='" + ognl + '\'' +
+                ", columnUpperCase=" + columnUpperCase +
+                ", exUpdateColumns=" + exUpdateColumns +
+                '}';
+    }
 }

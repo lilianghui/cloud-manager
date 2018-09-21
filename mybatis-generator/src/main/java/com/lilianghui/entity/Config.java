@@ -1,5 +1,7 @@
 package com.lilianghui.entity;
 
+import org.apache.maven.plugin.logging.Log;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -149,4 +151,7 @@ public interface Config {
 
     void setExUpdateColumns(Set<String> exUpdateColumns);
 
+    Log getLog();
+
+    String getIgnorePrefix();
 }

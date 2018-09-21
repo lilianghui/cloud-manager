@@ -19,13 +19,13 @@ public class NameSpace {
 		this.daoNamespace=getNamespace(config, table,false, "dao", config.getDaoPath());
 	}
 
-	public Map<String, String> getNameSpaceMap() {
+	public Map<String, String> getNameSpaceMap(String ignorePrefix) {
 		Map<String, String> map=new HashMap<>();
-		map.put("serviceNamespace",serviceNamespace);
-		map.put("serviceImplNamespace", serviceImplNamespace);
-		map.put("controllerNamespace", controllerNamespace);
-		map.put("entityNamespace", entityNamespace);
-		map.put("daoNamespace", daoNamespace);
+		map.put("serviceNamespace",serviceNamespace.replace(ignorePrefix,""));
+		map.put("serviceImplNamespace", serviceImplNamespace.replace(ignorePrefix,""));
+		map.put("controllerNamespace", controllerNamespace.replace(ignorePrefix,""));
+		map.put("entityNamespace", entityNamespace.replace(ignorePrefix,""));
+		map.put("daoNamespace", daoNamespace.replace(ignorePrefix,""));
 		return map;
 	}
 	

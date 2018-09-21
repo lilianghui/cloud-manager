@@ -579,11 +579,22 @@
                 <artifactId>mybatis-generator-maven-plugin</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
                 <configuration>
-                    <jdbcUrl>jdbc:mysql://127.0.0.1:3306/atmss?useOldAliasMetadataBehavior=true</jdbcUrl>
+                    <jdbcUrl>jdbc:mysql://127.0.0.1:3306/demo?useOldAliasMetadataBehavior=true</jdbcUrl>
                     <jdbcDriver>com.mysql.jdbc.Driver</jdbcDriver>
                     <jdbcUser>root</jdbcUser>
-                    <jdbcPassword>111111</jdbcPassword>
-                    <fileSavePath>E:/</fileSavePath>
+                    <jdbcPassword>123456</jdbcPassword>
+                    <ignorePrefix>java.</ignorePrefix>
+                    <daoExtend>com.lilianghui.framework.core.mapper.Mapper</daoExtend>
+                    <serviceExtend>com.lilianghui.framework.core.service.BaseMapperService</serviceExtend>
+                    <serviceImplExtend>com.lilianghui.framework.core.service.impl.AbstractBaseMapperService</serviceImplExtend>
+                    <entityExtend>com.lilianghui.framework.core.entity.BaseEntity</entityExtend>
+                    <includeTable>qrtz_blob_triggers,qrtz_framework_jobs</includeTable>
+                    <fileSavePath>${project.basedir}/src/main</fileSavePath>
+                    <controllerPath>java.com/walkiesoft/controller</controllerPath>
+                    <entityPath>java/com/walkiesoft/entity</entityPath>
+                    <servicePath>java/com/walkiesoft/service</servicePath>
+                    <daoPath>java/com/walkiesoft/mapper</daoPath>
+                    <mapperPath>resources/mapper</mapperPath>
                 </configuration>
             </plugin>
         </plugins>

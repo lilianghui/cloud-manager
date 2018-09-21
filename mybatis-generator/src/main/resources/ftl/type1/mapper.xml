@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <#assign namespace="${config.daoPath}.${table.iDaoName}">
 <#assign databaseType="${config.databaseType?upper_case}">
-<#assign parameterType="${config.entityPath}.${table.entityName}">
+<#assign parameterType="${entityNamespace}.${table.entityName}">
 <#assign resultType="${table.entityName?uncap_first}Entity">
 
 <mapper namespace="${namespace}">

@@ -18,6 +18,7 @@
         <module>zipkin-server</module>
         <module>fastdfs-server</module>
         <module>hystrix-server</module>
+        <module>task-server</module>
         <module>mybatis-generator</module>
     </modules>
 
@@ -248,15 +249,13 @@
                     </imageName>
                     <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
                     <skipDockerBuild>true</skipDockerBuild>
-                    <!--&lt;!&ndash;docker推送至李子园镜像仓库&ndash;&gt;-->
-                    <serverId>docker-qcloud</serverId>
+                    <serverId>docker-cloud</serverId>
                     <registryUrl>${docker.repository}</registryUrl>
                     <pushImage>true</pushImage>
                     <imageTags>
                         <!--docker的tag为项目版本号、latest-->
                         <imageTag>1.0.0.${maven.build.timestamp}</imageTag>
                     </imageTags>
-                    <!--&lt;!&ndash;docker推送至李子园镜像仓库&ndash;&gt;-->
                     <resources>
                         <resource>
                             <directory>${project.build.directory}</directory>
