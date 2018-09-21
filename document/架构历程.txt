@@ -1,0 +1,86 @@
+微服务:springcloud
+	zipkin	  		分布式跟踪系统
+	zuul	  		服务网关，分发服务
+	Ribbon	  		负载均衡调用client
+	Eureka    		服务注册中心
+	actuator  		健康检查 提供/health等端点
+	hystrix   		容错，断路器
+	turbine   		聚合监控数据
+	sleuth			分布式追踪系统
+	cloud bus		消息总线
+	cloud task		批量任务
+	ELK    			日志分析
+	分布式事务(XA/TCC)
+	分布式锁(redis/zokeeper)
+	protostuff		高性能序列化
+	shiro分布式		分布式权限认证
+
+	
+分布式文件系统:
+	fastdfs
+
+
+自动化部署:
+	jenkins	  		自动化部署
+	docker	  		虚拟容器/搭建私有仓库
+	
+	
+	
+全文检索:
+	solr(集群)
+	elasticsearch(集群)
+
+	
+消息中间件:
+	rabbitMQ(集群)
+	
+	
+缓存数据库:
+	redis(集群)
+
+	
+综合:
+	maven 			搭建私有仓库
+	Git Gitlab		服务器搭建
+	nginx
+
+	
+大数据:
+	python
+	hadoop
+	scala
+
+	
+工作流:
+	activiti
+
+工具:
+	kettle  		数据同步工具
+	Informatica 
+	ngrok			外网映射工具
+
+性能监控:
+	zabbix
+
+压测:
+	jmeter			压测工具
+	loadrunner
+
+
+Spring Cloud分布式微服务系统中利用redssion实现分布式锁
+https://www.cnblogs.com/shamo89/p/8036451.html
+
+git clone https://github.com/lilianghui/llh.git  克隆远程
+
+git branch 						查看当前分支
+git branch -a 					查看本地所有分支
+git branch -r 					查看远程所有分支
+
+git add . 						添加所有项目文件到本地仓库缓存
+git commit -m "init commit" 	提交到本地仓库(""为注释)
+git branch develop  			创建分支
+git branch -d  develop  		创建并切换分支
+git checkout develop			切换分支
+
+git pull origin master			拉master 分之内容
+git push origin develop:develop 将本地分支develop提交到远程develop分支   没有则创建

@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: config-server
+  # git管理配置
+  cloud:
+    bus:
+      refresh:
+        enabled: true
+      trace:
+        enabled: true
+    config:
+      server:
+#        git:
+#          uri: https://git.oschina.net/itmuch/spring-cloud-config-repo      # 配置Git仓库的地址
+#          username:                                                         # Git仓库的账号
+#          password:                                                         # Git仓库的密码
+          native:
+            search-locations: classpath:/config
+      discovery:
+        enabled: true
+        service-id: eureka-server
+  profiles:
+    active: native
+  rabbitmq:
+    host: llh-tencent-os
+    port: 5672
+    username: guest
+    password: guest
+server:
+  port: 7001
+
+# eureka注册中心
+eureka:
+  client:
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://root:1qaz2wsx@llh:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    statusPageUrlPath: /actuator/info
+    healthCheckUrlPath: /actuator/health
+    leaseRenewalIntervalInSeconds: 10
+    metadataMap:
+      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+
+security: false
+management:
+  endpoint:
+    bus-refresh:
+      enabled: true
+  endpoints:
+    shutdown:
+      enabled: true
+    health:
+      sensitive: false
+      show-details: always
+    web:
+      exposure:
+        include: "*"

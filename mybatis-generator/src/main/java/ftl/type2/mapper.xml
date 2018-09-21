@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<#assign namespace="${config.daoPath}.${table.iDaoName}">
+<#assign databaseType="${config.databaseType?upper_case}">
+<#assign parameterType="${config.entityPath}.${table.entityName}">
+<#assign resultType="${table.entityName?uncap_first}Entity">
+<#assign resultType="BaseResultMap">
+
+<mapper namespace="${namespace}">
+
+	<resultMap id="${resultType}" type="${parameterType}" extends="${parameterType}-BaseResultMap">
+	</resultMap>
+	
+	<#if isCollection>
+	<resultMap id="${table.entityName?uncap_first}EntityCollection" extends="${resultType}" type="${parameterType}">
+		<#list ones as one>
+		<association property="${one.entityName?uncap_first}" resultMap="${config.entityPath}.${one.entityName}-BaseResultMap" columnPrefix="${one.alias}_"/>
+		</#list>
+		<#list manys as many>
+		<collection property="${many.entityName?uncap_first}s" resultMap="${config.entityPath}.${many.entityName}-BaseResultMap" columnPrefix="${many.alias}_"/>
+		</#list>
+	</resultMap>
+	</#if>
+
+	<sql id="conditionSQL">
+			<#list	table.list as item>
+		<if test="${item.propertyName}!= null<#if item.javaType=='String'> and ${item.propertyName}!=''</#if>">AND ${item.columnName} =${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}}</if>
+			</#list>
+	</sql>
+	
+
+</mapper>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<#assign namespace="${config.daoPath}.${table.iDaoName}">
+<#assign databaseType="${config.databaseType?upper_case}">
+<#assign parameterType="${config.entityPath}.${table.entityName}">
+<#assign resultType="${table.entityName?uncap_first}Entity">
+
+<mapper namespace="${namespace}">
+
+	<resultMap id="${resultType}" type="${parameterType}">
+		<#list table.list as item>
+		<#if item.propertyName!=table.pkColumn.propertyName>
+		<result property="${item.propertyName}" column="${item.columnName}"/>
+		<#else>
+		<id property="${item.propertyName}" column="${item.columnName}"/>
+		</#if>
+		</#list>
+	</resultMap>
+	
+	<#if isCollection>
+	<resultMap id="${table.entityName?uncap_first}EntityCollection" extends="${namespace}.${table.entityName?uncap_first}Entity" type="${parameterType}">
+		<#list ones as one>
+		<association property="${one.entityName?uncap_first}" resultMap="${config.daoPath}.${one.iDaoName}.${one.entityName?uncap_first}Entity" columnPrefix="${one.alias}_"/>
+		</#list>
+		<#list manys as many>
+		<collection property="${many.entityName?uncap_first}s" resultMap="${config.daoPath}.${many.iDaoName}.${many.entityName?uncap_first}Entity" columnPrefix="${many.alias}_"/>
+		</#list>
+	</resultMap>
+	</#if>
+	
+	<insert id="insert" parameterType="${parameterType}">
+	  INSERT INTO ${table.table}(
+		<#list	table.list as item>
+		${item.columnName}<#if table.list?size-1!=item_index>,</#if>
+		</#list>
+		) VALUES(
+		<#list table.list as item>
+		<#if item.data_default=="sysdate">sysdate<#else>${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}}</#if><#if table.list?size-1!=item_index>,</#if>
+		</#list>
+		)
+	</insert>
+	
+	<insert id="insertList" parameterType="java.util.List">
+		INSERT INTO ${table.table}(
+		<#list	table.list as item>
+		${item.columnName}<#if table.list?size-1!=item_index>,</#if>
+		</#list>
+		)
+		<#if databaseType=='ORACLE'>
+		<foreach collection="list" item="item" index="index" separator="union all">
+			(select
+			<#list table.list as item>
+			<#if item.data_default=="sysdate">sysdate<#else>${r'#'}{item.${item.propertyName},jdbcType=${item.jdbcType}}</#if><#if table.list?size-1!=item_index>,</#if>
+			</#list>
+			from
+			dual
+			)
+		</foreach>
+		<#elseif  databaseType=='MYSQL'>
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+		(<#list table.list as item>
+			<#if item.data_default=="sysdate">sysdate<#else>${r'#'}{item.${item.propertyName},jdbcType=${item.jdbcType}}</#if><#if table.list?size-1!=item_index>,</#if></#list>
+		)
+		</foreach>
+		</#if>
+	</insert>
+	
+	
+	<insert id="save" parameterType="${parameterType}">
+		INSERT INTO ${table.table}
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<#list	table.list as item>
+				<if test="${item.propertyName}!= null">${item.columnName},</if>
+			</#list>
+		</trim>
+    	<trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+    		<#list table.list as item>
+    			<if test="${item.propertyName}!= null">${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}},</if>
+    		</#list>
+    	</trim>
+	</insert>
+	
+	<delete id="deleteById" parameterType="${table.pkColumn.javaType}">
+		DELETE FROM ${table.table} WHERE ${table.pkColumn.columnName}=${r'#'}{${table.pkColumn.propertyName},jdbcType=${table.pkColumn.jdbcType}}
+	</delete>
+	
+	<delete id="deleteByIds">
+		DELETE FROM ${table.table} WHERE ${table.pkColumn.columnName} in
+		<foreach collection="array" index="index" item="ids" open="(" separator="," close=")">
+			${r'#'}{ids,jdbcType=${table.pkColumn.jdbcType}}
+		 </foreach>
+	</delete>
+	
+	<update id="updateDynamic" parameterType="${parameterType}">
+		UPDATE ${table.table}
+		<set>
+		<#list	table.list as item>
+			<#if item.propertyName!=table.pkColumn.propertyName>
+			<if test="${item.propertyName}!= null and ${item.propertyName}!=''">${item.columnName} =${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}},</if>
+			</#if>
+		</#list>
+		</set>
+		WHERE ${table.pkColumn.columnName}=${r'#'}{${table.pkColumn.propertyName},jdbcType=${table.pkColumn.jdbcType}}
+	</update>
+	
+	<update id="update" parameterType="${parameterType}">
+		UPDATE ${table.table} SET
+		<#list	table.list as item>
+			<#if item.propertyName!=table.pkColumn.propertyName>
+			${item.columnName} =${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}}<#if table.list?size-1!=item_index>,</#if>
+			</#if>
+		</#list>
+		WHERE ${table.pkColumn.columnName}=${r'#'}{${table.pkColumn.propertyName},jdbcType=${table.pkColumn.jdbcType}}
+	</update>
+	
+
+	<sql id="querySql">
+			<#list	table.list as item>
+		<if test="${item.propertyName}!= null<#if item.javaType=='String'> and ${item.propertyName}!=''</#if>">AND ${item.columnName} =${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}}</if>
+			</#list>
+	</sql>
+	
+	<select id="getById" resultMap="${resultType}"	parameterType="${table.pkColumn.javaType}">
+		SELECT 	* FROM ${table.table}  T WHERE ${table.pkColumn.columnName}=${r'#'}{${table.pkColumn.propertyName},jdbcType=${table.pkColumn.jdbcType}} 
+	</select>
+	
+	<select id="getAll" resultMap="${resultType}"	parameterType="${parameterType}">
+		SELECT  * FROM  ${table.table} T WHERE 1=1 <include refid="querySql"/> 
+	</select>
+	
+	<select id="search" resultMap="${resultType}"	parameterType="${parameterType}">
+		<#if databaseType=='ORACLE'>
+		SELECT * FROM (SELECT T.*, ROWNUM ROWNUM_ FROM  ${table.table} T WHERE ROWNUM &lt;=${r'$'}{endRow}
+			<include refid="querySql"/> )
+		  where ROWNUM_ &gt; ${r'$'}{startRow}
+		  <#elseif  databaseType=='MYSQL'>
+		  SELECT * FROM  ${table.table} T WHERE 1=1 <include refid="querySql"/>
+		  LIMIT ${r'$'}{startRow},${r'$'}{pageSize}
+		</#if>
+	</select>
+	
+	<select id="getCount" resultType="java.lang.Integer"	parameterType="${parameterType}">
+		SELECT  COUNT(DISTINCT ${table.pkColumn.columnName}) FROM  ${table.table}  T WHERE 1=1 <include refid="querySql"/>
+	</select>
+	
+	<insert id="mergeInto" parameterType="${parameterType}">
+	<#if databaseType=='ORACLE'>
+	 MERGE INTO ${table.table} T  
+     USING ( SELECT ${r'#'}{${table.pkColumn.propertyName}} ID FROM DUAL) T1  
+    	ON(T.${table.pkColumn.columnName} = T1.ID)  
+   	 WHEN NOT MATCHED THEN  
+		INSERT (<#list table.list as item> ${item.columnName}<#if table.list?size-1!=item_index>,</#if></#list>) 
+		VALUES (<#list table.list as item> ${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}}<#if table.list?size-1!=item_index>,</#if></#list>)
+     WHEN MATCHED THEN  
+        UPDATE 	SET
+		<#list	table.list as item>
+			<#if item.propertyName!=table.pkColumn.propertyName>
+		${item.columnName} =${r'#'}{${item.propertyName},jdbcType=VARCHAR}<#if table.list?size-1!=item_index>,</#if>
+			</#if>
+		</#list>
+		<#elseif  databaseType=='MYSQL'>
+		REPLACE  INTO ${table.table}(
+		<#list	table.list as item>
+		${item.columnName}<#if table.list?size-1!=item_index>,</#if>
+		</#list>
+		) VALUES(
+		<#list table.list as item>
+		<#if item.data_default=="sysdate">sysdate<#else>${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}}</#if><#if table.list?size-1!=item_index>,</#if>
+		</#list>
+		)
+	</#if>
+	</insert>
+	
+	<#if isCollection>
+	<sql id="queryByPage">
+		<#if databaseType=='ORACLE'>
+			SELECT * FROM(
+		</#if>
+			SELECT
+		<#if databaseType=='ORACLE'>
+			dense_rank() over(order by ${table.alias}.${table.pkColumn.columnName} desc) numrow,
+		<#elseif  databaseType=='MYSQL'>
+				CASE
+			WHEN @id !=  ${table.alias}.${table.pkColumn.columnName} THEN
+				@dense_rank := @dense_rank + 1
+			ELSE
+				@dense_rank := @dense_rank
+			END AS numrow,
+			 @id :=  ${table.alias}.${table.pkColumn.columnName} AS ke,
+		</#if>
+			 ${table.alias}.*, 
+		<#list collection as one>
+		<#list one.list as item>
+			${one.alias}.${item.columnName} ${one.alias}_${item.columnName}<#if (one.list?size-1!=item_index||collection?size-1!=one_index)>,</#if>
+		</#list>
+		</#list>
+		FROM ${table.table} ${table.alias}
+		<#list collection as one>
+		LEFT JOIN ${one.table} ${one.alias} ON ${one.prevAlias}.${one.ref.oneColumnName} = ${one.alias}.${one.ref.manyColumnName}<#if  databaseType=='MYSQL'>,</#if>
+		</#list>
+		<#if databaseType=='ORACLE'>
+			) T
+		<#elseif  databaseType=='MYSQL'>
+		 (SELECT @dense_rank := 0) d,
+		 (SELECT @id := '') k
+		</#if>
+		
+	</sql>
+	</#if>	
+</mapper>

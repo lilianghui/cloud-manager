@@ -1,0 +1,5 @@
+server:
+  port: 8085
+turbine:
+  app-config: eureka-server,config-server,shiro-server
+  cluster-name-expression: "'default'"

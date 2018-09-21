@@ -1,0 +1,131 @@
+# ======================== Elasticsearch Configuration =========================
+#
+# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+#       Before you set out to tweak and tune the configuration, make sure you
+#       understand what are you trying to accomplish and the consequences.
+#
+# The primary way of configuring a node is via this file. This template lists
+# the most important settings you may want to configure for a production cluster.
+#
+# Please consult the documentation for further information on configuration options:
+# https://www.elastic.co/guide/en/elasticsearch/reference/index.html
+#
+# ---------------------------------- Cluster -----------------------------------
+#
+# Use a descriptive name for your cluster:
+#
+#设置集群名称，用以区分同一网段下的不同集群
+cluster.name: elasticsearch
+#
+# ------------------------------------ Node ------------------------------------
+#
+# Use a descriptive name for the node:
+#
+#设置节点名称，不同的节点名称不一样
+node.name: node-9300
+#
+# Add custom attributes to the node:
+#
+#node.attr.rack: r1
+#
+# ----------------------------------- Paths ------------------------------------
+#
+# Path to directory where to store the data (separate multiple locations by comma):
+#
+#设置索引数据的存储路径
+path.data: /home/elasticsearch/elasticsearch-6.4.0-9300/data
+#
+# Path to log files:
+#
+#设置日志文件的存储路径，默认是es根目录下的logs文件夹
+path.logs: /home/elasticsearch/elasticsearch-6.4.0-9300/logs
+#
+# ----------------------------------- Memory -----------------------------------
+#
+# Lock the memory on startup:
+#
+#设置为true来锁住内存。因为内存交换到磁盘对服务器性能来说是致命的，当jvm开始swapping时es的效率会降低，所以要保证它不swap
+bootstrap.memory_lock: true
+#
+# Make sure that the heap size is set to about half the memory available
+# on the system and that the owner of the process is allowed to use this
+# limit.
+#
+# Elasticsearch performs poorly when the system is swapping the memory.
+#
+# ---------------------------------- Network -----------------------------------
+#
+# Set the bind address to a specific IP (IPv4 or IPv6):
+#
+#设置对外网络地址
+network.host: 0.0.0.0
+
+#设置节点tcp端口
+transport.tcp.port: 9300
+
+#
+# Set a custom port for HTTP:
+#
+#设置http端口
+http.port: 9200
+#
+# For more information, consult the network module documentation.
+#
+# --------------------------------- Discovery ----------------------------------
+#
+# Pass an initial list of hosts to perform discovery when new node is started:
+# The default list of hosts is ["127.0.0.1", "[::1]"]
+#
+#设置可选为master节点的初始列表，可通过这些节点来自动发现新加入集群的节点
+discovery.zen.ping.unicast.hosts: ["10.250.209.89:9300","10.250.209.89:9301","10.250.209.89:9302"]
+#
+# Prevent the "split brain" by configuring the majority of nodes (total number of master-eligible nodes / 2 + 1):
+#
+#设置集群中最小master资格节点数，N = nodes/2 + 1
+discovery.zen.minimum_master_nodes: 2
+#
+# For more information, consult the zen discovery module documentation.
+#
+# ---------------------------------- Gateway -----------------------------------
+#
+# Block initial recovery after a full cluster restart until N nodes are started:
+#
+#gateway.recover_after_nodes: 3
+#
+# For more information, consult the gateway module documentation.
+#
+# ---------------------------------- Various -----------------------------------
+#
+# Require explicit names when deleting indices:
+#
+#设置是否可以通过正则或者_all删除或者关闭索引，false为允许，true为不允许
+action.destructive_requires_name: true
+
+#指定该节点是否有资格被选举成为master，如果master节点挂了会重新选举master
+node.master: true
+
+#设置该节点是否存储数据
+node.data: true
+
+#注： a、当master为false，而data为true时，会对该节点产生严重负荷b、当master为true，而data为false时，该节点作为一个协调者c、当master为false，data也为false时，该节点就变成了一个负载均衡器
+
+#设置索引分片数，默认为5片
+#index.number_of_shards: 5
+
+#设置索引副本数，默认为1个副本
+#index.number_of_replicas: 1
+
+#设置集群中自动发现其它节点时，ping连接的超时时间
+#discovery.zen.ping.timeout: 10s
+
+#设置是否多播发现节点
+#discovery.zen.ping.multicast.enabled: false
+
+
+#设置是否跨域访问
+http.cors.enabled: true
+
+#允许跨域访问的域名地址，设置成"*"是高风险的，这说明部署的ES集群允许被任何地方跨域请求，所以建议在实际生产环境中，最好根据需求设定允许访问的域名地址
+http.cors.allow-origin: "*"
+
+bootstrap.system_call_filter: false

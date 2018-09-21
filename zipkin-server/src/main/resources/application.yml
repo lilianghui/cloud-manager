@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: zipkin-server
+  datasource:
+    #    schema: classpath:/sql/mysql/zipkin.sql
+    url: jdbc:mysql://llh-tencent-os:3306/zipkin?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+    username: root
+    password: 1qaz@WSX
+    #    initialize: true
+    continueOnError: true
+
+server:
+  port: 8083
+
+# eureka注册中心
+eureka:
+  client:
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://root:1qaz2wsx@llh:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    statusPageUrlPath: /actuator/info
+    healthCheckUrlPath: /actuator/health
+    leaseRenewalIntervalInSeconds: 10
+    metadataMap:
+      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+
+security: false
+management:
+  endpoints:
+    shutdown:
+      enabled: true
+    health:
+      sensitive: false
+      show-details: always
+    web:
+      exposure:
+        include: "*"

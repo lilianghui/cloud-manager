@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+  <!--java -jar mybatis-generator-core-1.3.5.jar -configfile mbg_configuration.xml -overwrite-->
+<generatorConfiguration>
+    <classPathEntry
+        location="mysql-connector-java-5.1.38.jar" />
+    <context id="mybatisDemoForMysql" targetRuntime="MyBatis3">
+        <!-- 控制注释 -->
+        <commentGenerator>
+            <!-- 是否去除所有自动生成的注释文件 -->
+            <property name="suppressAllComments" value="true" />
+            <!-- 是否去除所有自动生成的文件的时间戳，默认为false -->
+            <property name="suppressDate" value="true" />
+        </commentGenerator>
+        <!-- 控制数据库 -->
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+            connectionURL="jdbc:mysql://127.0.0.1:3306/atmss_schedule?characterEncoding=utf8"
+            userId="root" password="root" />
+
+        <javaTypeResolver>
+            <!-- 把jdbc中的decimal与numberic类型转化为integer类型 -->
+            <property name="forceBigDecimals" value="false" />
+        </javaTypeResolver>
+        <!-- 数据库表对应的model -->
+        <javaModelGenerator targetPackage="david.model"
+            targetProject="src">
+            <property name="enableSubPackages" value="true" />
+            <property name="trimStrings" value="true" />
+        </javaModelGenerator>
+        <!-- 控制Model的xmlMapper文件 -->
+        <sqlMapGenerator targetPackage="david.mappers"
+            targetProject="src">
+            <property name="enableSubPackages" value="true" />
+        </sqlMapGenerator>
+        <!-- 控制mapper接口 -->
+        <javaClientGenerator targetPackage="david.inter"
+            type="XMLMAPPER" targetProject="src">
+            <property name="enableSubPackages" value="true" />
+            <property name="methodNameCalculator" value="extended" />
+        </javaClientGenerator>
+        <!-- schema你的数据库，tableName表明，domainObjectName对应你的javabean类名，是否生成相应的example -->
+        <table schema="atmss_schedule" tableName="m_user" domainObjectName="User"
+            enableCountByExample="true" enableUpdateByExample="true"
+            enableDeleteByExample="true" enableSelectByExample="true"
+            selectByExampleQueryId="true">
+            <generatedKey column="id" sqlStatement="MySql" />
+            <!-- <columnOverride column="name" property="visitor_name" /> -->
+            <ignoreColumn column="status" delimitedColumnName="false" />            
+        </table>
+    </context>
+</generatorConfiguration>

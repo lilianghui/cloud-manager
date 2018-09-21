@@ -1,0 +1,5 @@
+server:
+  port: 8084
+servlet:
+  jsp:
+    class-name: org.apache.jasper.servlet.JspServlet

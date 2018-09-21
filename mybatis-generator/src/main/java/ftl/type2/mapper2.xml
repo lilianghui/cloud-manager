@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<#assign namespace="${config.daoPath}.${table.iDaoName}">
+<#assign databaseType="${config.databaseType?upper_case}">
+<#assign parameterType="${config.entityPath}.${table.entityName}">
+<#assign resultType="${table.entityName?uncap_first}Entity">
+
+<mapper namespace="${namespace}">
+
+	<resultMap id="${resultType}" type="${parameterType}">
+		<#list table.list as item>
+		<#if item.propertyName!=pkProperty>
+		<result property="${item.propertyName}" column="${item.columnName}"/>
+		<#else>
+		<id property="${item.propertyName}" column="${item.columnName}"/>
+		</#if>
+		</#list>
+	</resultMap>
+	
+	<#if isCollection>
+	<resultMap id="${table.entityName?uncap_first}EntityCollection" extends="${namespace}.${table.entityName?uncap_first}Entity" type="${parameterType}">
+		<#list ones as one>
+		<association property="${one.entityName?uncap_first}" resultMap="${config.daoPath}.${one.iDaoName}.${one.entityName?uncap_first}Entity" columnPrefix="${one.alias}_"/>
+		</#list>
+		<#list manys as many>
+		<collection property="${many.entityName?uncap_first}s" resultMap="${config.daoPath}.${many.iDaoName}.${many.entityName?uncap_first}Entity" columnPrefix="${many.alias}_"/>
+		</#list>
+	</resultMap>
+	</#if>
+
+	<sql id="querySql">
+			<#list	table.list as item>
+		<if test="${item.propertyName}!= null<#if item.javaType=='String'> and ${item.propertyName}!=''</#if>">AND ${item.columnName} =${r'#'}{${item.propertyName},jdbcType=${item.jdbcType}}</if>
+			</#list>
+	</sql>
+	
+	
+	<select id="search" resultMap="${resultType}"	parameterType="${parameterType}">
+		<#if databaseType=='ORACLE'>
+		SELECT * FROM (SELECT T.*, ROWNUM ROWNUM_ FROM  ${table.table} T WHERE ROWNUM &lt;=${r'$'}{endRow}
+			<include refid="querySql"/> )
+		  where ROWNUM_ &gt; ${r'$'}{startRow}
+		  <#elseif  databaseType=='MYSQL'>
+		  SELECT * FROM  ${table.table} T WHERE 1=1 <include refid="querySql"/>
+		  LIMIT ${r'$'}{startRow},${r'$'}{pageSize}
+		</#if>
+	</select>
+	
+	<select id="getSearchCount" resultType="java.lang.Integer"	parameterType="${parameterType}">
+		SELECT  COUNT(${table.pk}) FROM  ${table.table}  T WHERE 1=1 <include refid="querySql"/>
+	</select>
+	
+	
+	<#if isCollection>
+	<sql id="queryByPage">
+		<#if databaseType=='ORACLE'>
+			SELECT * FROM(
+		</#if>
+			SELECT
+		<#if databaseType=='ORACLE'>
+			dense_rank() over(order by ${table.alias}.${table.pk} desc) numrow,
+		<#elseif  databaseType=='MYSQL'>
+				CASE
+			WHEN @id !=  ${table.alias}.${table.pkColumn.columnName} THEN
+				@dense_rank := @dense_rank + 1
+			ELSE
+				@dense_rank := @dense_rank
+			END AS numrow,
+			 @id :=  ${table.pkColumn.columnName}.${table.pk} AS ke,
+		</#if>
+			 ${table.alias}.*, 
+		<#list collection as one>
+		<#list one.list as item>
+			${one.alias}.${item.columnName} ${one.alias}_${item.columnName}<#if (one.list?size-1!=item_index||collection?size-1!=one_index)>,</#if>
+		</#list>
+		</#list>
+		FROM ${table.table} ${table.alias}
+		<#list collection as one>
+		LEFT JOIN ${one.table} ${one.alias} ON ${one.prevAlias}.${one.ref.oneColumnName} = ${one.alias}.${one.ref.manyColumnName}<#if  databaseType=='MYSQL'>,</#if>
+		</#list>
+		<#if databaseType=='ORACLE'>
+			) T
+		<#elseif  databaseType=='MYSQL'>
+		 (SELECT @dense_rank := 0) d,
+		 (SELECT @id := '') k
+		</#if>
+		
+	</sql>
+	</#if>	
+</mapper>

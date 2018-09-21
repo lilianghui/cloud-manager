@@ -1,0 +1,30 @@
+spring:
+  jpa:
+    database: MySQL
+  datasource:
+    #    schema: classpath:/sql/mysql/zipkin.sql
+    url: jdbc:mysql://llh-tencent-os:3306/zipkin?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+    username: root
+    password: 1qaz@WSX
+    #    initialize: true
+    continueOnError: true
+
+
+security: false
+management:
+  endpoint:
+    bus-refresh:
+      enabled: true
+  endpoints:
+    shutdown:
+      enabled: true
+    health:
+      sensitive: false
+      show-details: always
+    web:
+      exposure:
+        include: "*"
+
+gatway:
+  name: llh
+  age: 2412

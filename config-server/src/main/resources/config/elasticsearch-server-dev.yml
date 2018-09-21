@@ -1,0 +1,17 @@
+spring:
+  data:
+    elasticsearch:
+      cluster-name: elasticsearch
+      cluster-nodes: llh:9300
+
+security: false
+management:
+  endpoints:
+    shutdown:
+      enabled: true
+    health:
+      sensitive: false
+      show-details: always
+    web:
+      exposure:
+        include: "*"

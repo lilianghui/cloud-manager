@@ -1,0 +1,59 @@
+spring:
+  mvc:
+    static-path-pattern: /**
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+  freemarker:
+    template-loader-path: /templates
+  thymeleaf:
+    template-resolver-order: 122
+#  redis:
+#    cluster:
+#      nodes: 10.250.209.89:7000,10.250.209.89:7001,10.250.209.89:7002,10.250.209.89:7003,10.250.209.89:7004,10.250.209.89:7005,10.250.209.89:7006
+#      timeout: 2000
+#      max-redirects: 7
+  rabbitmq:
+    host: llh-tencent-os
+    port: 5672
+    username: guest
+    password: guest
+
+
+# routes to serviceId
+zuul:
+  routes:
+    fastdfs-server:
+      path: /fastdfs/**
+      serviceId: fastdfs-server
+      stripPrefix: false
+    elasticsearch-server:
+      path: /elasticsearch/**
+      serviceId: elasticsearch-server
+      stripPrefix: false
+    shiro-server:
+      path: /shiro/**
+      serviceId: shiro-server
+      stripPrefix: false
+  ignored-services: '*'
+  ignoredPatterns: /**/**/index, /**/**/edit/**, /core/**, /**/**/copy/**, /pdf/*
+
+
+security: false
+management:
+  endpoint:
+    bus-refresh:
+      enabled: true
+  endpoints:
+    shutdown:
+      enabled: true
+    health:
+      sensitive: false
+      show-details: always
+    web:
+      exposure:
+        include: "*"
+
+gatway:
+  name: llh
+  age: 24

@@ -1,0 +1,14 @@
+	<#if isCollection>
+	<sql id="selectSQL">
+		SELECT  ${table.alias}.*, 
+		<#list collection as one>
+		<#list one.list as item>
+			${one.alias}.${item.columnName} ${one.alias}_${item.columnName}<#if (one.list?size-1!=item_index||collection?size-1!=one_index)>,</#if>
+		</#list>
+		</#list>
+		FROM ${table.table} ${table.alias}
+		<#list collection as one>
+		LEFT JOIN ${one.table} ${one.alias} ON ${one.prevAlias}.${one.ref.oneColumnName} = ${one.alias}.${one.ref.manyColumnName}
+		</#list>
+	</sql>
+	</#if>	

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+		<!--<setting name="logImpl" value="LOG4J" />-->
+		<!-- <setting name="useGeneratedKeys" value="true" /> -->
+	    <setting name="jdbcTypeForNull" value="NULL"/>
+		<setting name="mapUnderscoreToCamelCase" value="true" />
+	</settings>
+	<typeHandlers>
+		<!--&lt;!&ndash; jdbcType 配置数据库基本数据类型，例如varchar, 如果配上jdbcType, 那么指定的typeHandler就只作用于指定的类型 &ndash;&gt;-->
+		<!--<typeHandler javaType="boolean" handler="com.lilianghui.framework.mybatis.mapping.BooleanTypeHandler" />-->
+		<!--<typeHandler javaType="String"  handler="com.lilianghui.framework.mybatis.mapping.StringTypeHandler" />-->
+		<!--<typeHandler javaType="java.io.Serializable"  handler="com.lilianghui.framework.mybatis.mapping.SerializableTypeHandler" />-->
+		<!--<typeHandler javaType="[Ljava.lang.Integer;"   handler="com.lilianghui.framework.mybatis.mapping.IntegerArrayTypeHandler" />-->
+		<!--<typeHandler javaType="[Ljava.lang.String;"   handler="com.lilianghui.framework.mybatis.mapping.StringArrayTypeHandler" />-->
+	</typeHandlers>
+</configuration>

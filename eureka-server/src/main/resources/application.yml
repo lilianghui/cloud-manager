@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: eureka-server
+  security:
+    user:
+      name: root
+      password: 1qaz2wsx
+server:
+  port: 8761
+
+eureka:
+  server:
+  ## 中小规模下，自我保护模式坑比好处多，所以关闭它
+    enableSelfPreservation: false
+  ## 心跳阈值计算周期，如果开启自我保护模式，可以改一下这个配置
+    renewalThresholdUpdateIntervalMs: 120000
+  ## 主动失效检测间隔,配置成5秒
+    evictionIntervalTimerInMs: 5000
+  ## 禁用readOnlyCacheMap
+    useReadOnlyResponseCache: false
+  instance:
+    hostname: localhost
+    ## 心跳间隔，10秒
+    leaseRenewalIntervalInSeconds: 10
+    ## 没有心跳的淘汰时间，15秒
+    leaseExpirationDurationInSeconds: 15
+    status-page-url-path: /actuator/info
+    health-check-url-path: /actuator/health
+    home-page-url-path: /
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    serviceUrl:
+      defaultZone: http://root:1qaz2wsx@llh:8761/eureka/
+
+security: false
+management:
+  endpoints:
+    shutdown:
+        enabled: true
+    health:
+        sensitive: false
+        show-details: always
+    web:
+      exposure:
+        include: "*"
