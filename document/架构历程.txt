@@ -61,6 +61,7 @@
 
 性能监控:
 	zabbix
+	jvisualvm
 
 压测:
 	jmeter			压测工具
