@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/archetype-maven/src/main/resources/archetype-resources" includeSubdirectories="true" />
+    </excludeFromCompile>
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="archetype-maven" />
         <module name="config-server" />
         <module name="elasticsearch-server" />
         <module name="eureka-server" />
@@ -15,6 +20,8 @@
         <module name="hystrix-server" />
         <module name="mybatis-generator-maven-plugin" />
         <module name="shiro-server" />
+        <module name="spring-boot-admin-server" />
+        <module name="task-server" />
         <module name="zipkin-server" />
       </profile>
     </annotationProcessing>
