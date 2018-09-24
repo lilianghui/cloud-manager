@@ -50,8 +50,8 @@
         <jolokia-core.version>1.6.0</jolokia-core.version>
         <!-- spring-boot-admin end-->
 
-        <docker.repository></docker.repository>
-        <docker.registry.name></docker.registry.name>
+        <docker.repository>llh-tencent-os</docker.repository>
+        <docker.registry.name>cloud-manager</docker.registry.name>
     </properties>
 
 

@@ -20,6 +20,11 @@
     <name>eureka-server</name>
     <description>Demo project for Spring Boot</description>
 
+    <properties>
+        <docker.repository>llh-tencent-os</docker.repository>
+        <docker.registry.name>cloud-manager</docker.registry.name>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -54,8 +59,25 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
+                <version>1.1.0</version>
                 <configuration>
+                    <imageName>${docker.repository}/${docker.registry.name}/${project.name}:${project.version}
+                    </imageName>
+                    <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
                     <skipDockerBuild>false</skipDockerBuild>
+                    <serverId>docker-cloud</serverId>
+                    <registryUrl>${docker.repository}</registryUrl>
+                    <pushImage>true</pushImage>
+                    <imageTags>
+                        <!--docker的tag为项目版本号、latest-->
+                        <imageTag>1.0.0.${maven.build.timestamp}</imageTag>
+                    </imageTags>
+                    <resources>
+                        <resource>
+                            <directory>${project.build.directory}</directory>
+                            <include>${project.build.finalName}.jar</include>
+                        </resource>
+                    </resources>
                 </configuration>
             </plugin>
         </plugins>
