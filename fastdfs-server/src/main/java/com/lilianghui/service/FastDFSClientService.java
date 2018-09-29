@@ -22,7 +22,6 @@ import java.nio.charset.Charset;
  *
  * @author 杨信
  * @version 1.0
- * @date 2016/9/7
  */
 @Component
 public class FastDFSClientService {
@@ -37,7 +36,7 @@ public class FastDFSClientService {
      *
      * @param file 文件对象
      * @return 文件访问地址
-     * @throws IOException
+     * @throws IOException io异常
      */
     public String uploadFile(MultipartFile file) throws IOException {
         StorePath storePath = fastFileStorageClient.uploadFile(file.getInputStream(), file.getSize(), FilenameUtils.getExtension(file.getOriginalFilename()), null);
@@ -48,8 +47,8 @@ public class FastDFSClientService {
      * 将一段字符串生成一个文件上传
      *
      * @param content       文件内容
-     * @param fileExtension
-     * @return
+     * @param fileExtension 文件扩展名
+     * @return  图片地址
      */
     public String uploadFile(String content, String fileExtension) {
         byte[] buff = content.getBytes(Charset.forName("UTF-8"));
@@ -68,7 +67,6 @@ public class FastDFSClientService {
      * 删除文件
      *
      * @param fileUrl 文件访问地址
-     * @return
      */
     public void deleteFile(String fileUrl) {
         if (StringUtils.isEmpty(fileUrl)) {

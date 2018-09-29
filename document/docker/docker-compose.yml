@@ -1,0 +1,40 @@
+version: '2'
+
+services:
+  registry-web:
+    image: hyper/docker-registry-web:latest
+    extra_hosts:
+      - "llh-tencent-os:212.64.26.25"
+    ports:
+      - 8888:8080
+    volumes:
+      - /root/data/registry_dir/conf/registry-web:/conf:ro
+      - /root/data/registry_dir/db:/data
+    networks:
+      - registry-net
+    depends_on:
+      - registry
+    restart: always
+
+  registry:
+    image: registry:latest
+    extra_hosts:
+      - "llh-tencent-os:212.64.26.25"
+    ports:
+      - 5000:5000
+    volumes:
+      - /root/data/registry_dir/conf/registry:/etc/docker/registry:ro
+      - /root/data/registry_dir/registry:/var/lib/registry
+    environment:
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+      - REGISTRY_HTTP_TLS_CERTIFICATE=/etc/docker/registry/certs/domain.crt
+      - REGISTRY_HTTP_TLS_KEY=/etc/docker/registry/certs/domain.key
+      - REGISTRY_HTTP_SECRET=admin
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/var/lib/registry
+    networks:
+      - registry-net
+    restart: always
+
+networks:
+  registry-net:
+    driver: bridge

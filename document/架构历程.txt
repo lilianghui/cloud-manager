@@ -10,7 +10,7 @@
 	cloud bus		消息总线
 	cloud task		批量任务
 	ELK    			日志分析
-	分布式事务(XA/TCC)
+	分布式事务(XA/TCC/MQ)
 	分布式锁(redis/zokeeper)
 	protostuff		高性能序列化
 	shiro分布式		分布式权限认证
@@ -56,16 +56,16 @@
 
 工具:
 	kettle  		数据同步工具
-	Informatica 
+	Informatica     数据同步工具
 	ngrok			外网映射工具
 
 性能监控:
 	zabbix
-	jvisualvm
+	jvisualvm       jvm监控工具
 
 压测:
 	jmeter			压测工具
-	loadrunner
+	loadrunner      压测工具
 
 
 Spring Cloud分布式微服务系统中利用redssion实现分布式锁

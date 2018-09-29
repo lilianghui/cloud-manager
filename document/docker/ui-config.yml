@@ -1,0 +1,8 @@
+registry:
+  url: https://llh-tencent-os:5000/v2
+  name: llh-tencent-os:5000
+  readonly: false
+  auth:
+    enabled: true
+    issuer: 'admin'
+    key: /conf/auth.key

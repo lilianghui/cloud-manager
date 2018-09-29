@@ -61,17 +61,20 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>1.1.0</version>
                 <configuration>
-                    <imageName>${docker.repository}/${docker.registry.name}/${project.name}:${project.version}
+                    <imageName>${docker.repository}:5000/${docker.registry.name}/${project.name}:${project.version}
                     </imageName>
-                    <dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
+                    <dockerDirectory>${project.basedir}\src\main\docker</dockerDirectory>
                     <skipDockerBuild>false</skipDockerBuild>
-                    <serverId>docker-cloud</serverId>
-                    <registryUrl>${docker.repository}</registryUrl>
+                    <dockerHost>https://${docker.repository}:2376</dockerHost>
+                    <!--client的ca.pem/key.pem/cert.pem-->
+                    <dockerCertPath>E:\cesgroup\workspace\cloud-manager\cert</dockerCertPath>
+                    <serverId>llh-docker-cloud</serverId>
+                    <registryUrl>https://${docker.repository}:5000</registryUrl>
                     <pushImage>true</pushImage>
-                    <imageTags>
-                        <!--docker的tag为项目版本号、latest-->
-                        <imageTag>1.0.0.${maven.build.timestamp}</imageTag>
-                    </imageTags>
+                    <!--<imageTags>-->
+                    <!--&lt;!&ndash;docker的tag为项目版本号、latest&ndash;&gt;-->
+                    <!--<imageTag>1.0.0.${maven.build.timestamp}</imageTag>-->
+                    <!--</imageTags>-->
                     <resources>
                         <resource>
                             <directory>${project.build.directory}</directory>
@@ -88,3 +91,4 @@
         </resources>
     </build>
 </project>
+
