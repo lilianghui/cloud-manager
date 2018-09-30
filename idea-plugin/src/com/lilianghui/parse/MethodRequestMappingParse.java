@@ -38,7 +38,7 @@ public class MethodRequestMappingParse {
         } else {
             respClass = JavaDirectoryService.getInstance().createClass(entityDirectory, psiClass.getName()+"Test");
 //            respClass.getExtendsList().add(getReferenceClass(elementFactory, BaseModelStr)); //确定继承关系
-            respClass.getModifierList().add(elementFactory.createKeyword("public"));//修改权限
+//            respClass.getModifierList().add(elementFactory.createKeyword("public"));//修改权限
         }
 
 
@@ -50,7 +50,8 @@ public class MethodRequestMappingParse {
             annotation = annotation == null ? psiClass.getAnnotation("org.springframework.web.bind.annotation.PutMapping") : annotation;
             annotation = annotation == null ? psiClass.getAnnotation("org.springframework.web.bind.annotation.DeleteMapping") : annotation;
             if (annotation != null) {
-                elementFactory.createMethodFromText(method_template.replace("${method}", psiMethod.getName() + "Test"), respClass);
+                PsiMethod method = elementFactory.createMethodFromText(method_template.replace("${method}", psiMethod.getName() + "Test"), respClass);
+                respClass.add(method);
             }
         });
     }
