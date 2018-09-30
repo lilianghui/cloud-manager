@@ -5,6 +5,8 @@ import com.lilianghui.action.Clicked;
 import com.lilianghui.render.CellRender;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.event.*;
 
 public class ImportDialog extends JDialog {
@@ -12,6 +14,8 @@ public class ImportDialog extends JDialog {
     private JButton buttonOK;
     private JButton buttonCancel;
     private JList list1;
+    private JTextField textField1;
+    private JButton previousButton;
     private Clicked clicked;
     private Context context;
 
@@ -55,17 +59,39 @@ public class ImportDialog extends JDialog {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    if (clicked.mouseClicked(ImportDialog.this, context)) {
+                    if (clicked.mouseClicked(ImportDialog.this, context, 2)) {
                         dispose();
                     }
                 }
+            }
+        });
+        textField1.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                clicked.refreshModel(context, ImportDialog.this, textField1.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                clicked.refreshModel(context, ImportDialog.this, textField1.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                clicked.refreshModel(context, ImportDialog.this, textField1.getText());
+            }
+        });
+        previousButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clicked.mouseClicked(ImportDialog.this, context, 1);
             }
         });
     }
 
     private void onOK() {
         // add your code here
-        if (clicked.mouseClicked(ImportDialog.this, context)) {
+        if (clicked.mouseClicked(ImportDialog.this, context, 2)) {
             dispose();
         }
     }
@@ -77,5 +103,13 @@ public class ImportDialog extends JDialog {
 
     public JList getList1() {
         return list1;
+    }
+
+    public JButton getPreviousButton() {
+        return previousButton;
+    }
+
+    public JTextField getTextField1() {
+        return textField1;
     }
 }

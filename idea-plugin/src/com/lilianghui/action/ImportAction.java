@@ -12,12 +12,14 @@ import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiImportStatement;
 import com.lilianghui.Context;
 import com.lilianghui.ui.ImportDialog;
+import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ImportAction extends AnAction implements Clicked {
     private static int width = 800;
@@ -27,13 +29,12 @@ public class ImportAction extends AnAction implements Clicked {
     @Override
     public void actionPerformed(AnActionEvent event) {
         final Project project = event.getData(PlatformDataKeys.PROJECT);
-        (new WriteCommandAction.Simple(project) {
-            protected void run() throws Throwable {
+        WriteCommandAction.runWriteCommandAction(project, new Runnable() {
+            @Override
+            public void run() {
                 ImportAction.this.build(event);
             }
-        }).execute();
-
-
+        });
     }
 
 
@@ -42,8 +43,9 @@ public class ImportAction extends AnAction implements Clicked {
         try {
             if (context.hasElement()) {
                 ImportDialog dialog = new ImportDialog(this, context);
+                context.setDialog(dialog);
                 dialog.pack();
-                setModel(dialog, context.pop(), context.getCurrentPsiClass());
+                setModel(dialog, context.pop(0), context.getCurrentPsiClass());
                 Dimension size = WindowManager.getInstance().getIdeFrame(context.getProject()).getComponent().getSize();
                 dialog.setBounds((size.width - width) / 2, (size.height - height) / 2, width, height);
                 dialog.setVisible(true);
@@ -56,22 +58,30 @@ public class ImportAction extends AnAction implements Clicked {
     }
 
     private void setModel(ImportDialog dialog, String title, Set<PsiClass> psiClasses) {
-        dialog.setTitle(title);
+        if (StringUtils.isNotBlank(title)) {
+            dialog.setTitle(title);
+        }
         ListModel model = new ListComboBoxModel(new ArrayList(psiClasses));
         dialog.getList1().setModel(model);
     }
 
 
     @Override
-    public boolean mouseClicked(ImportDialog importDialog, Context context) {
+    public boolean mouseClicked(ImportDialog importDialog, Context context, int type) {
         try {
-            PsiClass psiClass = (PsiClass) importDialog.getList1().getSelectedValue();
-            context.getImportPsiClass().add(psiClass);
-            if (!context.hasElement()) {
-                createImportText(context);
-                return true;
+            if (type == 1) {
+                setModel(importDialog, context.previous(), context.getCurrentPsiClass());
             } else {
-                setModel(importDialog, context.pop(), context.getCurrentPsiClass());
+                PsiClass psiClass = (PsiClass) importDialog.getList1().getSelectedValue();
+                if (psiClass != null) {
+                    context.putImportPsiClass(psiClass);
+                    if (!context.hasElement()) {
+                        createImportText(context);
+                        return true;
+                    } else {
+                        setModel(importDialog, context.pop(null), context.getCurrentPsiClass());
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,9 +89,17 @@ public class ImportAction extends AnAction implements Clicked {
         return false;
     }
 
+    @Override
+    public void refreshModel(Context context, ImportDialog dialog, String text) {
+        Set<PsiClass> psiClasses = context.getCurrentPsiClass();
+        setModel(dialog, null, psiClasses.stream().filter(psiClass ->
+                StringUtils.isBlank(text) ? true : psiClass.getQualifiedName().contains(text)
+        ).collect(Collectors.toSet()));
+    }
+
     private void createImportText(Context context) {
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(context.getProject());
-        context.getImportPsiClass().forEach(psiClass -> {
+        context.getImportPsiClass().values().forEach(psiClass -> {
             if (psiClass != null) {
                 PsiImportStatement psiImportStaticStatement = elementFactory.createImportStatement(psiClass);
                 context.getPsiElementOne(Context.IMPORT_TYPE).add(psiImportStaticStatement);

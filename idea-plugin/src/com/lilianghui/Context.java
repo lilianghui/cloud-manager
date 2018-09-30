@@ -11,6 +11,7 @@ import com.intellij.psi.search.EverythingGlobalScope;
 import com.intellij.psi.search.PsiShortNamesCache;
 import com.lilianghui.parse.ClassParse;
 import com.lilianghui.parse.Parse;
+import com.lilianghui.ui.ImportDialog;
 
 import java.util.*;
 
@@ -21,15 +22,16 @@ public class Context {
 
     private Map<Integer, Set<PsiElement>> psiElementMap = new HashMap<>();
     private Set<String> classNames = new HashSet<>();
+    private Set<String> removeClassNames = new HashSet<>();
     private AnActionEvent event;
     private Project project;
-    private LinkedList<String> keys = null;
+    private List<String> keys = null;
     private Map<String, Set<PsiClass>> stringSetMap = new HashMap<>();
 
     private Parse parse = null;
-
-    private String currentkey;
-    private Set<PsiClass> importPsiClass = new HashSet<>();
+    private ImportDialog dialog;
+    private int currentkey = 0;
+    private Map<String, PsiClass> importPsiClass = new HashMap<>();
 
     public static Context build(AnActionEvent event) {
         return build(event, new ClassParse());
@@ -45,29 +47,46 @@ public class Context {
         return context;
     }
 
+    private void buildRemoveImportList() {
+        Arrays.asList(((PsiImportList) getPsiElementOne(0)).getImportStatements()).forEach(psiImportStatement -> {
+            String name = psiImportStatement.getQualifiedName();
+            int index = name.lastIndexOf(".");
+            removeClassNames.add(name.substring(index > 0 ? index + 1 : 0));
+        });
+    }
+
     private Context buildPsiClassMapping() {
-        this.classNames.forEach(classSimpleName -> {
+        Set<String> remove = new HashSet<>();
+        Set<String> exists = new HashSet<>();
+        this.classNames.stream().filter(s -> !removeClassNames.contains(s)).forEach(classSimpleName -> {
             PsiClass[] psiClasses = PsiShortNamesCache.getInstance(project).getClassesByName(classSimpleName, EverythingGlobalScope.allScope(project));
             if (psiClasses != null) {
                 if (stringSetMap.get(classSimpleName) == null) {
                     stringSetMap.put(classSimpleName, new HashSet<>());
                 }
                 Arrays.asList(psiClasses).forEach(psiClass1 -> {
-                    stringSetMap.get(classSimpleName).add(psiClass1);
+                    if (psiClass1.getQualifiedName().startsWith("java.lang.")) {
+                        remove.add(classSimpleName);
+                    } else if (!exists.contains(psiClass1.getQualifiedName())) {
+                        stringSetMap.get(classSimpleName).add(psiClass1);
+                        exists.add(psiClass1.getQualifiedName());
+                    }
                 });
             }
         });
-        Set<String> remove = new HashSet<>();
         stringSetMap.forEach((s, psiClasses) -> {
-            if (psiClasses.size() == 1) {
+            if (psiClasses.size() == 0) {
                 remove.add(s);
-                this.importPsiClass.add(psiClasses.iterator().next());
+            } else if (psiClasses.size() == 1) {
+                remove.add(s);
+                PsiClass psiClass = psiClasses.iterator().next();
+                putImportPsiClass(psiClass);
             }
         });
         if (remove.size() > 0) {
             remove.forEach(s -> stringSetMap.remove(s));
         }
-        keys = new LinkedList<>(stringSetMap.keySet());
+        keys = new ArrayList<>(stringSetMap.keySet());
         return this;
     }
 
@@ -80,6 +99,7 @@ public class Context {
                 putPsiElementMap(CLASS_TYPE, psiElement);
             }
         });
+        buildRemoveImportList();
         return this;
     }
 
@@ -120,24 +140,53 @@ public class Context {
         this.project = project;
     }
 
-    public String pop() {
-        this.currentkey = keys.pop();
-        return this.currentkey;
+    public String pop(Integer currentkey) {
+        if (currentkey != null) {
+            this.currentkey = 0;
+        } else {
+            this.currentkey++;
+        }
+        setBtnVisable();
+        dialog.getTextField1().setText(null);
+        return keys.get(this.currentkey);
+    }
+
+    public String previous() {
+        if (this.currentkey <= 0) {
+            this.currentkey = 0;
+        } else {
+            this.currentkey--;
+        }
+        setBtnVisable();
+        dialog.getTextField1().setText(null);
+        return keys.get(this.currentkey);
     }
 
     public Set<PsiClass> getCurrentPsiClass() {
-        return stringSetMap.get(this.currentkey);
+        return stringSetMap.get(keys.get(this.currentkey));
     }
 
     public boolean hasElement() {
-        return keys.size() > 0;
+        return keys.size() - 1 > this.currentkey;
     }
 
-    public Set<PsiClass> getImportPsiClass() {
+    public Map<String, PsiClass> getImportPsiClass() {
         return importPsiClass;
     }
 
-    public void setImportPsiClass(Set<PsiClass> importPsiClass) {
-        this.importPsiClass = importPsiClass;
+    public void putImportPsiClass(PsiClass psiClass) {
+        this.importPsiClass.put(psiClass.getQualifiedName(), psiClass);
+    }
+
+    public void setBtnVisable() {
+        boolean flag = true;
+        if (this.currentkey <= 0) {
+            flag = false;
+        }
+        dialog.getPreviousButton().setVisible(flag);
+    }
+
+    public void setDialog(ImportDialog dialog) {
+        this.dialog = dialog;
     }
 }

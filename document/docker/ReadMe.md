@@ -101,6 +101,18 @@ Docker私有仓库Registry:
 
 6、验证
     docker login localhost:5000 
+    
+    
+Docker常用命令           (容器是镜像的实例)
+    docker images       列出镜像
+    docker rmi          删除镜像
+    docker ps -a        列出容器
+    docker rm           删除容器
+    docker export cbe3cb7799ed > update.tar     将容器导出到文件
+    docker import - update < update.tar         创建一个新容器从基于导出的文件
+    docker save 9610cfc68e8d > update.tar       导出镜像
+    docker load < update.tar                    导入镜像
 
 参考：
 https://blog.csdn.net/yuhaitao8922/article/details/72996993
+https://yeasy.gitbooks.io/docker_practice/content/image/build.html
