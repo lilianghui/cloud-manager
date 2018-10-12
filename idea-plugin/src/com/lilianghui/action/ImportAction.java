@@ -6,6 +6,7 @@ import com.intellij.codeInspection.ex.GlobalInspectionContextImpl;
 import com.intellij.ide.util.PackageUtil;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
@@ -48,46 +49,56 @@ public class ImportAction extends AnAction implements Clicked {
             @Override
             public void run() {
 //                ImportAction.this.build(event);
+//                ImportAction.this.pmd(project);
                 ImportAction.this.parseClass(JavaPsiFacade.getInstance(project).findPackage("net.zhuisuyun.saas.batch.client.web").getClasses());
             }
         });
 
     }
 
-    public void pmd(Project project, PsiFile psiFile) {
+    public void pmd(AnActionEvent event,Project project) throws Exception {
+        PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+        //总配置
         PMDConfiguration configuration = new PMDConfiguration();
-        RuleContext ruleContext = new RuleContext();
-//        ruleContext.setLanguageVersion();
-
         configuration.setSourceEncoding(psiFile.getVirtualFile().getCharset().displayName());
         configuration.setInputPaths(psiFile.getVirtualFile().getCanonicalPath());
 
-
-        SourceCodeProcessor processor = new SourceCodeProcessor(configuration);
-        Parser parser = PMD.parserFor(ruleContext, configuration);
-        Node rootNode = parser.parse(ruleContext.getSourceCodeFilename(), sourceCode);
-        AnalysisScope analysisScope = new AnalysisScope(project);
-
-
+        //代码文档
         Document document = FileDocumentManager.getInstance().getDocument(psiFile.getVirtualFile());
         String niceFileName = psiFile.getVirtualFile().getCanonicalPath();
-        Report report = Report.createReport(ruleContext, niceFileName);
+
+
+        //规则上下文
+        RuleContext ruleContext = new RuleContext();
+
+
+        //规则
         RuleSets ruleSets = new RuleSets();
-        RuleSet ruleSet = new RuleSet();
-
-
-        ruleSet.addRule(rule);
+        RuleSetFactory factory = new RuleSetFactory();
+        RuleSet ruleSet = factory.createRuleSet("");
         ruleSets.addRuleSet(ruleSet);
+
+        //报告
+        Report report = Report.createReport(ruleContext, niceFileName);
+
+        //其它
+        AnalysisScope analysisScope = new AnalysisScope(project);
+        Parser parser = PMD.parserFor(ruleContext.getLanguageVersion(), configuration);
+        Node rootNode = parser.parse(ruleContext.getSourceCodeFilename(), new StringReader(document.getText()));
+
+        //开始
         ruleSets.start(ruleContext);
         try {
-            ruleContext.setLanguageVersion(null);
-            processor.processSourceCode(new StringReader(document.getText()), ruleSets, ruleContext)
-        } catch (Exception e){
-//            report.addError(new Report.ProcessingError(e.getMessage(), niceFileName));
+            SourceCodeProcessor processor = new SourceCodeProcessor(configuration);
+            processor.processSourceCode(new StringReader(document.getText()), ruleSets, ruleContext);
+        } catch (PMDException e) {
+            report.addError(new Report.ProcessingError(e, niceFileName));
         }
         ruleSets.end(ruleContext);
-        ruleContext.getReport().toString();
+
+        System.out.println(ruleContext.getReport().toString());
     }
+
 
     @Override
     public void update(AnActionEvent e) {
