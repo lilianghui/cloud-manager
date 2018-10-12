@@ -8,7 +8,9 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -19,11 +21,16 @@ import com.intellij.psi.util.PsiClassUtil;
 import com.lilianghui.Context;
 import com.lilianghui.parse.MethodRequestMappingParse;
 import com.lilianghui.ui.ImportDialog;
+import net.sourceforge.pmd.*;
+import net.sourceforge.pmd.lang.Parser;
+import net.sourceforge.pmd.lang.ast.Node;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
@@ -44,6 +51,42 @@ public class ImportAction extends AnAction implements Clicked {
                 ImportAction.this.parseClass(JavaPsiFacade.getInstance(project).findPackage("net.zhuisuyun.saas.batch.client.web").getClasses());
             }
         });
+
+    }
+
+    public void pmd(Project project, PsiFile psiFile) {
+        PMDConfiguration configuration = new PMDConfiguration();
+        RuleContext ruleContext = new RuleContext();
+//        ruleContext.setLanguageVersion();
+
+        configuration.setSourceEncoding(psiFile.getVirtualFile().getCharset().displayName());
+        configuration.setInputPaths(psiFile.getVirtualFile().getCanonicalPath());
+
+
+        SourceCodeProcessor processor = new SourceCodeProcessor(configuration);
+        Parser parser = PMD.parserFor(ruleContext, configuration);
+        Node rootNode = parser.parse(ruleContext.getSourceCodeFilename(), sourceCode);
+        AnalysisScope analysisScope = new AnalysisScope(project);
+
+
+        Document document = FileDocumentManager.getInstance().getDocument(psiFile.getVirtualFile());
+        String niceFileName = psiFile.getVirtualFile().getCanonicalPath();
+        Report report = Report.createReport(ruleContext, niceFileName);
+        RuleSets ruleSets = new RuleSets();
+        RuleSet ruleSet = new RuleSet();
+
+
+        ruleSet.addRule(rule);
+        ruleSets.addRuleSet(ruleSet);
+        ruleSets.start(ruleContext);
+        try {
+            ruleContext.setLanguageVersion(null);
+            processor.processSourceCode(new StringReader(document.getText()), ruleSets, ruleContext)
+        } catch (Exception e){
+//            report.addError(new Report.ProcessingError(e.getMessage(), niceFileName));
+        }
+        ruleSets.end(ruleContext);
+        ruleContext.getReport().toString();
     }
 
     @Override
@@ -58,10 +101,10 @@ public class ImportAction extends AnAction implements Clicked {
     }
 
     private void parseClass(PsiClass[] classes) {
-        MethodRequestMappingParse methodRequestMappingParse=new MethodRequestMappingParse();
+        MethodRequestMappingParse methodRequestMappingParse = new MethodRequestMappingParse();
         Arrays.asList(classes).forEach(psiClass -> {
-            PsiAnnotation annotation = psiClass.getAnnotation("org.springframework.web.bind.annotation.RestController");
-            annotation = annotation == null ? psiClass.getAnnotation("org.springframework.web.bind.annotation.Controller") : annotation;
+            PsiAnnotation annotation = psiClass.getAnnotation(MethodRequestMappingParse.RestController);
+            annotation = annotation == null ? psiClass.getAnnotation(MethodRequestMappingParse.Controller) : annotation;
             if (annotation != null) {
                 System.out.println(psiClass.getQualifiedName());
                 methodRequestMappingParse.parse(psiClass);
