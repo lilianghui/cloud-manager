@@ -11,7 +11,7 @@ Idea安装 maven archetype catalogs 插件
 下添加archetype-catalog.xml,创建项目时可以找到该archetype
 
 或执行命令:
-mvn archetype:generate -DarchetypeGroupId=com.lilianghui -DarchetypeVersion=0.0.1-SNAPSHOT -DarchetypeArtifactId=archetype-maven-archetype
+mvn archetype:generate -DarchetypeGroupId=com.lilianghui -DarchetypeVersion=1.0-SNAPSHOT -DarchetypeArtifactId=archetype-maven-archetype
 
 生成后的项目删除generator.bat、generator.sh、ReadMe.md文件
 

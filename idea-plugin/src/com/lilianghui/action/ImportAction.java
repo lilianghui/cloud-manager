@@ -20,26 +20,31 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiClassUtil;
 import com.lilianghui.Context;
+import com.lilianghui.ImportRule;
 import com.lilianghui.parse.MethodRequestMappingParse;
 import com.lilianghui.ui.ImportDialog;
 import net.sourceforge.pmd.*;
+import net.sourceforge.pmd.lang.LanguageRegistry;
+import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.Parser;
 import net.sourceforge.pmd.lang.ast.Node;
+import net.sourceforge.pmd.lang.java.JavaLanguageHandler;
+import net.sourceforge.pmd.lang.java.JavaLanguageModule;
+import net.sourceforge.pmd.renderers.Renderer;
 import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.combobox.ListComboBoxModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ImportAction extends AnAction implements Clicked {
     private static int width = 800;
     private static int height = 400;
+    private Set<String> classNames = new HashSet<>();
 
 
     @Override
@@ -48,15 +53,84 @@ public class ImportAction extends AnAction implements Clicked {
         WriteCommandAction.runWriteCommandAction(project, new Runnable() {
             @Override
             public void run() {
-//                ImportAction.this.build(event);
-//                ImportAction.this.pmd(project);
-                ImportAction.this.parseClass(JavaPsiFacade.getInstance(project).findPackage("net.zhuisuyun.saas.batch.client.web").getClasses());
+                try {
+//                    ImportAction.this.pmdRule(event, project);
+    //                ImportAction.this.pmd(project);
+    //                ImportAction.this.parseClass(JavaPsiFacade.getInstance(project).findPackage("net.zhuisuyun.saas.batch.client.web").getClasses());
+                    ImportAction.this.build(event);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
     }
 
-    public void pmd(AnActionEvent event,Project project) throws Exception {
+    public void pmdRule(AnActionEvent event, Project project) throws Exception {
+        PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+
+        Document document = FileDocumentManager.getInstance().getDocument(psiFile.getVirtualFile());
+        String niceFileName = psiFile.getVirtualFile().getCanonicalPath();
+        String canonicalPath = niceFileName;
+
+
+        //总配置
+        PMDConfiguration configuration = new PMDConfiguration();
+        configuration.setSourceEncoding("utf-8");
+        configuration.setInputPaths(canonicalPath);
+//        LanguageVersion languageVersion = configuration.getLanguageVersionDiscoverer().getDefaultLanguageVersion(LanguageRegistry.getLanguage("Java"));
+        LanguageVersion languageVersion = new LanguageVersion(new JavaLanguageModule(),"11",new JavaLanguageHandler(11));
+        configuration.setDefaultLanguageVersion(languageVersion);
+
+//        configuration.setRuleSets("C:\\Users\\Administrator\\Desktop\\pmd\\src\\main\\java\\rules\\unusedcode.xml," +
+//                "C:\\Users\\Administrator\\Desktop\\pmd\\src\\main\\java\\rules\\imports.xml");
+        //规则上下文
+        RuleContext ruleContext = new RuleContext();
+        ruleContext.setLanguageVersion(languageVersion);
+
+        //规则
+        RuleSets ruleSets = new RuleSets();
+        RuleSetFactory factory = new RuleSetFactory();
+        Rule rule = new ImportRule(this);
+        rule.setLanguage(new JavaLanguageModule());
+        RuleSet ruleSet = factory.createSingleRuleRuleSet(rule);
+        ruleSets.addRuleSet(ruleSet);
+
+        //报告
+        Report report = Report.createReport(ruleContext, niceFileName);
+
+        //其它
+//        Parser parser = PMD.parserFor(ruleContext.getLanguageVersion(), configuration);
+//        Node rootNode = parser.parse(ruleContext.getSourceCodeFilename(), new StringReader(text));
+
+        configuration.setReportFormat("text");
+        net.sourceforge.pmd.renderers.Renderer renderer = configuration.createRenderer(true);
+        List<net.sourceforge.pmd.renderers.Renderer> renderers = Collections.singletonList(renderer);
+        StringWriter stringWriter = new StringWriter();
+        renderer.setWriter(stringWriter);
+        renderer.start();
+
+        //开始
+//        ruleSets.start(ruleContext);
+        try {
+            SourceCodeProcessor processor = new SourceCodeProcessor(configuration);
+//            ruleContext.setLanguageVersion(null);
+            processor.processSourceCode(new StringReader(document.getText()), ruleSets, ruleContext);
+        } catch (PMDException e) {
+            report.addError(new Report.ProcessingError(e, niceFileName));
+        }
+        renderer.end();
+        for (Renderer r : renderers) {
+//            r.renderFileReport(report);
+        }
+
+        classNames.forEach(s -> {
+            System.out.println(s);
+        });
+    }
+
+
+    public void pmd(AnActionEvent event, Project project) throws Exception {
         PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
         //总配置
         PMDConfiguration configuration = new PMDConfiguration();
@@ -195,4 +269,7 @@ public class ImportAction extends AnAction implements Clicked {
     }
 
 
+    public void addName(String image) {
+        this.classNames.add(image);
+    }
 }

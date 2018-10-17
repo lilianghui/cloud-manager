@@ -4,6 +4,7 @@ spring:
   # git管理配置
   cloud:
     bus:
+      enabled: true
       refresh:
         enabled: true
       trace:
@@ -22,7 +23,7 @@ spring:
   profiles:
     active: native
   rabbitmq:
-    host: llh-tencent-os
+    host: 127.0.0.1
     port: 5672
     username: guest
     password: guest

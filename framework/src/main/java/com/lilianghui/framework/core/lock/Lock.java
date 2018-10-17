@@ -1,4 +1,4 @@
-package com.lilianghui.utils;
+package com.lilianghui.framework.core.lock;
 
 public class Lock {
 

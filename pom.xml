@@ -22,6 +22,7 @@
         <module>spring-boot-admin-server</module>
         <module>mybatis-generator</module>
         <module>archetype-maven</module>
+        <module>framework-entity</module>
     </modules>
 
     <parent>

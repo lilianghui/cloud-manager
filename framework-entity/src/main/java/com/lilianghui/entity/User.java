@@ -1,10 +1,7 @@
 package com.lilianghui.entity;
 
 import com.lilianghui.framework.core.entity.BaseEntity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -14,6 +11,8 @@ import javax.persistence.Table;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(callSuper = true)
+@EqualsAndHashCode
 @Table(name = "t_market_manage_customer")
 public class User extends BaseEntity {
     @Id

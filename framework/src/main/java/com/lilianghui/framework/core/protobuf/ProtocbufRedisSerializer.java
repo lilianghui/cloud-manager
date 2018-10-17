@@ -1,15 +1,11 @@
-package com.lilianghui.config;
+package com.lilianghui.framework.core.protobuf;
 
 
-import com.lilianghui.utils.ProtobufUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.assertj.core.util.Lists;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
 
-import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 
 /**
  * 存在问题,必须设置对应type,这样的话RedisTemplate单例就没有办法是用了!,是用多例

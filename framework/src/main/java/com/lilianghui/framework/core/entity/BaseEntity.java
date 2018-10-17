@@ -79,8 +79,10 @@ public class BaseEntity implements Entity, Serializable {
     @Transient
     private transient Serializable[] primaryKeys;// 主键数组
 
+    @Transient
     private int rownumber;//数据库查询序号  伪列
 
+    @Transient
     private String currentMenuId;//当前菜单Id
 
     public int getPageSize() {

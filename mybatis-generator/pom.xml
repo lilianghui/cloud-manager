@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.lilianghui</groupId>
     <artifactId>mybatis-generator-maven-plugin</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>mybatis-generator Maven Mojo</name>
     <url>http://maven.apache.org</url>

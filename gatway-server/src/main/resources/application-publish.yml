@@ -1,0 +1,7 @@
+server:
+  port: 81
+servlet:
+  jsp:
+    class-name: org.apache.jasper.servlet.JspServlet
+
+#java -jar xxx.jar --spring.profiles.active=test 表示使用测试环境的配置
