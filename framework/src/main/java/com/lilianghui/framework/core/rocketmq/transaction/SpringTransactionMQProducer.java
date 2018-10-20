@@ -1,6 +1,8 @@
 package com.lilianghui.framework.core.rocketmq.transaction;
 
 import com.google.common.collect.Maps;
+import com.lilianghui.framework.core.entity.MergeEntity;
+import com.lilianghui.framework.core.jackson.JacksonUtils;
 import com.lilianghui.framework.core.rocketmq.entity.RocketMQConfig;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.TransactionListener;
@@ -8,15 +10,17 @@ import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class SpringTransactionMQProducer extends TransactionMQProducer implements DisposableBean, InitializingBean, TransactionListener {
     private final static Map<String, LocalTransactionState> LOCAL_TRANSACTION_STATE_MAP = Maps.newConcurrentMap();
     private final static Map<String, TransactionListener> ABSTRACT_TRANSACTION_LISTENER_MAP = Maps.newConcurrentMap();
-    public final static String CLASS_NAME="CLASS_NAME";
+    public final static String CLASS_NAME = "CLASS_NAME";
 
     private RocketMQConfig rocketMQConfig;
 
@@ -30,6 +34,20 @@ public class SpringTransactionMQProducer extends TransactionMQProducer implement
         setTransactionListener(this);
     }
 
+
+    public TransactionSendResult sendMessageInTransaction(final MergeEntity mergeEntity, Object arg,
+                                                          TransactionListener listener) throws Exception {
+        String keys = UUID.randomUUID().toString();
+        mergeEntity.setIdentity(keys);
+        Message msg = new Message(getRocketMQConfig().getTopic(),
+                getRocketMQConfig().getTag(), keys, JacksonUtils.writeValue(mergeEntity).getBytes(RemotingHelper.DEFAULT_CHARSET));
+        String className = mergeEntity.getMainEntity().getClass().getName() + ","
+                + mergeEntity.getInsertEntity().iterator().next().getClass().getName() + "," + mergeEntity.getExtra().getClass().getName();
+        msg.putUserProperty(CLASS_NAME, className);
+        putListener(msg.getKeys(), listener);
+        TransactionSendResult transactionSendResult = super.sendMessageInTransaction(msg, arg);
+        return transactionSendResult;
+    }
 
     public TransactionSendResult sendMessageInTransaction(final Message msg, Object arg,
                                                           TransactionListener listener) throws Exception {

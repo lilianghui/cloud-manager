@@ -5,6 +5,7 @@ import com.lilianghui.entity.User;
 import com.lilianghui.mapper.UserMapper;
 import com.lilianghui.service.UserService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,13 +26,17 @@ public class UserController {
     private IndexFeignClient indexFeignClient;
 
     @RequestMapping("list")
-    public List<User> list() {
-        System.out.println(indexFeignClient.weather("北京"));
-        return userService.selectAll();
+    public List<User> list(String name) {
+        Example example = new Example(User.class);
+        if(StringUtils.isNotBlank(name)){
+            example.createCriteria().andLike("customer","%"+name+"%");
+        }
+        return userService.selectByExample(example);
     }
 
     @RequestMapping("view")
     public ModelAndView index(Model model) {
+        System.out.println(indexFeignClient.weather("北京"));
         model.addAttribute("list", userService.findAll());
         return new ModelAndView("index");
     }

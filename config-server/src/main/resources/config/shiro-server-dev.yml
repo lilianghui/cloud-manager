@@ -1,6 +1,6 @@
 spring:
-  mvc:
-    static-path-pattern: /**
+#  mvc:
+#    static-path-pattern: /**
   thymeleaf:
     template-resolver-order: 0
   datasource:

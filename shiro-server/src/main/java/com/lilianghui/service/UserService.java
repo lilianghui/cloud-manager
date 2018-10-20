@@ -1,6 +1,7 @@
 package com.lilianghui.service;
 
 import com.lilianghui.entity.User;
+import com.lilianghui.framework.core.entity.MergeEntity;
 import com.lilianghui.framework.core.rocketmq.RocketService;
 import com.lilianghui.framework.core.service.impl.AbstractBaseMapperService;
 import com.lilianghui.mapper.UserMapper;
@@ -24,4 +25,11 @@ public class UserService extends AbstractBaseMapperService<User, UserMapper> imp
         mapper.insert(user);
         System.out.println(user);
     }
+
+    @Override
+    public void processMergeEntity(MergeEntity<User, ?> object, MessageExt messageExt, ConsumeConcurrentlyContext context) {
+        System.out.println(object);
+    }
+
+
 }
