@@ -9,7 +9,6 @@ import java.util.Set;
 
 @Data
 public class MergeEntity<M, S> {
-    private String identity;
     private M mainEntity;
     private List<S> insertEntity = Lists.newArrayList();
     private List<S> updateEntity = Lists.newArrayList();

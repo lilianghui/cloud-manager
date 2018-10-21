@@ -38,6 +38,9 @@ spring:
       allow-single-quotes: true
       allow-unquoted-field-names: true
       allow-unquoted-control-chars: true
+  rocketmq:
+    name-server: 127.0.0.1:9876
+
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
   config-location: classpath:/spring-mybatis-cfg.xml
@@ -48,12 +51,3 @@ mapper:
   - com.lilianghui.framework.core.mapper.Mapper
   notEmpty: true
   resolveClass: com.lilianghui.framework.core.mapper.tk.resolve.DefaultEntityResolve
-
-rocketmq:
-  group: transactional_message
-  namesrvAddr: 127.0.0.1:9876
-  instanceName: transactional_message
-  topic: transactional_message
-  tag: transactional_message
-  entityBeanNameMap:
-    com.lilianghui.entity.User: userService

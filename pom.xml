@@ -23,12 +23,13 @@
         <module>mybatis-generator</module>
         <module>archetype-maven</module>
         <module>framework-entity</module>
+        <module>spring-boot-starter-rocketmq</module>
     </modules>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.4.RELEASE</version>
+        <version>2.0.6.RELEASE</version>
         <relativePath/>
     </parent>
 
@@ -77,6 +78,16 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-lang3</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -121,6 +132,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>HdrHistogram</artifactId>
+                    <groupId>org.hdrhistogram</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jolokia</groupId>
@@ -224,7 +241,7 @@
                 <version>3.0.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <aggregate>true</aggregate>
+                    <!--<aggregate>true</aggregate>-->
                     <charset>UTF-8</charset>
                     <docencoding>UTF-8</docencoding>
                 </configuration>
