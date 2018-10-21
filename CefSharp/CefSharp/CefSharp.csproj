@@ -99,6 +99,7 @@
     <Compile Include="hamdler\WebContextMenu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="utils\DisplayPrinterObject.cs" />
     <Compile Include="utils\SerialObject.cs" />
     <Compile Include="utils\YamlSerializeObject.cs" />
     <EmbeddedResource Include="Form.resx">
