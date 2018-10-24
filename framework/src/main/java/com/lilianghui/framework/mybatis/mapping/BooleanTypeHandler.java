@@ -2,6 +2,7 @@ package com.lilianghui.framework.mybatis.mapping;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
 
 import java.sql.CallableStatement;
@@ -9,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@MappedTypes({ Boolean.class })
 public class BooleanTypeHandler implements TypeHandler<Boolean> {
 
 	@Override

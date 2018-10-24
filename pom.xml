@@ -24,6 +24,9 @@
         <module>archetype-maven</module>
         <module>framework-entity</module>
         <module>spring-boot-starter-rocketmq</module>
+        <module>spring-boot-starter-shiro</module>
+        <module>spring-boot-starter-commons</module>
+        <module>parent-pom</module>
     </modules>
 
     <parent>

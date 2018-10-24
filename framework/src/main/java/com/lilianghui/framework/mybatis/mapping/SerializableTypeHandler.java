@@ -8,8 +8,10 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
 
+@MappedTypes({ Serializable.class })
 public class SerializableTypeHandler implements TypeHandler<Serializable> {
 
 	@Override

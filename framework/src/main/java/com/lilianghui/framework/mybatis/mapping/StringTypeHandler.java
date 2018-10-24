@@ -3,11 +3,13 @@ package com.lilianghui.framework.mybatis.mapping;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedTypes;
 import org.apache.ibatis.type.TypeHandler;
 
 import java.sql.*;
 import java.text.ParseException;
 
+@MappedTypes({ String.class })
 public class StringTypeHandler implements TypeHandler<String> {
 
     @Override

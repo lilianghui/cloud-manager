@@ -40,10 +40,16 @@ spring:
       allow-unquoted-control-chars: true
   rocketmq:
     name-server: 127.0.0.1:9876
+  p6spy:
+    logFile: /home/${spring.application.name}/spy.log
 
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
-  config-location: classpath:/spring-mybatis-cfg.xml
+#  config-location: classpath:/spring-mybatis-cfg.xml
+  typeHandlerPackage: com.lilianghui.framework.mybatis.mapping
+  configurationProperties:
+    jdbcTypeForNull: OTHER
+    mapUnderscoreToCamelCase: true
 
 
 mapper:

@@ -27,7 +27,6 @@
         <junit-version>4.12</junit-version>
         <jackson-version>2.9.5</jackson-version>
         <java-version>1.8</java-version>
-        <shiro-version>1.4.0-RC2</shiro-version>
         <activiti-version>5.22.0</activiti-version>
         <log4j2.version>2.3</log4j2.version>
         <disruptor.version>3.3.2</disruptor.version>
@@ -57,6 +56,13 @@
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>1.3.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.lilianghui</groupId>
+            <artifactId>parent-pom</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -77,24 +83,6 @@
 
 
         <dependency>
-            <groupId>com.dyuproject.protostuff</groupId>
-            <artifactId>protostuff-core</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.dyuproject.protostuff</groupId>
-            <artifactId>protostuff-runtime</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>tk.mybatis</groupId>
             <artifactId>mapper</artifactId>
             <version>4.0.4</version>
@@ -113,92 +101,6 @@
         </dependency>
         <!-- proxool数据源===end -->
 
-        <!-- jackson json解析框架 ===start -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson-version}</version>
-        </dependency>
-        <!-- jackson json解析框架 ===end -->
-
-        <!-- junit测试框架 ==start -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit-version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- junit测试框架 ==end -->
-
-        <!-- apache tools=== start -->
-        <!--<dependency>-->
-        <!--<groupId>commons-logging</groupId>-->
-        <!--<artifactId>commons-logging</artifactId>-->
-        <!--<version>1.2</version>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.8</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.2</version>
-        </dependency>
-        <!-- apache tools=== start -->
-
-        <!-- log4j2 日志 slf4j+log4j2 -->
-        <!--<dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.13</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.13</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-web</artifactId>
-            <version>${log4j2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>${disruptor.version}</version>
-        </dependency>-->
 
         <!-- poi===start -->
         <dependency>
@@ -296,85 +198,6 @@
         </dependency>
         <!-- hibernate validator jsr303===end -->
 
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.58</version>
-        </dependency>
-
-
-        <!-- shiro权限控制===start -->
-        <dependency>
-            <artifactId>shiro-spring</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-lang</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-config-core</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-config-ogdl</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-ehcache</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-web</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-event</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-core</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-aspectj</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-crypto-cipher</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-guice</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-crypto-core</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-crypto-hash</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>shiro-hazelcast</artifactId>
-            <groupId>org.apache.shiro</groupId>
-            <version>${shiro-version}</version>
-        </dependency>
-        <!-- shiro权限控制===end -->
 
         <!-- activiti工作流===start -->
         <dependency>
@@ -421,43 +244,6 @@
             <version>3.2.17</version>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>com.google.code.google-collections</groupId>-->
-        <!--<artifactId>google-collect</artifactId>-->
-        <!--<version>snapshot-20080530</version>-->
-        <!--</dependency>-->
-
-        <!-- dom4j=== start -->
-        <dependency>
-            <groupId>dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>1.6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-            <version>1.1.6</version>
-        </dependency>
-        <!-- dom4j=== end -->
-
-
-        <dependency>
-            <groupId>net.sf.dozer</groupId>
-            <artifactId>dozer</artifactId>
-            <version>5.5.1</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.github.junrar/junrar 解压.rar文件 -->
-        <!--<dependency>-->
-        <!--<groupId>com.github.junrar</groupId>-->
-        <!--<artifactId>junrar</artifactId>-->
-        <!--<version>0.7</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.ant</groupId>-->
-        <!--<artifactId>ant</artifactId>-->
-        <!--<version>1.7.0</version>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>com.github.abel533</groupId>
@@ -482,53 +268,7 @@
             <version>0.7.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-pool2</artifactId>
-            <version>2.4.2</version>
-        </dependency>
 
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-            <version>3.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>eu.bitwalker</groupId>
-            <artifactId>UserAgentUtils</artifactId>
-            <version>1.20</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.4.9</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>core</artifactId>
-            <version>${zxing.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>javase</artifactId>
-            <version>${zxing.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>26.0-jre</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.jfree/jfreechart -->
         <dependency>
             <groupId>org.jfree</groupId>
@@ -543,12 +283,7 @@
             <version>1.0</version>
         </dependency>
         <!--Compile Java code in memory end-->
-        <!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-            <version>3.6</version>
-        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.apache.mina/mina-core -->
         <dependency>

@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.lilianghui.spring.starter.P6spyAutoConfiguration

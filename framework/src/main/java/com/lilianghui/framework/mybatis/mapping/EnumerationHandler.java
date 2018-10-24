@@ -12,6 +12,9 @@ public class EnumerationHandler<E extends Enum<?>> extends BaseTypeHandler<E> {
 	private Class<? extends Enum<?>> type;
 	private E[] enums;
 
+	public EnumerationHandler() {
+	}
+
 	public EnumerationHandler(Class<? extends Enum<?>> type) {
 		this.type = type;
 		if (this.type == null) {
