@@ -1,5 +1,7 @@
-package com.lilianghui.framework.core.lock.redisson;
+package com.lilianghui.spring.starter;
 
+import com.lilianghui.spring.starter.config.RedissonProperties;
+import com.lilianghui.spring.starter.utils.RedissLockUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -10,7 +12,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Redisson+springboot 自动配置类
@@ -75,7 +76,7 @@ public class RedissonAutoConfiguration {
     DistributedLocker distributedLocker(RedissonClient redissonClient) {
         RedissonDistributedLocker locker = new RedissonDistributedLocker();
         locker.setRedissonClient(redissonClient);
-        RedissLockUtil.setLocker(locker);
+        RedissLockUtils.setLocker(locker);
         return locker;
     }
 

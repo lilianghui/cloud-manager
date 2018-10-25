@@ -1,4 +1,4 @@
-package com.lilianghui.framework.core.lock.redisson;
+package com.lilianghui.spring.starter.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

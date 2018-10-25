@@ -1,49 +1,36 @@
 package com.lilianghui.shiro.spring.starter.core;
 
+import com.google.inject.internal.util.$Maps;
 import org.apache.commons.collections.MapUtils;
-import org.apache.shiro.config.Ini;
-import org.apache.shiro.config.Ini.Section;
-import org.springframework.beans.factory.FactoryBean;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
-public abstract class AbstractChainDefinitionSectionMetaSource implements FactoryBean<Map<String, String>> {
+public abstract class AbstractChainDefinitionSectionMetaSource {
 
     public static final String PREMISSION_STRING = "authc,orPerms[{0}]"; // 资源结构格式
     public static final String ROLE_STRING = "authc,orRole[{0}]"; // 角色结构格式
 
-    private String filterChainDefinitions;
 
-    @Override
-    public Map<String, String> getObject() throws Exception {
-        Map<String, String> map = new LinkedHashMap<>();
-        Ini ini = new Ini();
-        ini.load(filterChainDefinitions);
-        Section section = ini.getSection(Ini.DEFAULT_SECTION_NAME);
-        if (section != null) {
-            map.putAll(section);
+    public final LinkedHashMap<String, String> loadAllAuth(LinkedHashMap<String, String> filterChainDefinitions) throws Exception {
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        if (MapUtils.isNotEmpty(filterChainDefinitions)) {
+            map.putAll(filterChainDefinitions);
         }
-        Map<String, String> authc = loadAuth();
+        LinkedHashMap<String, String> authc = loadAuth();
         if (MapUtils.isNotEmpty(authc)) {
             map.putAll(authc);
         }
         return map;
     }
 
-    @Override
-    public Class<?> getObjectType() {
-        return Map.class;
-    }
 
-    @Override
-    public boolean isSingleton() {
-        return true;
-    }
+    public abstract LinkedHashMap<String, String> loadAuth();
 
-    public void setFilterChainDefinitions(String filterChainDefinitions) {
-        this.filterChainDefinitions = filterChainDefinitions;
-    }
+    public static class DefaultChainDefinitionSectionMetaSource extends AbstractChainDefinitionSectionMetaSource {
 
-    public abstract Map<String, String> loadAuth();
+        @Override
+        public LinkedHashMap<String, String> loadAuth() {
+            return $Maps.newLinkedHashMap();
+        }
+    }
 }

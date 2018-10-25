@@ -17,6 +17,26 @@ spring:
     template-loader-path: /templates
   thymeleaf:
     template-resolver-order: 122
+  shiro:
+    loginUrl: /
+    successUrl: /success
+    unauthorizedUrl: /unauthorized
+    cacheName: aa
+    hashAlgorithmName: MD5
+    hashIterations: 6
+    total: 6
+    cacheManagerConfigFile: classpath:ehcache/shiro-ehcache.xml
+    globalSessionTimeout: 6000
+    sessionValidationInterval: 6000
+    activeSessionsCacheName: shiro-activeSessionCache
+    cookieName: aa
+    cipherKey: 4AvVhmFLUs0KTA3Kprsdag==
+    rememberMeCookieName: rememberMe
+    rememberMeMaxAge: 1
+    realms:
+      - com.lilianghui.commons.security.UserRealm
+    filterChainDefinitionMap: { '/': 'anon', '/resources/**': 'anon', '/**': 'authc' }
+    filterChainDefinitionClass: com.lilianghui.commons.security.ChainDefinitionSectionMetaSource
 #  redis:
 #    cluster:
 #      nodes: 10.250.209.89:7000,10.250.209.89:7001,10.250.209.89:7002,10.250.209.89:7003,10.250.209.89:7004,10.250.209.89:7005,10.250.209.89:7006
@@ -28,7 +48,7 @@ spring:
     username: guest
     password: guest
   rocketmq:
-    name-server: 127.0.0.1:9876
+    nameServer: 127.0.0.1:9876
     producer:
       group: producer-group
   p6spy:
@@ -67,11 +87,10 @@ management:
       show-details: always
     web:
       exposure:
-        include: "*"
+        include: '*'
 
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
-#  config-location: classpath:/spring-mybatis-cfg.xml
   typeHandlerPackage: com.lilianghui.framework.mybatis.mapping
   configurationProperties:
     jdbcTypeForNull: OTHER

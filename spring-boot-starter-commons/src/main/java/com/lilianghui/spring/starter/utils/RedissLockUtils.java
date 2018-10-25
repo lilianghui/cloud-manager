@@ -1,4 +1,6 @@
-package com.lilianghui.framework.core.lock.redisson;
+package com.lilianghui.spring.starter.utils;
+
+import com.lilianghui.spring.starter.DistributedLocker;
 
 import java.util.concurrent.TimeUnit;
 
@@ -8,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  * @author ko
  *
  */
-public class RedissLockUtil {
+public class RedissLockUtils {
     private static DistributedLocker redissLock;
     
     public static void setLocker(DistributedLocker locker) {

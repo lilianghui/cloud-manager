@@ -304,11 +304,6 @@
         <!--<version>1.4.01</version>-->
         <!--</dependency>-->
 
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
-            <version>3.3.2</version>
-        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-client -->
         <dependency>

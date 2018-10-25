@@ -1,23 +1,17 @@
 package com.lilianghui;
 
 import com.lilianghui.config.filter.AuthHeaderFilter;
-import com.lilianghui.config.filter.ResponseFilter;
-import com.lilianghui.framework.core.lock.redisson.RedissonAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @EnableZuulProxy
 @MapperScan("com.lilianghui.mapper")
-@Import(RedissonAutoConfiguration.class)
 //@EnableEurekaClient
 public class GatwayServerApplication extends SpringBootServletInitializer {
 

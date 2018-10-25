@@ -1,4 +1,4 @@
-package com.lilianghui.framework.core.lock.redisson;
+package com.lilianghui.spring.starter;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,5 +15,5 @@ public interface DistributedLocker {
 
     void lock(String lockKey, int timeout);
     
-    void lock(String lockKey, TimeUnit unit ,int timeout);
+    void lock(String lockKey, TimeUnit unit, int timeout);
 }

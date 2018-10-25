@@ -1,17 +1,26 @@
 package com.lilianghui.controller;
 
+import com.hazelcast.client.AuthenticationException;
 import com.lilianghui.entity.GatWayConfig;
-import com.lilianghui.framework.core.lock.redisson.RedissLockUtil;
+import com.lilianghui.entity.User;
 import com.lilianghui.service.ContractService;
+import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
+import com.lilianghui.spring.starter.utils.RedissLockUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.*;
+import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +63,61 @@ public class IndexController {
         return new ModelAndView("index");
     }
 
+
+    /**
+     * 用户登录
+     *
+     * @param user
+     * @param attributes
+     * @return
+     */
+    @RequestMapping(value = "login", method = RequestMethod.POST)
+    public ModelAndView login(HttpSession session, User user, RedirectAttributes attributes) {
+        ModelAndView mv = new ModelAndView();
+        try {
+            Subject subject = SecurityUtils.getSubject();
+            UsernamePasswordToken token = new UsernamePasswordToken("llh", "llh");
+            token.setRememberMe(true);
+            try {
+                subject.login(token);
+            } catch (IncorrectCaptchaException e) {
+                e.printStackTrace();
+            } catch (UnknownAccountException e) {
+                e.printStackTrace();
+            } catch (IncorrectCredentialsException e) {
+                e.printStackTrace();
+            } catch (LockedAccountException e) {
+                e.printStackTrace();
+            } catch (ExcessiveAttemptsException e) {
+                e.printStackTrace();
+            } catch (AuthenticationException e) {
+                e.printStackTrace();
+            }
+            if (subject.isAuthenticated()) {
+                User record = new User();
+                record.setId("llh");
+                record.setCustomer("llh");
+                session.setAttribute("session", record);
+                mv.setViewName("redirect:/main.shtml");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            mv.setViewName("redirect:/");
+        }
+        return mv;
+    }
+
+
+    @RequestMapping("success")
+    public ModelAndView success(Model model) {
+        try {
+            model.addAttribute("name", "transactional");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ModelAndView("success");
+    }
+
     private final String _lock = "_lock";
 
     public String getCurrentDate() {
@@ -69,7 +133,7 @@ public class IndexController {
             @Override
             public void run() {
 
-                RedissLockUtil.lock(_lock, TimeUnit.MINUTES, 50);
+                RedissLockUtils.lock(_lock, TimeUnit.MINUTES, 50);
 
                 System.out.println(getCurrentDate() + " " + name + " begin...");
                 for (int i = 0; i < 100; i++) {
@@ -82,7 +146,7 @@ public class IndexController {
                 }
                 System.out.println(getCurrentDate() + " " + name + " end...");
 
-                RedissLockUtil.unlock(_lock);
+                RedissLockUtils.unlock(_lock);
             }
         }).start();
         model.addAttribute("name", "lock");

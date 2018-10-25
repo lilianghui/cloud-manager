@@ -1,4 +1,4 @@
-package com.lilianghui.framework.core.lock.redisson;
+package com.lilianghui.spring.starter;
 
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
