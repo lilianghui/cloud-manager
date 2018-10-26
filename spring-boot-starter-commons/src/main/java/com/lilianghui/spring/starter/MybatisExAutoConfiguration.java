@@ -1,7 +1,6 @@
 package com.lilianghui.spring.starter;
 
 import com.google.common.collect.Sets;
-import com.lilianghui.spring.starter.annotation.EnumerationTypeHandler;
 import com.lilianghui.spring.starter.annotation.PropertyMapping;
 import com.lilianghui.spring.starter.config.MyBatisExProperties;
 import com.lilianghui.spring.starter.config.MybatisMapperRefresh;
@@ -13,9 +12,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
-import org.apache.ibatis.session.AutoMappingUnknownColumnBehavior;
-import org.apache.ibatis.type.TypeHandler;
-import org.apache.ibatis.type.UnknownTypeHandler;
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,9 +24,6 @@ import javax.annotation.Resource;
 import javax.persistence.Table;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.file.FileSystems;
-import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
 import java.util.*;
 
 @Slf4j
@@ -87,7 +80,7 @@ public class MybatisExAutoConfiguration {
 
             if (CollectionUtils.isNotEmpty(packages)) {
                 Set<Class<?>> beanMapping = new HashSet<>();
-                beanMapping.addAll(ScanPackage.findPackageClasses(StringUtils.join(packages, ","), Sets.newHashSet(EnumerationTypeHandler.class, PropertyMapping.class, Table.class)));
+                beanMapping.addAll(ScanPackage.findPackageClasses(StringUtils.join(packages, ","), Sets.newHashSet(PropertyMapping.class, Table.class)));
                 beanMapping.forEach(clazz -> {
                     builderPropertyMappingResultMap(configuration, clazz);
                     builderTkMybatisResultMap(configuration, clazz);

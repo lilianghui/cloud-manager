@@ -54,6 +54,7 @@ public class FileLogger extends com.p6spy.engine.spy.appender.FileLogger {
         return printStream;
     }
 
+    @Override
     public void setLogfile(String fileName) {
 //        String file = BasicPropertyPlaceholderConfigurer.getStringProperty(fileName);
 //        originalFileName = StringUtils.isNotBlank(file) ? file : fileName;
