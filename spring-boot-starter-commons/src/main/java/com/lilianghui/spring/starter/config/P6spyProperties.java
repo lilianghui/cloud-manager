@@ -10,8 +10,8 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
-@ConfigurationProperties(prefix = P6spyConfiguration.PREFIX)
-public class P6spyConfiguration {
+@ConfigurationProperties(prefix = P6spyProperties.PREFIX)
+public class P6spyProperties {
     public static final String PREFIX = "spring.p6spy";
 
     private boolean autoFlush = false;

@@ -50,7 +50,7 @@ public class TkHelper {
 			f.setAccessible(true);
 			return (Field) f.get(field);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage(),e);
 		}
 		return null;
 	}

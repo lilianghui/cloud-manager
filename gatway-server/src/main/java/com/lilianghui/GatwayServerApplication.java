@@ -6,12 +6,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @EnableZuulProxy
 @MapperScan("com.lilianghui.mapper")
+@EnableFeignClients("com.lilianghui.client")
 //@EnableEurekaClient
 public class GatwayServerApplication extends SpringBootServletInitializer {
 

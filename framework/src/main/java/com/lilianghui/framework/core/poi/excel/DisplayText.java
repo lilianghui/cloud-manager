@@ -1,5 +1,6 @@
 package com.lilianghui.framework.core.poi.excel;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -7,6 +8,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import java.util.Date;
 import java.util.Map;
 
+@Slf4j
 public class DisplayText {
     private int rowIndex;
     private int cellIndex;
@@ -98,7 +100,7 @@ public class DisplayText {
             return null;
         } catch (Exception e) {
             this.error = String.format("日期转换错误,请参照以下日期格式:%s", StringUtils.join(Constant.DATE_FORMAT_ARRAY, ","));
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
             return null;
         }
     }

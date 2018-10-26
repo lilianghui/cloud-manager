@@ -1,7 +1,9 @@
 package com.lilianghui.shiro.spring.starter;
 
 import com.lilianghui.shiro.spring.starter.config.ShiroProperties;
+import com.lilianghui.shiro.spring.starter.core.AbstractChainDefinitionSectionMetaSource;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -17,12 +19,15 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Slf4j
 public class ShiroTemplate {
 
     @Setter
     private ShiroFilterFactoryBean shiroFilterFactoryBean;
     @Setter
     private ShiroProperties shiroProperties;
+    @Setter
+    private AbstractChainDefinitionSectionMetaSource abstractChainDefinitionSectionMetaSource;
 
     public void refreshAll() {
         refresh(null, true);
@@ -73,7 +78,7 @@ public class ShiroTemplate {
             manager.getFilterChains().clear();
 
             shiroFilterFactoryBean.getFilterChainDefinitionMap().clear();
-            LinkedHashMap<String, String> filterChainDefinitionMap = shiroProperties.getFilterChainDefinitionClass().newInstance().loadAllAuth(shiroProperties.getFilterChainDefinitionMap());
+            LinkedHashMap<String, String> filterChainDefinitionMap = abstractChainDefinitionSectionMetaSource.loadAllAuth(shiroProperties.getFilterChainDefinitionMap());
             shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
             // 重新构建生成
             Map<String, String> chains = shiroFilterFactoryBean.getFilterChainDefinitionMap();
@@ -85,7 +90,7 @@ public class ShiroTemplate {
 
             System.out.println("更新权限成功！！");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 

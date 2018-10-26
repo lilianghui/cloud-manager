@@ -22,6 +22,7 @@ package com.lilianghui.spring.starter.p6spy;
 import com.lilianghui.spring.starter.P6spyAutoConfiguration;
 import com.p6spy.engine.common.P6Util;
 import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -33,6 +34,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class SingleLineFormat implements MessageFormattingStrategy {
     private static final String SEPARATE = "|";
 
@@ -60,10 +62,10 @@ public class SingleLineFormat implements MessageFormattingStrategy {
             if (request != null) {
                 requestURL = request.getRequestURI();
                 ip = getRemoteHost(request);
-                Object user = request.getSession().getAttribute(P6spyAutoConfiguration.P_6_SPY_CONFIGURATION.getSessionName());
+                Object user = request.getSession().getAttribute(P6spyAutoConfiguration.P_6_SPY_PROPERTIES.getSessionName());
                 if (user != null) {
-                    id = getValue(P6spyAutoConfiguration.P_6_SPY_CONFIGURATION.getIdField(), user);
-                    name = getValue(P6spyAutoConfiguration.P_6_SPY_CONFIGURATION.getNameField(), user);
+                    id = getValue(P6spyAutoConfiguration.P_6_SPY_PROPERTIES.getIdField(), user);
+                    name = getValue(P6spyAutoConfiguration.P_6_SPY_PROPERTIES.getNameField(), user);
                 }
             }
         }
@@ -81,7 +83,7 @@ public class SingleLineFormat implements MessageFormattingStrategy {
             f.setAccessible(true);
             value = f.get(object);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return value == null ? "" : value.toString();
     }

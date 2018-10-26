@@ -3,6 +3,7 @@ package com.lilianghui.framework.core.utils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lilianghui.framework.core.poi.excel.Constant;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -21,6 +22,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class PlatformUtils {
     private static final String PATTERN_STRING = "\\$\\{((.*?))\\}";
     private static final Pattern PATTERN = Pattern.compile(PATTERN_STRING);
@@ -33,7 +35,7 @@ public class PlatformUtils {
         } catch (NoSuchMethodException e) {
             return getFieldValue(target, name);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return null;
     }
@@ -59,7 +61,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return result;
     }
@@ -74,7 +76,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return null;
     }
@@ -88,7 +90,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 
@@ -167,7 +169,7 @@ public class PlatformUtils {
                 set.add(prefix + val + prefix);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return StringUtils.join(set, separate);
     }
@@ -214,7 +216,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 
@@ -228,7 +230,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 
@@ -245,7 +247,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return list;
     }
@@ -263,7 +265,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return list;
     }
@@ -280,7 +282,7 @@ public class PlatformUtils {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return list;
     }
@@ -306,7 +308,7 @@ public class PlatformUtils {
                 t = value;
             } while (true);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 

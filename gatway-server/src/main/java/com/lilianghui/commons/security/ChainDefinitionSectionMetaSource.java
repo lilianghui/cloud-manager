@@ -10,6 +10,7 @@ public class ChainDefinitionSectionMetaSource extends AbstractChainDefinitionSec
     public LinkedHashMap<String, String> loadAuth() {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.put("/","anon");
+        map.put("/login","anon");
         map.put("/resources/**","anon");
         map.put("/**","authc");
         return map;

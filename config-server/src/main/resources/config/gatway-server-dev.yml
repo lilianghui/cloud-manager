@@ -28,7 +28,7 @@ spring:
     cacheManagerConfigFile: classpath:ehcache/shiro-ehcache.xml
     globalSessionTimeout: 6000
     sessionValidationInterval: 6000
-    activeSessionsCacheName: shiro-activeSessionCache
+    activeSessionsCacheName: shiroActiveSessionCache
     cookieName: aa
     cipherKey: 4AvVhmFLUs0KTA3Kprsdag==
     rememberMeCookieName: rememberMe
@@ -37,11 +37,26 @@ spring:
       - com.lilianghui.commons.security.UserRealm
     filterChainDefinitionMap: { '/': 'anon', '/resources/**': 'anon', '/**': 'authc' }
     filterChainDefinitionClass: com.lilianghui.commons.security.ChainDefinitionSectionMetaSource
+    redisCache:
+      shiroActiveSessionCache:
+        timeout: 10
 #  redis:
 #    cluster:
 #      nodes: 10.250.209.89:7000,10.250.209.89:7001,10.250.209.89:7002,10.250.209.89:7003,10.250.209.89:7004,10.250.209.89:7005,10.250.209.89:7006
 #      timeout: 2000
 #      max-redirects: 7
+  redis:
+    password:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    pool:
+      max-idle: 8
+      min-idle: 0
+      max-active: 8
+      max-wait: -1
+    timeout: 5000
+
   rabbitmq:
     host: 127.0.0.1
     port: 5672
@@ -91,10 +106,9 @@ management:
 
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
-  typeHandlerPackage: com.lilianghui.framework.mybatis.mapping
-  configurationProperties:
-    jdbcTypeForNull: OTHER
-    mapUnderscoreToCamelCase: true
+  typeHandlersPackage: com.lilianghui.framework.mybatis.mapping
+  jdbcTypeForNull: NULL
+  mapUnderscoreToCamelCase: true
 
 
 mapper:
@@ -102,6 +116,8 @@ mapper:
   - com.lilianghui.framework.core.mapper.Mapper
   notEmpty: true
   resolveClass: com.lilianghui.framework.core.mapper.tk.resolve.DefaultEntityResolve
+  entityScanPackages: com.lilianghui.entity
+  enumerationHandlerClass: com.lilianghui.framework.mybatis.mapping.EnumerationHandler
 
 redisson:
   address: 127.0.0.1:6379

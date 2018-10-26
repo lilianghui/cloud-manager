@@ -1,4 +1,4 @@
-package com.lilianghui.spring.starter;
+package com.lilianghui.spring.starter.core;
 
 import java.util.concurrent.TimeUnit;
 

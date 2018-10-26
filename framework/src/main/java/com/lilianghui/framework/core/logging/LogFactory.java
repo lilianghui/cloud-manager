@@ -32,7 +32,7 @@ public final class LogFactory {
 					try {
 						logConstructor = clazz.getConstructor(String.class);
 					} catch (Exception e) {
-						e.printStackTrace();
+						log.error(e.getMessage(),e);
 					}
 				}
 			}

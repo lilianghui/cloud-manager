@@ -1,5 +1,6 @@
 package com.lilianghui.shiro.spring.starter.interceptor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.session.Session;
@@ -15,6 +16,7 @@ import java.io.Serializable;
 import java.util.Deque;
 import java.util.LinkedList;
 
+@Slf4j
 public class KickoutSessionControlFilter extends AccessControlFilter {
 
 	private String kickoutUrl; // 踢出后到的地址
@@ -69,7 +71,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
 					kickoutSession.setAttribute("kickout", true);
 				}
 			} catch (Exception e) {// ignore exception
-				e.printStackTrace();
+				log.error(e.getMessage(),e);
 			}
 		}
 
@@ -79,7 +81,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
 			try {
 				subject.logout();
 			} catch (Exception e) { // ignore
-				e.printStackTrace();
+				log.error(e.getMessage(),e);
 			}
 			saveRequest(request);
 			WebUtils.issueRedirect(request, response, kickoutUrl);

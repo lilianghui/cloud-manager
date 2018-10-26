@@ -1,6 +1,7 @@
 package com.lilianghui.spring.starter.p6spy;
 
 import com.p6spy.engine.spy.P6SpyOptions;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -14,6 +15,7 @@ import java.util.Date;
 /**
  * Created by Administrator on 2018/1/21 0021.
  */
+@Slf4j
 public class FileLogger extends com.p6spy.engine.spy.appender.FileLogger {
 
     private String fileName = null;
@@ -67,7 +69,7 @@ public class FileLogger extends com.p6spy.engine.spy.appender.FileLogger {
                 getStream().println(text);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 }

@@ -6,12 +6,14 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.lilianghui.framework.core.utils.StaticApplication;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
+@Slf4j
 public class JacksonUtils {
     private static ObjectMapper objectMapper = null;
 
@@ -27,7 +29,7 @@ public class JacksonUtils {
             if (exception) {
                 throw new RuntimeException(e);
             }
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return value;
     }
@@ -52,7 +54,7 @@ public class JacksonUtils {
             getObjectMapper().setFilterProvider(filterProvider);
             return getObjectMapper().writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return null;
     }
@@ -82,7 +84,7 @@ public class JacksonUtils {
             if (exception) {
                 throw new RuntimeException(e);
             }
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return List.class.isAssignableFrom(collectionClass) ? Collections.<T>emptyList() : Collections.<T>emptySet();
     }

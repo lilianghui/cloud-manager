@@ -1,5 +1,6 @@
 package com.lilianghui.shiro.spring.starter.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
+@Slf4j
 public class WebUtils {
 
     public static ModelAndView getModelAndView(String view, Map<String, Object> context) {
@@ -96,7 +98,7 @@ public class WebUtils {
             // 把字符串所有小写字母改为大写成为正规的mac地址并返回
             return sb.toString().toUpperCase();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return null;
     }
@@ -127,7 +129,7 @@ public class WebUtils {
                 write.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 

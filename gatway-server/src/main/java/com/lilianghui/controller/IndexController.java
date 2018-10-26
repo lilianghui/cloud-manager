@@ -6,12 +6,11 @@ import com.lilianghui.entity.User;
 import com.lilianghui.service.ContractService;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,10 +23,10 @@ import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Controller
 public class IndexController {
 
-    private Logger logger = LoggerFactory.getLogger(IndexController.class);
     @Resource
     private ContractService contractService;
 //    @Resource
@@ -57,7 +56,7 @@ public class IndexController {
         try {
             contractService.transactional();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         model.addAttribute("name", "transactional");
         return new ModelAndView("index");
@@ -81,17 +80,17 @@ public class IndexController {
             try {
                 subject.login(token);
             } catch (IncorrectCaptchaException e) {
-                e.printStackTrace();
+                throw e;
             } catch (UnknownAccountException e) {
-                e.printStackTrace();
+                throw e;
             } catch (IncorrectCredentialsException e) {
-                e.printStackTrace();
+                throw e;
             } catch (LockedAccountException e) {
-                e.printStackTrace();
+                throw e;
             } catch (ExcessiveAttemptsException e) {
-                e.printStackTrace();
+                throw e;
             } catch (AuthenticationException e) {
-                e.printStackTrace();
+                throw e;
             }
             if (subject.isAuthenticated()) {
                 User record = new User();
@@ -101,7 +100,7 @@ public class IndexController {
                 mv.setViewName("redirect:/main.shtml");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
             mv.setViewName("redirect:/");
         }
         return mv;
@@ -113,7 +112,7 @@ public class IndexController {
         try {
             model.addAttribute("name", "transactional");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
         return new ModelAndView("success");
     }
@@ -141,7 +140,7 @@ public class IndexController {
                         Thread.sleep(1000);
                         System.out.println(getCurrentDate() + " " + name + " " + i);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        log.error(e.getMessage(),e);
                     }
                 }
                 System.out.println(getCurrentDate() + " " + name + " end...");

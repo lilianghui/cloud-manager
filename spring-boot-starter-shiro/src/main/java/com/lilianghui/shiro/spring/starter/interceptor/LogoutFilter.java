@@ -1,5 +1,6 @@
 package com.lilianghui.shiro.spring.starter.interceptor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.session.SessionException;
 import org.apache.shiro.subject.Subject;
 
@@ -7,6 +8,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+@Slf4j
 public class LogoutFilter extends org.apache.shiro.web.filter.authc.LogoutFilter {
 
 	@Override
@@ -22,8 +24,8 @@ public class LogoutFilter extends org.apache.shiro.web.filter.authc.LogoutFilter
 //			((HttpServletRequest)request).getSession().removeAttribute(Constant.SESSION);
 			((HttpServletRequest)request).getSession().invalidate();
 			subject.logout();
-		} catch (SessionException ise) {
-			ise.printStackTrace();
+		} catch (SessionException e) {
+			log.error(e.getMessage(),e);
 		}
 		issueRedirect(request, response, redirectUrl);
 

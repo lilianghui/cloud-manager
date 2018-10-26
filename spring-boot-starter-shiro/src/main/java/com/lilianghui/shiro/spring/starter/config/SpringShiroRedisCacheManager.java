@@ -4,60 +4,76 @@ import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.cache.CacheManager;
 import org.springframework.cache.support.SimpleValueWrapper;
-import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.core.RedisTemplate;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 public class SpringShiroRedisCacheManager implements CacheManager {
-    private RedisCacheManager redisCacheManager;
+    private RedisTemplate redisTemplate;
+    private Map<String, ShiroProperties.RedisCacheProperties> redisCache;
 
-    public SpringShiroRedisCacheManager(RedisCacheManager redisCacheManager) {
-        this.redisCacheManager = redisCacheManager;
+    public SpringShiroRedisCacheManager(RedisTemplate redisTemplate, Map<String, ShiroProperties.RedisCacheProperties> redisCache) {
+        this.redisTemplate = redisTemplate;
+        this.redisCache = redisCache;
     }
 
     @Override
-    public <K, V> Cache<K, V> getCache(String s) throws CacheException {
-        org.springframework.cache.Cache cache = redisCacheManager.getCache(s);
-        return new SpringShiroCache(cache);
+    public <K, V> Cache<K, V> getCache(String name) throws CacheException {
+        return new SpringShiroCache(name, redisTemplate, redisCache.get(name) == null ? ShiroProperties.RedisCacheProperties.DEFALUT_CONFIG : redisCache.get(name));
     }
 
     static class SpringShiroCache implements Cache {
-        private org.springframework.cache.Cache springCache;
+        private String name;
+        private RedisTemplate redisTemplate;
+        private ShiroProperties.RedisCacheProperties redisCacheProperties;
 
-        SpringShiroCache(org.springframework.cache.Cache springCache) {
-            this.springCache = springCache;
+        public SpringShiroCache(String name, RedisTemplate redisTemplate, ShiroProperties.RedisCacheProperties redisCacheProperties) {
+            this.name = name;
+            this.redisTemplate = redisTemplate;
+            this.redisCacheProperties = redisCacheProperties;
         }
 
         public Object get(Object key) throws CacheException {
-            Object value = this.springCache.get(key);
+            Object value = this.redisTemplate.opsForValue().get(getKey(key));
             return value instanceof SimpleValueWrapper ? ((SimpleValueWrapper) value).get() : value;
         }
 
         public Object put(Object key, Object value) throws CacheException {
-            this.springCache.put(key, value);
+            this.redisTemplate.opsForValue().set(getKey(key), value, redisCacheProperties.getTimeout(), redisCacheProperties.getTimeUnit());
             return value;
         }
 
         public Object remove(Object key) throws CacheException {
-            this.springCache.evict(key);
-            return null;
+            Object k = getKey(key);
+            Object val = get(k);
+            this.redisTemplate.delete(k);
+            return val;
         }
 
         public void clear() throws CacheException {
-            this.springCache.clear();
+            this.redisTemplate.delete(keys());
         }
 
         public int size() {
-            throw new UnsupportedOperationException("invoke spring cache abstract size method not supported");
+            return keys().size();
         }
 
         public Set keys() {
-            throw new UnsupportedOperationException("invoke spring cache abstract keys method not supported");
+            return this.redisTemplate.keys(this.name);
         }
 
         public Collection values() {
-            throw new UnsupportedOperationException("invoke spring cache abstract values method not supported");
+            List values = new ArrayList<>();
+            keys().forEach(key -> {
+                Object value = this.redisTemplate.opsForValue().get(key);
+                values.add(value);
+            });
+            return values;
         }
+
+        private byte[] getKey(Object key) {
+            return redisTemplate.getKeySerializer().serialize(new StringBuffer(this.name).append("::").append(key).toString());
+        }
+
     }
 }

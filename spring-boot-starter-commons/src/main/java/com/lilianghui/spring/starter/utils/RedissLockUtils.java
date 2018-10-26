@@ -1,6 +1,6 @@
 package com.lilianghui.spring.starter.utils;
 
-import com.lilianghui.spring.starter.DistributedLocker;
+import com.lilianghui.spring.starter.core.DistributedLocker;
 
 import java.util.concurrent.TimeUnit;
 

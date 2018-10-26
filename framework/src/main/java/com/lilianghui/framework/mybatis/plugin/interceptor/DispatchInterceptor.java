@@ -1,6 +1,7 @@
 package com.lilianghui.framework.mybatis.plugin.interceptor;
 
 import com.lilianghui.framework.mybatis.plugin.helper.PageProcessHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.*;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+@Slf4j
 @Intercepts(@Signature(type = Executor.class, method = "query", args = { MappedStatement.class, Object.class,
 		RowBounds.class, ResultHandler.class }))
 public class DispatchInterceptor implements Interceptor {
@@ -40,7 +42,7 @@ public class DispatchInterceptor implements Interceptor {
 						.invoke(PageProcessHelper.instance, invocation,defalutOrderBy);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage(),e);
 		}
 		// 如果没有进行拦截处理，则执行默认逻辑
 		return invocation.proceed();

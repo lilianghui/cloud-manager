@@ -1,5 +1,6 @@
 package com.lilianghui.framework.mybatis.mapping;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.ibatis.type.JdbcType;
@@ -9,6 +10,7 @@ import org.apache.ibatis.type.TypeHandler;
 import java.sql.*;
 import java.text.ParseException;
 
+@Slf4j
 @MappedTypes({ String.class })
 public class StringTypeHandler implements TypeHandler<String> {
 
@@ -24,7 +26,7 @@ public class StringTypeHandler implements TypeHandler<String> {
                 try {
                     ps.setDate(i, new Date(DateUtils.parseDate(parameter, "").getTime()));
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(),e);
                 }
             }
         } else {

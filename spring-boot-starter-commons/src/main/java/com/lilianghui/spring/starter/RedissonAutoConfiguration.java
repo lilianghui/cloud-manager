@@ -1,6 +1,8 @@
 package com.lilianghui.spring.starter;
 
 import com.lilianghui.spring.starter.config.RedissonProperties;
+import com.lilianghui.spring.starter.core.DistributedLocker;
+import com.lilianghui.spring.starter.core.RedissonDistributedLocker;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

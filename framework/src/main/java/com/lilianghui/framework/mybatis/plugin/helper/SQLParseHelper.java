@@ -1,6 +1,7 @@
 package com.lilianghui.framework.mybatis.plugin.helper;
 
 import com.lilianghui.framework.mybatis.entity.Entity;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Table;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+@Slf4j
 public class SQLParseHelper {
     public static String parse(String sql, String databaseId, boolean flag, Object parameterObject) {
 
@@ -57,7 +59,7 @@ public class SQLParseHelper {
             PKColumn = StringUtils.isBlank(PKColumn) ? "ID" : PKColumn;
             sql = sql.replace("{PKColumn}", PKColumn);
         } catch (JSQLParserException e) {
-            //e.printStackTrace();
+            //log.error(e.getMessage(),e);
         }
 
         return sql;

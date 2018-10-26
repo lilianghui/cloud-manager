@@ -1,6 +1,7 @@
 package com.lilianghui.framework.mybatis.utils;
 
 import com.lilianghui.framework.mybatis.entity.Entity;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.resultset.ResultSetWrapper;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class BridgeHelper {
     private static final boolean tkMybatisPresent = ClassUtils.isPresent("com.walkiesoft.framework.tk.mybatis.mapper.entity.EntityColumn", BridgeHelper.class.getClassLoader());
     public static final String COUNT_SUFFIX = "_Count";
@@ -147,7 +149,7 @@ public class BridgeHelper {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 

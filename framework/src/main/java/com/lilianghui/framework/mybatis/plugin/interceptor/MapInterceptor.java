@@ -1,6 +1,7 @@
 package com.lilianghui.framework.mybatis.plugin.interceptor;
 
 import com.lilianghui.framework.mybatis.entity.MapParam;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.resultset.DefaultResultSetHandler;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+@Slf4j
 @Intercepts({@Signature(method = "handleResultSets", type = ResultSetHandler.class, args = {Statement.class})})
 public class MapInterceptor implements Interceptor {
 
@@ -46,7 +48,7 @@ public class MapInterceptor implements Interceptor {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage(),e);
 		}
 		// 如果没有进行拦截处理，则执行默认逻辑
 		return invocation.proceed();
@@ -79,7 +81,7 @@ public class MapInterceptor implements Interceptor {
 				return resultList;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage(),e);
 		} finally {
 			closeResultSet(resultSet);
 		}
