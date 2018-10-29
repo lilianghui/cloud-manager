@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -74,5 +75,9 @@ public class ContractService extends AbstractBaseMapperService<Contract, Contrac
 //            }
 //        });
 
+    }
+
+    public List<Contract> selectContract(Contract contract) {
+        return mapper.selectContract(contract);
     }
 }

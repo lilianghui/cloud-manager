@@ -1,6 +1,7 @@
 package com.lilianghui.controller;
 
 import com.hazelcast.client.AuthenticationException;
+import com.lilianghui.entity.Contract;
 import com.lilianghui.entity.GatWayConfig;
 import com.lilianghui.entity.User;
 import com.lilianghui.service.ContractService;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -48,6 +50,9 @@ public class IndexController {
         System.out.println(user);*/
         System.out.println(gatWayConfig);
         model.addAttribute("name", "spring cloud" + gatWayConfig);
+        Contract contract = new Contract();
+        List<Contract> list = contractService.selectContract(contract);
+
         return new ModelAndView("index");
     }
 
@@ -56,7 +61,7 @@ public class IndexController {
         try {
             contractService.transactional();
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
         model.addAttribute("name", "transactional");
         return new ModelAndView("index");
@@ -100,7 +105,7 @@ public class IndexController {
                 mv.setViewName("redirect:/main.shtml");
             }
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             mv.setViewName("redirect:/");
         }
         return mv;
@@ -112,7 +117,7 @@ public class IndexController {
         try {
             model.addAttribute("name", "transactional");
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
         return new ModelAndView("success");
     }
@@ -140,7 +145,7 @@ public class IndexController {
                         Thread.sleep(1000);
                         System.out.println(getCurrentDate() + " " + name + " " + i);
                     } catch (InterruptedException e) {
-                        log.error(e.getMessage(),e);
+                        log.error(e.getMessage(), e);
                     }
                 }
                 System.out.println(getCurrentDate() + " " + name + " end...");

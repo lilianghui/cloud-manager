@@ -5,6 +5,7 @@ import com.p6spy.engine.logging.P6LogOptions;
 import com.p6spy.engine.spy.P6ModuleManager;
 import com.p6spy.engine.spy.P6SpyOptions;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -36,12 +37,6 @@ public class P6spyAutoConfiguration implements InitializingBean {
         P_6_SPY_PROPERTIES = p6spyProperties;
     }
 
-
-//    @Bean
-//    public P6ModuleManager p6ModuleManager() {
-//
-//        return p6ModuleManager;
-//    }
 
     private void setP6SpyOptions(P6ModuleManager p6ModuleManager) {
         P6SpyOptions p6SpyOptions = p6ModuleManager.getOptions(P6SpyOptions.class);
@@ -86,7 +81,11 @@ public class P6spyAutoConfiguration implements InitializingBean {
 
         @Override
         public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
-            return conditionContext.getEnvironment().getProperty("spring.datasource.url").toLowerCase().startsWith("jdbc:p6spy:");
+            String value = conditionContext.getEnvironment().getProperty("spring.datasource.url");
+            if (StringUtils.isBlank(value)) {
+                return false;
+            }
+            return value.toLowerCase().startsWith("jdbc:p6spy:");
         }
     }
 

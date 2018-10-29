@@ -2,14 +2,19 @@ package com.lilianghui.spring.starter.utils;
 
 import com.lilianghui.spring.starter.annotation.Property;
 import com.lilianghui.spring.starter.annotation.RelationMapping;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.executor.resultset.ResultSetWrapper;
 import org.apache.ibatis.mapping.*;
+import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.UnknownTypeHandler;
 import org.springframework.util.ClassUtils;
 import tk.mybatis.mapper.annotation.ColumnType;
+import tk.mybatis.mapper.entity.EntityColumn;
+import tk.mybatis.mapper.mapperhelper.EntityHelper;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -18,6 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+@Slf4j
 public class BridgeHelper {
     private static final boolean tkMybatisPresent = ClassUtils.isPresent("tk.mybatis.mapper.entity.EntityColumn", BridgeHelper.class.getClassLoader());
     public static final String COUNT_SUFFIX = "_Count";
@@ -132,6 +138,40 @@ public class BridgeHelper {
         return builder.build();
     }
 
+    public static void applyParamsMappings(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject, String columnPrefix) {
+        try {
+            for (String column : rsw.getUnmappedColumnNames(resultMap, columnPrefix)) {
+                String prefix = ((columnPrefix == null ? "" : columnPrefix) + PARAMS).toLowerCase();
+                if (column.toLowerCase().startsWith(prefix)) {
+                    Object object = metaObject.getValue(PROPERTY);
+                    if (object != null && object instanceof Map) {
+                        String name = column.substring(prefix.length());
+                        ((Map<String, Object>) metaObject.getValue(PROPERTY)).put(name, rsw.getResultSet().getObject(column));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+
+    public static String findProperty(Class<?> type, String propertyName) {
+        try {
+            if (tkMybatisPresent) {
+                Map<String, String> tableColumn = TABLE_COLUMN_REF.get(type);
+                if (tableColumn == null) {
+                    TABLE_COLUMN_REF.put(type, new HashMap<String, String>());
+                    tableColumn = TABLE_COLUMN_REF.get(type);
+                    for (EntityColumn column : EntityHelper.getEntityTable(type).getEntityClassColumns()) {
+                        tableColumn.put(column.getColumn(), column.getProperty());
+                    }
+                }
+                return tableColumn.get(propertyName);
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
 
     public static boolean isSqlServer(String databaseId) {
         if ("Microsoft SQL Server".equals(databaseId)) {

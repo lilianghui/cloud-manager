@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lilianghui.mapper.ContractMapper">
+
+
+    <select id="selectContract" resultType="com.lilianghui.entity.Contract">
+		SELECT DISTINCT
+			t.*,'abc' params_abc
+		FROM
+			t_market_manage_contract t where 111=111
+	</select>
+
+</mapper>

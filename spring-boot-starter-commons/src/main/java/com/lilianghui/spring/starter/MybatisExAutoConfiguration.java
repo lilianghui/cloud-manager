@@ -14,9 +14,9 @@ import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,19 +38,21 @@ public class MybatisExAutoConfiguration {
         return new ConfigurationCustomizer();
     }
 
-    public static class ConfigurationCustomizer implements org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer, InitializingBean, DisposableBean {
+    public static class ConfigurationCustomizer implements org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer, DisposableBean {
 
         @Resource
         private MybatisProperties mybatisProperties;
         @Resource
         private MyBatisExProperties myBatisExProperties;
+        @Resource
+        private ApplicationContext applicationContext;
 
         @Override
         public void customize(org.apache.ibatis.session.Configuration configuration) {
             try {
                 registerBeanMapping(configuration);
                 registerConfigurationProperty(configuration);
-//                configuration.setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior.NONE());
+                init(configuration);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -137,7 +139,7 @@ public class MybatisExAutoConfiguration {
 
         }
 
-        private Thread thread=null;
+        private Thread thread = null;
 
         @Override
         public void destroy() throws Exception {
@@ -146,11 +148,10 @@ public class MybatisExAutoConfiguration {
             }
         }
 
-        @Override
-        public void afterPropertiesSet() throws Exception {
+        public void init(org.apache.ibatis.session.Configuration configuration) throws Exception {
             org.springframework.core.io.Resource[] mappers = mybatisProperties.resolveMapperLocations();
             if (ArrayUtils.isNotEmpty(mappers)) {
-                thread = new Thread(new MybatisMapperRefresh(mappers[0].getFile().getAbsolutePath()));
+                thread = new Thread(new MybatisMapperRefresh(applicationContext,configuration, mappers),"mybatis xml refresh thread");
                 thread.start();
             }
 

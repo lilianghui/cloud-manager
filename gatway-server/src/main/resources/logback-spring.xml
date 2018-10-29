@@ -190,7 +190,7 @@
 
 
     <!--spring.profiles.active=dev-->
-    <springProfile name="dev">
+    <!--<springProfile name="dev">-->
         <!-- 生产环境下，将此级别配置为适合的级别，以免日志文件太多或影响程序性能 -->
         <root level="DEBUG">
             <appender-ref ref="FILE-ERROR"/>
@@ -200,7 +200,7 @@
             <appender-ref ref="STDOUT"/>
             <appender-ref ref="LOGSTASH"/>
         </root>
-    </springProfile>
+    <!--</springProfile>-->
 
     <!-- OFF、TRACE、DEBUG、INFO、WARN、ERROR -->
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
