@@ -3,6 +3,30 @@ spring:
     name: config-server
   # git管理配置
   cloud:
+    stream:
+      bindings:
+        springCloudBusInput:
+          content-type: application/json
+          destination: springCloudBus
+          binder: rocket1
+        springCloudBusOutput:
+          content-type: application/json
+          destination: springCloudBus
+          binder: rocket1
+      binders:
+        rocket1:
+          type: rocket
+      rocketmq:
+        binder:
+          nameSrvAddr: 127.0.0.1
+          default-name-srv-port: 9876
+        bindings:
+          springCloudBusOutput:
+            producer:
+              groupName: test
+          springCloudBusInput:
+            consumer:
+              groupName: test
     bus:
       enabled: true
       refresh:
@@ -22,11 +46,15 @@ spring:
         service-id: eureka-server
   profiles:
     active: native
-  rabbitmq:
-    host: 127.0.0.1
-    port: 5672
-    username: guest
-    password: guest
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    username: guest
+#    password: guest
+  rocketmq:
+    nameServer: 127.0.0.1:9876
+    producer:
+      group: producer-group
 server:
   port: 7001
 

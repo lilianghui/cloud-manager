@@ -35,11 +35,11 @@ spring:
     rememberMeMaxAge: 1
     realms:
       - com.lilianghui.commons.security.UserRealm
-    filterChainDefinitionMap:
-      '/': 'anon'
-      '/login': 'anon'
-      '/resources/**': 'anon'
-      '/**': 'authc'
+    filterChainDefinitionMap: |
+      /: anon
+      /login: anon
+      /resources/**: anon
+      /**: authc
     filterChainDefinitionClass: com.lilianghui.commons.security.ChainDefinitionSectionMetaSource
     redisCache:
       shiroActiveSessionCache:
@@ -49,6 +49,31 @@ spring:
 #      nodes: 10.250.209.89:7000,10.250.209.89:7001,10.250.209.89:7002,10.250.209.89:7003,10.250.209.89:7004,10.250.209.89:7005,10.250.209.89:7006
 #      timeout: 2000
 #      max-redirects: 7
+  cloud:
+    stream:
+      bindings:
+        springCloudBusInput:
+          content-type: application/json
+          destination: springCloudBus
+          binder: rocket1
+        springCloudBusOutput:
+          content-type: application/json
+          destination: springCloudBus
+          binder: rocket1
+      binders:
+        rocket1:
+          type: rocket
+      rocketmq:
+        binder:
+          nameSrvAddr: 127.0.0.1
+          default-name-srv-port: 9876
+        bindings:
+          springCloudBusOutput:
+            producer:
+              groupName: test
+          springCloudBusInput:
+            consumer:
+              groupName: test
   redis:
     password:
     database: 0

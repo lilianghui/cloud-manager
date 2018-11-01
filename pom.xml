@@ -27,6 +27,7 @@
         <module>spring-boot-starter-shiro</module>
         <module>spring-boot-starter-commons</module>
         <module>parent-pom</module>
+        <module>spring-cloud-starter-stream-rocket</module>
     </modules>
 
     <parent>
