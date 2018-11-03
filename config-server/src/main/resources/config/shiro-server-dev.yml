@@ -24,6 +24,8 @@ spring:
       allow-unquoted-control-chars: true
   rocketmq:
     nameServer: 127.0.0.1:9876
+    producer:
+      group: producer-group
   p6spy:
     logFile: /home/${spring.application.name}/spy.log
 

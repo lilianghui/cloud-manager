@@ -5,6 +5,7 @@ import com.lilianghui.config.RocketExtendedBindingProperties;
 import com.lilianghui.config.RocketProducerProperties;
 import com.lilianghui.endpoint.RocketInboundEndpoint;
 import com.lilianghui.endpoint.RocketOutboundEndpoint;
+import org.apache.rocketmq.spring.starter.RocketMQProperties;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
@@ -22,22 +23,26 @@ public class RocketMessageChannelBinder extends AbstractMessageChannelBinder<Ext
 
     private RocketExtendedBindingProperties extendedBindingProperties = new RocketExtendedBindingProperties();
     private RocketMQTemplate rocketMQTemplate;
+    private RocketMQProperties rocketMQProperties;
+    private String applicationName;
 
-    public RocketMessageChannelBinder(String[] headersToEmbed, RocketExchangeQueueProvisioner provisioningProvider, RocketMQTemplate rocketMQTemplate) {
+    public RocketMessageChannelBinder(String[] headersToEmbed,String applicationName, RocketExchangeQueueProvisioner provisioningProvider, RocketMQTemplate rocketMQTemplate, RocketMQProperties rocketMQProperties) {
         super(headersToEmbed, provisioningProvider);
         this.rocketMQTemplate = rocketMQTemplate;
+        this.rocketMQProperties = rocketMQProperties;
+        this.applicationName = applicationName;
     }
 
     @Override
     protected MessageHandler createProducerMessageHandler(ProducerDestination destination, ExtendedProducerProperties<RocketProducerProperties> producerProperties, MessageChannel errorChannel) throws Exception {
-        RocketOutboundEndpoint endpoint = new RocketOutboundEndpoint(rocketMQTemplate,destination.getName());
+        RocketOutboundEndpoint endpoint = new RocketOutboundEndpoint(rocketMQTemplate,rocketMQProperties,destination.getName());
         endpoint.setBeanFactory(this.getBeanFactory());
         return endpoint;
     }
 
     @Override
     protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group, ExtendedConsumerProperties<RocketConsumerProperties> properties) throws Exception {
-        RocketInboundEndpoint endpoint = new RocketInboundEndpoint(rocketMQTemplate,destination.getName());
+        RocketInboundEndpoint endpoint = new RocketInboundEndpoint(rocketMQTemplate,rocketMQProperties,destination.getName(),applicationName);
         endpoint.setBeanFactory(this.getBeanFactory());
         return endpoint;
     }

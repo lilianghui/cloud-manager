@@ -1,6 +1,7 @@
 package com.lilianghui.controller;
 
 import com.hazelcast.client.AuthenticationException;
+import com.lilianghui.client.ShiroFeignClient;
 import com.lilianghui.entity.Contract;
 import com.lilianghui.entity.GatWayConfig;
 import com.lilianghui.entity.User;
@@ -31,6 +32,8 @@ public class IndexController {
 
     @Resource
     private ContractService contractService;
+    @Resource
+    private ShiroFeignClient shiroFeignClient;
 //    @Resource
 //    private RedisTemplate redisTemplate;
 //    @Resource
@@ -52,7 +55,7 @@ public class IndexController {
         model.addAttribute("name", "spring cloud" + gatWayConfig);
         Contract contract = new Contract();
         List<Contract> list = contractService.selectContract(contract);
-
+        shiroFeignClient.selectByPrimaryKey(new User());
         return new ModelAndView("index");
     }
 

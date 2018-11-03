@@ -2,12 +2,22 @@ spring:
   application:
     name: zipkin-server
   datasource:
-    #    schema: classpath:/sql/mysql/zipkin.sql
     url: jdbc:mysql://llh-tencent-os:3306/zipkin?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
     username: root
     password: 1qaz@WSX
-    #    initialize: true
     continueOnError: true
+    #启动时需要初始化的建表语句
+#    schema: classpath:/mysql/zipkin.sql
+    #初始化的数据
+    data: /mysql/zipkin.sql
+    # Initialize the datasource with available DDL and DML scripts.
+    initialization-mode: always
+    #data-password:
+    #data-username:
+    #schema-password:
+    #schema-username:
+    sql-script-encoding: utf-8
+    separator: ;
 
 server:
   port: 8083
@@ -28,6 +38,8 @@ eureka:
 
 security: false
 management:
+  #去除控制台异常
+  metrics.web.server.auto-time-requests: false
   endpoints:
     shutdown:
       enabled: true

@@ -4,6 +4,10 @@ spring:
   zipkin:
     baseUrl: http://llh:8083
     enabled: true
+    sender.type: web
+  sleuth:
+    sampler:
+      percentage: 1.0
   cloud:
     config:
       profile: dev
