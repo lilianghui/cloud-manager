@@ -37,6 +37,7 @@ spring:
       - com.lilianghui.commons.security.UserRealm
     filterChainDefinitionMap: |
       /: anon
+      /actuator/**: anon
       /login: anon
       /resources/**: anon
       /**: authc
