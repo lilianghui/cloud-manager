@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: config-server
+
+crawl:
+  url:
+    - https://blog.csdn.net/bolg_hero/article/list/1
+    - https://blog.csdn.net/bolg_hero/article/list/2
+  maxDepthOfCrawling: 10
+  webCrawler: com.lilianghui.application.CsdnBlogCrawler
+  crawlStorageFolder: './crawl-data'
+  robotstxtConfig:
+    enabled: false
