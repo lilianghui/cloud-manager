@@ -1,0 +1,20 @@
+server:
+  port: 8077
+
+spring:
+  datasource:
+    url: jdbc:mysql://llh-tencent-os:3306/lvxin-agricultural-trade?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+    max-idle: 10
+    max-wait: 10000
+    min-idle: 5
+    initial-size: 5
+
+elasticjob:
+  zookeeper:
+    servers: 10.250.209.25:2181
+    namespace: elastic-job-lite-springboot
+  startedTimeoutMilliseconds: 100
+  completedTimeoutMilliseconds: 100
