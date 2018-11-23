@@ -88,9 +88,9 @@ public class ShiroTemplate {
                 manager.createChain(url, chainDefinition);
             }
 
-            System.out.println("更新权限成功！！");
+            log.info("{}--更新权限成功", filterChainDefinitionMap.toString());
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
     }
 

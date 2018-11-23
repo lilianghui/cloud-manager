@@ -1,5 +1,7 @@
 package com.lilianghui.shiro.spring.starter.config;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.cache.CacheManager;
@@ -8,18 +10,23 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.*;
 
+@Slf4j
 public class SpringShiroRedisCacheManager implements CacheManager {
     private RedisTemplate redisTemplate;
-    private Map<String, ShiroProperties.RedisCacheProperties> redisCache;
+    private Map<String, String> redisCache;
 
-    public SpringShiroRedisCacheManager(RedisTemplate redisTemplate, Map<String, ShiroProperties.RedisCacheProperties> redisCache) {
+    public SpringShiroRedisCacheManager(RedisTemplate redisTemplate, Map<String, String> redisCache) {
         this.redisTemplate = redisTemplate;
         this.redisCache = redisCache;
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String name) throws CacheException {
-        return new SpringShiroCache(name, redisTemplate, redisCache.get(name) == null ? ShiroProperties.RedisCacheProperties.DEFALUT_CONFIG : redisCache.get(name));
+        ShiroProperties.RedisCacheProperties redisCacheProperties = null;
+        if (StringUtils.isNotBlank(redisCache.get(name))) {
+            redisCacheProperties = ShiroProperties.RedisCacheProperties.resolveTimeout(redisCache.get(name));
+        }
+        return new SpringShiroCache(name, redisTemplate, redisCacheProperties);
     }
 
     static class SpringShiroCache implements Cache {
@@ -39,7 +46,11 @@ public class SpringShiroRedisCacheManager implements CacheManager {
         }
 
         public Object put(Object key, Object value) throws CacheException {
-            this.redisTemplate.opsForValue().set(getKey(key), value, redisCacheProperties.getTimeout(), redisCacheProperties.getTimeUnit());
+            if (redisCacheProperties != null) {
+                this.redisTemplate.opsForValue().set(getKey(key), value, redisCacheProperties.getTimeout(), redisCacheProperties.getTimeUnit());
+            } else {
+                this.redisTemplate.opsForValue().set(getKey(key), value);
+            }
             return value;
         }
 
@@ -71,8 +82,10 @@ public class SpringShiroRedisCacheManager implements CacheManager {
             return values;
         }
 
-        private byte[] getKey(Object key) {
-            return redisTemplate.getKeySerializer().serialize(new StringBuffer(this.name).append("::").append(key).toString());
+        private String getKey(Object key) {
+            String k = new StringBuffer(StringUtils.defaultString(this.name)).append(":").append(key).toString();
+            log.info("getKey-------" + k);
+            return k;
         }
 
     }

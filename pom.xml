@@ -21,13 +21,13 @@
         <module>task-server</module>
         <module>spring-boot-admin-server</module>
         <module>mybatis-generator</module>
-        <module>archetype-maven</module>
+        <!--<module>archetype-maven</module>-->
         <module>framework-entity</module>
         <module>spring-boot-starter-rocketmq</module>
         <module>spring-boot-starter-shiro</module>
         <module>spring-boot-starter-commons</module>
-        <module>parent-pom</module>
         <module>spring-cloud-starter-stream-rocket</module>
+        <module>pom</module>
     </modules>
 
     <parent>

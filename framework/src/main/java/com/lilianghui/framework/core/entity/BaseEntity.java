@@ -45,6 +45,7 @@ public class BaseEntity implements Entity, Serializable {
 
 
     @Transient
+    @org.springframework.data.annotation.Transient
     private transient Map<String, Object> params = new HashMap<String, Object>();
 
     @JsonIgnore
@@ -80,9 +81,11 @@ public class BaseEntity implements Entity, Serializable {
     private transient Serializable[] primaryKeys;// 主键数组
 
     @Transient
+    @org.springframework.data.annotation.Transient
     private int rownumber;//数据库查询序号  伪列
 
     @Transient
+    @org.springframework.data.annotation.Transient
     private String currentMenuId;//当前菜单Id
 
     public int getPageSize() {

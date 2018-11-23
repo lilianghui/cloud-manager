@@ -16,7 +16,8 @@ public class AuthcFilter extends FormAuthenticationFilter {
         if (WebUtils.isAjax((HttpServletRequest) request)) {
 //
         }
-        String str = "<script>top.window.location.href = \"" + WebUtils.getWebsite((HttpServletRequest) request) + getLoginUrl() + "\"</script>";
-        WebUtils.writeJson((HttpServletResponse) response, str);
+//        String str = "<script>top.window.location.href = \"" + WebUtils.getWebsite((HttpServletRequest) request) + getLoginUrl() + "\"</script>";
+//        WebUtils.writeJson((HttpServletResponse) response, str);
+        ((HttpServletResponse)response).sendRedirect("/");
     }
 }

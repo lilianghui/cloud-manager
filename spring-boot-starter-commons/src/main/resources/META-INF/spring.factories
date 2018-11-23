@@ -1,2 +1,7 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.lilianghui.spring.starter.P6spyAutoConfiguration
+com.lilianghui.spring.starter.MultiDataSourceAutoConfiguration,\
+com.lilianghui.spring.starter.P6spyAutoConfiguration,\
+com.lilianghui.spring.starter.WebMveAutoConfiguration,\
+com.lilianghui.spring.starter.RedissonAutoConfiguration,\
+com.lilianghui.spring.starter.P6spyAutoConfiguration,\
+com.lilianghui.spring.starter.MybatisExAutoConfiguration

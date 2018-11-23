@@ -12,67 +12,70 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 如果是静态资源将不过shiro拦截器
+ */
 public class ShiroFilterFactoryBean extends org.apache.shiro.spring.web.ShiroFilterFactoryBean {
-	private String resourcePatterns;
+    private String resourcePatterns;
 
-	@Override
-	protected AbstractShiroFilter createInstance() throws Exception {
-		AbstractShiroFilter instance = super.createInstance();
-		Set<String> patternSet = new HashSet<>();
-		if (StringUtils.isNotBlank(resourcePatterns)) {
-			for (String str : resourcePatterns.split(",")) {
-				if (StringUtils.isNotBlank(str)) {
-					patternSet.add(str.trim());
-				}
-			}
+    @Override
+    protected AbstractShiroFilter createInstance() throws Exception {
+        AbstractShiroFilter instance = super.createInstance();
+        Set<String> patternSet = new HashSet<>();
+        if (StringUtils.isNotBlank(resourcePatterns)) {
+            for (String str : resourcePatterns.split(",")) {
+                if (StringUtils.isNotBlank(str)) {
+                    patternSet.add(str.trim());
+                }
+            }
 
-		}
-		return new SpringShiroFilter(instance.getSecurityManager(), instance.getFilterChainResolver(), patternSet);
-	}
+        }
+        return new SpringShiroFilter(instance.getSecurityManager(), instance.getFilterChainResolver(), patternSet);
+    }
 
-	private static final class SpringShiroFilter extends AbstractShiroFilter {
-		private Set<String> patternSet;
-		private AntPathMatcher matcher;
+    private static final class SpringShiroFilter extends AbstractShiroFilter {
+        private Set<String> patternSet;
+        private AntPathMatcher matcher;
 
-		protected SpringShiroFilter(WebSecurityManager webSecurityManager, FilterChainResolver resolver, Set<String> patternSet) {
-			super();
-			if (webSecurityManager == null) {
-				throw new IllegalArgumentException("WebSecurityManager property cannot be null.");
-			}
-			setSecurityManager(webSecurityManager);
-			if (resolver != null) {
-				setFilterChainResolver(resolver);
-			}
-			if (patternSet != null) {
-				this.patternSet = patternSet;
-				matcher = new AntPathMatcher();
-			}
-		}
+        protected SpringShiroFilter(WebSecurityManager webSecurityManager, FilterChainResolver resolver, Set<String> patternSet) {
+            super();
+            if (webSecurityManager == null) {
+                throw new IllegalArgumentException("WebSecurityManager property cannot be null.");
+            }
+            setSecurityManager(webSecurityManager);
+            if (resolver != null) {
+                setFilterChainResolver(resolver);
+            }
+            if (patternSet != null) {
+                this.patternSet = patternSet;
+                matcher = new AntPathMatcher();
+            }
+        }
 
-		@Override
-		protected void updateSessionLastAccessTime(ServletRequest request, ServletResponse response) {
-			if (!isHttpSessions() && !isResource(request))
-				super.updateSessionLastAccessTime(request, response);
-		}
+        @Override
+        protected void updateSessionLastAccessTime(ServletRequest request, ServletResponse response) {
+            if (!isHttpSessions() && !isResource(request))
+                super.updateSessionLastAccessTime(request, response);
+        }
 
-		private boolean isResource(ServletRequest servletRequest) {
-			if (patternSet == null || patternSet.isEmpty()) {
-				return false;
-			}
-			HttpServletRequest request = (HttpServletRequest) servletRequest;
-			int contextPathLen = request.getContextPath().length();
-			String requestURI = request.getRequestURI();
-			final String requestPath = requestURI.substring(contextPathLen);
-			for (String str : patternSet) {
-				if (matcher.match(str, requestPath)) {
-					return true;
-				}
-			}
-			return false;
-		}
-	}
+        private boolean isResource(ServletRequest servletRequest) {
+            if (patternSet == null || patternSet.isEmpty()) {
+                return false;
+            }
+            HttpServletRequest request = (HttpServletRequest) servletRequest;
+            int contextPathLen = request.getContextPath().length();
+            String requestURI = request.getRequestURI();
+            final String requestPath = requestURI.substring(contextPathLen);
+            for (String str : patternSet) {
+                if (matcher.match(str, requestPath)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 
-	public void setResourcesPatterns(String patterns) {
-		this.resourcePatterns = patterns;
-	}
+    public void setResourcesPatterns(String patterns) {
+        this.resourcePatterns = patterns;
+    }
 }

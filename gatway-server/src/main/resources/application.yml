@@ -1,5 +1,12 @@
 server:
-  port: 80
+  port: 8089
+  https-port: 8183
+  #keytool -genkey -alias cloud-manager  -storetype PKCS12 -keyalg RSA -keysize 2048  -keystore cloud-manager.p12 -validity 3650
+#  ssl:
+#    key-store: classpath:cloud-manager.p12
+#    key-store-password: 1qaz@WSX
+#    keyStoreType: PKCS12
+#    keyAlias: cloud-manager
 servlet:
   jsp:
     class-name: org.apache.jasper.servlet.JspServlet

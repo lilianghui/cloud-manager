@@ -67,6 +67,8 @@
 	jmeter			压测工具
 	loadrunner      压测工具
 
+任务调度
+    Elastic-Job
 
 Spring Cloud分布式微服务系统中利用redssion实现分布式锁
 https://www.cnblogs.com/shamo89/p/8036451.html
@@ -87,5 +89,5 @@ git branch develop  			创建分支
 git branch -d  develop  		创建并切换分支
 git checkout develop			切换分支
 
-git pull origin master			拉master 分之内容
+git pull origin master			拉master 分支内容
 git push origin develop:develop 将本地分支develop提交到远程develop分支   没有则创建

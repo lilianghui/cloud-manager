@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:p6spy:mysql://llh-tencent-os:3306/lvxin-agricultural-trade?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
     username: root
-    password: 1qaz@WSX
+    password: 123456
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
     max-idle: 10
     max-wait: 10000
@@ -21,64 +21,75 @@ spring:
     loginUrl: /
     successUrl: /success
     unauthorizedUrl: /unauthorized
-    cacheName: aa
-    hashAlgorithmName: MD5
-    hashIterations: 6
-    total: 6
     cacheManagerConfigFile: classpath:ehcache/shiro-ehcache.xml
-    globalSessionTimeout: 6000
-    sessionValidationInterval: 6000
+    #session失效时间 2小时,单位毫秒
+    globalSessionTimeout: 7200000
+    #session定时清理间隔 30分钟,单位毫秒
+    sessionValidationInterval: 1800000
     activeSessionsCacheName: shiroActiveSessionCache
-    cookieName: aa
+    cookieName: shiroCookie
     cipherKey: 4AvVhmFLUs0KTA3Kprsdag==
-    rememberMeCookieName: rememberMe
-    rememberMeMaxAge: 1
+    rememberMeCookieName: rememberMeCookie
+    #记住我cookie生效时间30天 ,单位秒
+    rememberMeMaxAge: 2592000
+    kickout:
+      kickoutUrl: /
+    #默认
+    credentialsMatcher:
+      enable: true
+      cacheName: credentialsMatcherCache
+      hashAlgorithmName: MD5
+      hashIterations: 6
+      total: 6
     realms:
-      - com.lilianghui.commons.security.UserRealm
+      - realmClass: com.lilianghui.commons.security.UserRealm
+        authenticationCacheName: authenticationCache
     filterChainDefinitionMap: |
       /: anon
       /actuator/**: anon
       /login: anon
+      /logout: anon
       /resources/**: anon
-      /**: authc
+      /**: authc,kickout
     filterChainDefinitionClass: com.lilianghui.commons.security.ChainDefinitionSectionMetaSource
     redisCache:
-      shiroActiveSessionCache:
-        timeout: 10
+      shiroActiveSessionCache: 2h
+      credentialsMatcherCache: 10m
+      authenticationCache: 10m
 #  redis:
 #    cluster:
 #      nodes: 10.250.209.89:7000,10.250.209.89:7001,10.250.209.89:7002,10.250.209.89:7003,10.250.209.89:7004,10.250.209.89:7005,10.250.209.89:7006
 #      timeout: 2000
 #      max-redirects: 7
-  cloud:
-    stream:
-      bindings:
-        springCloudBusInput:
-          content-type: application/json
-          destination: springCloudBus
-          binder: rocket1
-        springCloudBusOutput:
-          content-type: application/json
-          destination: springCloudBus
-          binder: rocket1
-      binders:
-        rocket1:
-          type: rocket
-      rocketmq:
-        binder:
-          nameSrvAddr: 127.0.0.1
-          default-name-srv-port: 9876
-        bindings:
-          springCloudBusOutput:
-            producer:
-              groupName: test
-          springCloudBusInput:
-            consumer:
-              groupName: test
+#  cloud:
+#    stream:
+#      bindings:
+#        springCloudBusInput:
+#          content-type: application/json
+#          destination: springCloudBus
+#          binder: rocket1
+#        springCloudBusOutput:
+#          content-type: application/json
+#          destination: springCloudBus
+#          binder: rocket1
+#      binders:
+#        rocket1:
+#          type: rocket
+#      rocketmq:
+#        binder:
+#          nameSrvAddr: 127.0.0.1
+#          default-name-srv-port: 9876
+#        bindings:
+#          springCloudBusOutput:
+#            producer:
+#              groupName: test
+#          springCloudBusInput:
+#            consumer:
+#              groupName: test
   redis:
     password:
     database: 0
-    host: 127.0.0.1
+    host: llh
     port: 6379
     pool:
       max-idle: 8
@@ -87,13 +98,13 @@ spring:
       max-wait: -1
     timeout: 5000
 
-  rabbitmq:
-    host: 127.0.0.1
-    port: 5672
-    username: guest
-    password: guest
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    username: guest
+#    password: guest
   rocketmq:
-    nameServer: 127.0.0.1:9876
+    nameServer: llh:9876
     producer:
       group: producer-group
   p6spy:
@@ -151,7 +162,7 @@ mapper:
   enumerationHandlerClass: com.lilianghui.framework.mybatis.mapping.EnumerationHandler
 
 redisson:
-  address: 127.0.0.1:6379
+  address: llh:6379
   password:
 
 gatway:

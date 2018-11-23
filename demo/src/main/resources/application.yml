@@ -1,0 +1,84 @@
+spring.atomikos.datasource:
+  cloudsystem:
+    type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+    url: jdbc:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+    max-idle: 10
+    max-wait: 10000
+    min-idle: 5
+    initial-size: 5
+    mybatis:
+      configuration: com.lilianghui.spring.starter.mybatis.MyBatisConfiguration
+      mapper-locations: classpath:/mapper/*.xml
+      typeHandlersPackage: com.lilianghui.framework.mybatis.mapping
+      jdbcTypeForNull: NULL
+      mapUnderscoreToCamelCase: true
+    mapper:
+      basePackages: com.example.demo.mapper.db01
+      mappers:
+        - tk.mybatis.mapper.common.Mapper
+      notEmpty: true
+      resolveClass: tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve
+      entityScanPackages: com.example.demo.entity
+  cloudstock:
+    type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+    url: jdbc:mysql://127.0.0.1:3306/db02?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+    max-idle: 10
+    max-wait: 10000
+    min-idle: 5
+    initial-size: 5
+    mybatis:
+      configuration: com.lilianghui.spring.starter.mybatis.MyBatisConfiguration
+      mapper-locations: classpath:/mapper/*.xml
+      typeHandlersPackage: com.lilianghui.framework.mybatis.mapping
+      jdbcTypeForNull: NULL
+      mapUnderscoreToCamelCase: true
+    mapper:
+      basePackages: com.example.demo.mapper.db02
+      mappers:
+        - tk.mybatis.mapper.common.Mapper
+      notEmpty: true
+      resolveClass: tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve
+      entityScanPackages: com.example.demo.entity
+  mvc:
+    #    static-path-pattern: /**
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+  freemarker:
+    template-loader-path: /templates
+  thymeleaf:
+    template-resolver-order: 122
+  p6spy:
+    logFile: /home/${spring.application.name}/spy.log
+
+
+
+security: false
+management:
+  endpoint:
+    bus-refresh:
+      enabled: true
+  endpoints:
+    shutdown:
+      enabled: true
+    health:
+      sensitive: false
+      show-details: always
+    web:
+      exposure:
+        include: '*'
+server:
+  port: 8898
+
+
+jta:
+  atomikos:
+    properties:
+      log-base-dir: ../logs
+  transaction-manager-id: transactionManager

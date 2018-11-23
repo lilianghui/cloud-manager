@@ -1,12 +1,18 @@
 spring:
   application:
-    name: config-server
+    name: crawler-java-server
+
+  rocketmq:
+    nameServer: 127.0.0.1:9876
+    producer:
+      group: producer-group
 
 crawl:
   url:
     - https://blog.csdn.net/bolg_hero/article/list/1
     - https://blog.csdn.net/bolg_hero/article/list/2
-  maxDepthOfCrawling: 10
+  maxDepthOfCrawling: 100
+  maxPagesToFetch: 100
   webCrawler: com.lilianghui.application.CsdnBlogCrawler
   crawlStorageFolder: './crawl-data'
   robotstxtConfig:

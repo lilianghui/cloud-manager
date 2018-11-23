@@ -1,55 +1,65 @@
 package com.lilianghui.shiro.spring.starter;
 
 
-import com.lilianghui.shiro.spring.starter.config.QuartzSessionValidationScheduler2;
-import com.lilianghui.shiro.spring.starter.config.ShiroProperties;
-import com.lilianghui.shiro.spring.starter.config.SpringShiroRedisCacheManager;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lilianghui.shiro.spring.starter.config.*;
 import com.lilianghui.shiro.spring.starter.core.AbstractChainDefinitionSectionMetaSource;
-import com.lilianghui.shiro.spring.starter.interceptor.AuthcFilter;
-import com.lilianghui.shiro.spring.starter.interceptor.LogoutFilter;
-import com.lilianghui.shiro.spring.starter.interceptor.PermissionsOrAuthorizationFilter;
-import com.lilianghui.shiro.spring.starter.interceptor.RolesOrAuthorizationFilter;
+import com.lilianghui.shiro.spring.starter.core.RetryLimitHashedCredentialsMatcher;
+import com.lilianghui.shiro.spring.starter.event.ApplicationRefreshListener;
+import com.lilianghui.shiro.spring.starter.interceptor.*;
 import com.lilianghui.shiro.spring.starter.utils.BeanFactoryUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.pam.*;
+import org.apache.shiro.authc.credential.CredentialsMatcher;
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.cache.CacheManager;
-import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.codec.Base64;
+import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.session.mgt.ValidatingSessionManager;
 import org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO;
 import org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator;
 import org.apache.shiro.session.mgt.eis.SessionDAO;
-import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.boot.autoconfigure.condition.*;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
-import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import javax.annotation.Resource;
-import javax.servlet.*;
-import java.util.*;
+import javax.servlet.Filter;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 @Order
 @Slf4j
@@ -64,9 +74,14 @@ public class ShiroAutoConfiguration {
     @Resource
     private ApplicationContext applicationContext;
 
-
     public ShiroAutoConfiguration() {
     }
+
+    @Bean
+    public ApplicationRefreshListener applicationRefreshListener() {
+        return new ApplicationRefreshListener();
+    }
+
 
     //缓存管理
     @Bean
@@ -74,8 +89,8 @@ public class ShiroAutoConfiguration {
 //    @ConditionalOnProperty(prefix = ShiroProperties.PREFIX, value = "enableRedisCache", havingValue = "true")
 //    @ConditionalOnBean(RedisTemplate.class)
     @ConditionalOnMissingBean
-    public CacheManager cacheRedisManager(@Autowired RedisTemplate redisTemplate) {
-        SpringShiroRedisCacheManager springShiroRedisCacheManager = new SpringShiroRedisCacheManager(redisTemplate, shiroProperties.getRedisCache());
+    public CacheManager cacheRedisManager(@Autowired @Qualifier("redisTemplateObject") RedisTemplate redisTemplateObject) {
+        SpringShiroRedisCacheManager springShiroRedisCacheManager = new SpringShiroRedisCacheManager(redisTemplateObject, shiroProperties.getRedisCache());
         return springShiroRedisCacheManager;
     }
 
@@ -95,7 +110,7 @@ public class ShiroAutoConfiguration {
     //会话管理器
     @Bean
     @ConditionalOnMissingBean
-    public DefaultWebSessionManager sessionManager() {
+    public DefaultWebSessionManager sessionManager(@Autowired SessionDAO sessionDAO) {
         DefaultWebSessionManager defaultWebSessionManager = new DefaultWebSessionManager();
         defaultWebSessionManager.setSessionIdCookieEnabled(true);
         defaultWebSessionManager.setSessionIdCookie(sessionIdCookie());
@@ -103,10 +118,21 @@ public class ShiroAutoConfiguration {
         defaultWebSessionManager.setDeleteInvalidSessions(true);
         defaultWebSessionManager.setSessionValidationSchedulerEnabled(true);
         defaultWebSessionManager.setSessionValidationScheduler(sessionValidationScheduler(defaultWebSessionManager));
-        defaultWebSessionManager.setSessionDAO(sessionDAO());
+        defaultWebSessionManager.setSessionDAO(sessionDAO);
+        defaultWebSessionManager.setSessionFactory(new RedisSessionFactory());
         return defaultWebSessionManager;
     }
 
+
+    @Bean
+    public RedisTemplate<Object, Object> redisTemplateObject(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<Object, Object> template = new RedisTemplate();
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new ObjectSerializer());
+        template.setConnectionFactory(redisConnectionFactory);
+        template.afterPropertiesSet();
+        return template;
+    }
 
     //session cookie策略
     @Bean
@@ -142,24 +168,67 @@ public class ShiroAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DefaultWebSecurityManager securityManager(@Autowired CacheManager cacheManager) throws Exception {
+    public DefaultWebSecurityManager securityManager(@Autowired CacheManager cacheManager, @Autowired SessionDAO sessionDAO) throws Exception {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setCacheManager(cacheManager);
         securityManager.setRememberMeManager(rememberMeManager());
-        securityManager.setSessionManager(sessionManager());
+        securityManager.setSessionManager(sessionManager(sessionDAO));
         List<Realm> realms = new ArrayList<>();
-        if (ArrayUtils.isNotEmpty(shiroProperties.getRealms())) {
-            for (Class<? extends Realm> ream : shiroProperties.getRealms()) {
-                realms.add(BeanFactoryUtils.registerBeanDefinition(applicationContext, ream));
+        if (CollectionUtils.isNotEmpty(shiroProperties.getRealms())) {
+            for (ShiroProperties.RealmProperties realmProperties : shiroProperties.getRealms()) {
+                Realm instance = BeanFactoryUtils.registerBeanDefinition(applicationContext, realmProperties.getRealmClass());
+                if (instance instanceof AuthenticatingRealm) {
+                    AuthenticatingRealm authenticatingRealm = ((AuthenticatingRealm) instance);
+                    authenticatingRealm.setAuthenticationCacheName(realmProperties.getAuthenticationCacheName());
+                    authenticatingRealm.setAuthenticationCachingEnabled(realmProperties.isAuthenticationCachingEnabled());
+                    authenticatingRealm.setAuthenticationTokenClass(realmProperties.getAuthenticationTokenClass());
+                    CredentialsMatcher credentialsMatcher = resolveCredentialsMatcher(realmProperties.getCredentialsMatcher());
+//                    if (realmProperties.getCredentialsMatcherClass() != null) {
+//                        credentialsMatcher = BeanFactoryUtils.registerBeanDefinitionExist(applicationContext, realmProperties.getCredentialsMatcherClass());
+//                    }
+                    if (credentialsMatcher != null) {
+                        authenticatingRealm.setCredentialsMatcher(credentialsMatcher);
+                    } else {
+                        authenticatingRealm.setCredentialsMatcher(retryLimitHashedCredentialsMatcher(cacheManager));
+                    }
+                }
+                realms.add(instance);
             }
         }
-//        securityManager.setRealms(realms);
         ModularRealmAuthenticator modularRealmAuthenticator = new ModularRealmAuthenticator();
         modularRealmAuthenticator.setAuthenticationStrategy(shiroProperties.getAuthenticationStrategyMode().instance());
         modularRealmAuthenticator.setRealms(realms);
         securityManager.setAuthenticator(modularRealmAuthenticator);
         SecurityUtils.setSecurityManager(securityManager);
         return securityManager;
+    }
+
+    private CredentialsMatcher resolveCredentialsMatcher(ShiroProperties.RetryLimitHashedCredentialsMatcherProperties matcherProperties) {
+        if (matcherProperties.getCredentialsMatcherClass() == null) {
+            return null;
+        }
+        CredentialsMatcher credentialsMatcher = BeanFactoryUtils.registerBeanDefinitionExist(applicationContext, matcherProperties.getCredentialsMatcherClass());
+        if (credentialsMatcher instanceof HashedCredentialsMatcher) {
+            HashedCredentialsMatcher hashedCredentialsMatcher=(HashedCredentialsMatcher)credentialsMatcher;
+            hashedCredentialsMatcher.setHashAlgorithmName(matcherProperties.getHashAlgorithm());
+            hashedCredentialsMatcher.setHashIterations(matcherProperties.getHashIterations());
+            hashedCredentialsMatcher.setStoredCredentialsHexEncoded(matcherProperties.isStoredCredentialsHexEncoded());
+        }
+        return credentialsMatcher;
+    }
+
+    @Bean
+    public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher(@Autowired CacheManager cacheManager) {
+        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher();
+        ShiroProperties.RetryLimitHashedCredentialsMatcherProperties credentialsMatcher = shiroProperties.getCredentialsMatcher();
+        retryLimitHashedCredentialsMatcher.setCacheName(credentialsMatcher.getCacheName());
+        retryLimitHashedCredentialsMatcher.setTotal(credentialsMatcher.getTotal());
+        retryLimitHashedCredentialsMatcher.setEnable(credentialsMatcher.isEnable());
+        retryLimitHashedCredentialsMatcher.setHashAlgorithmName(credentialsMatcher.getHashAlgorithm());
+        retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(credentialsMatcher.isStoredCredentialsHexEncoded());
+        retryLimitHashedCredentialsMatcher.setHashIterations(credentialsMatcher.getHashIterations());
+        retryLimitHashedCredentialsMatcher.setCacheManager(cacheManager);
+        return retryLimitHashedCredentialsMatcher;
     }
 
 
@@ -173,10 +242,19 @@ public class ShiroAutoConfiguration {
         return shiroTemplate;
     }
 
+//    @Bean
+//    @ConditionalOnMissingBean(SessionDAO.class)
+//    public SessionDAO sessionDAO() {
+//        EnterpriseCacheSessionDAO sessionDAO = new EnterpriseCacheSessionDAO();
+//        sessionDAO.setActiveSessionsCacheName(shiroProperties.getActiveSessionsCacheName());
+//        sessionDAO.setSessionIdGenerator(sessionIdGenerator());
+//        return sessionDAO;
+//    }
+
     @Bean
-    @ConditionalOnMissingBean(SessionDAO.class)
-    public SessionDAO sessionDAO() {
-        EnterpriseCacheSessionDAO sessionDAO = new EnterpriseCacheSessionDAO();
+    public SessionDAO sessionDAO(@Autowired @Qualifier("redisTemplateObject") RedisTemplate redisTemplateObject) {
+        SpringShiroSessionDAO sessionDAO = new SpringShiroSessionDAO();
+        sessionDAO.setRedisTemplate(redisTemplateObject);
         sessionDAO.setActiveSessionsCacheName(shiroProperties.getActiveSessionsCacheName());
         sessionDAO.setSessionIdGenerator(sessionIdGenerator());
         return sessionDAO;
@@ -200,12 +278,14 @@ public class ShiroAutoConfiguration {
 
     @Bean
     @Order
-    public ShiroFilterFactoryBean shiroFilter(@Autowired CacheManager cacheManager) throws Exception {
+    public ShiroFilterFactoryBean shiroFilter(@Autowired CacheManager cacheManager,
+                                              @Autowired SessionManager sessionManager,
+                                              @Autowired SessionDAO sessionDAO) throws Exception {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setLoginUrl(shiroProperties.getLoginUrl());
         shiroFilterFactoryBean.setSuccessUrl(shiroProperties.getSuccessUrl());
         shiroFilterFactoryBean.setUnauthorizedUrl(shiroProperties.getUnauthorizedUrl());
-        shiroFilterFactoryBean.setSecurityManager(securityManager(cacheManager));
+        shiroFilterFactoryBean.setSecurityManager(securityManager(cacheManager, sessionDAO));
         AbstractChainDefinitionSectionMetaSource abstractChainDefinitionSectionMetaSource = BeanFactoryUtils.registerBeanDefinition(applicationContext, shiroProperties.getFilterChainDefinitionClass());
         LinkedHashMap<String, String> filterChainDefinitionMap = abstractChainDefinitionSectionMetaSource.loadAllAuth(shiroProperties.getFilterChainDefinitionMap());
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
@@ -217,6 +297,9 @@ public class ShiroAutoConfiguration {
         filters.put("orPerms", new PermissionsOrAuthorizationFilter());
         filters.put("authc", new AuthcFilter());
         filters.put("logout", new LogoutFilter());
+        if (StringUtils.isNotBlank(shiroProperties.getKickout().getKickoutUrl())) {
+            filters.put("kickout", new KickoutSessionControlFilter(sessionManager, cacheManager, shiroProperties.getKickout()));
+        }
         shiroFilterFactoryBean.setFilters(filters);
         return shiroFilterFactoryBean;
     }
@@ -249,9 +332,9 @@ public class ShiroAutoConfiguration {
      * 内部使用AopAllianceAnnotationsAuthorizingMethodInterceptor来拦截用以下注解的方法。
      */
     @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Autowired CacheManager cacheManager) throws Exception {
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(@Autowired CacheManager cacheManager, @Autowired SessionDAO sessionDAO) throws Exception {
         AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
-        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager(cacheManager));
+        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager(cacheManager, sessionDAO));
         return authorizationAttributeSourceAdvisor;
     }
 

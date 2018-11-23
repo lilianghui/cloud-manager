@@ -17,10 +17,17 @@ import javax.persistence.Table;
 public class User extends BaseEntity {
     @Id
     private String id;
+
     @Column
     private String customer;
+
     @Column(name = "TEL_PHONE")
     private String telPhone;
+
+    @Column(name = "CERTIFICATE_CODE")
+    private String certificateCode;
+
     private String currentAddress;
+
     private String nativeAddress;
 }

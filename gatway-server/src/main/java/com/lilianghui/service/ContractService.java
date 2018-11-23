@@ -1,6 +1,7 @@
 package com.lilianghui.service;
 
 import com.google.common.collect.Sets;
+import com.lilianghui.client.ElasticFeignClient;
 import com.lilianghui.entity.Contract;
 import com.lilianghui.entity.User;
 import com.lilianghui.framework.core.entity.MergeEntity;
@@ -11,6 +12,7 @@ import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -22,14 +24,18 @@ import java.util.UUID;
 public class ContractService extends AbstractBaseMapperService<Contract, ContractMapper> {
 
     public static final String TX_PRODUCER_GROUP = "transaction-message";
+
     @Resource
     private RocketMQTemplate rocketMQTemplate;
+    @Resource
+    private ElasticFeignClient elasticFeignClient;
+
     private ProtocbufRedisSerializer protocbufRedisSerializer = new ProtocbufRedisSerializer();
 
     public void transactional() throws Exception {
         Contract contract = new Contract();
         contract.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-        contract.setContractCode("785458715878");
+        contract.setEntpNo("785458715878");
         //
         User user = new User();
         user.setId(UUID.randomUUID().toString().replaceAll("-", ""));
@@ -79,5 +85,11 @@ public class ContractService extends AbstractBaseMapperService<Contract, Contrac
 
     public List<Contract> selectContract(Contract contract) {
         return mapper.selectContract(contract);
+    }
+
+    public boolean initContract() {
+        Example example=new Example(Contract.class);
+        example.createCriteria().andEqualTo("delFlg","0");
+        return elasticFeignClient.initContract(selectByExample(example));
     }
 }

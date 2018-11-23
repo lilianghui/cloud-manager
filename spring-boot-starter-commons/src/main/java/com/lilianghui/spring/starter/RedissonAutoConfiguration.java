@@ -10,6 +10,7 @@ import org.redisson.config.Config;
 import org.redisson.config.SentinelServersConfig;
 import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -21,7 +22,7 @@ import org.springframework.context.annotation.Bean;
  *
  */
 //@Configuration
-@ConditionalOnClass(Config.class)
+@ConditionalOnClass({Config.class,RedissonClient.class})
 @EnableConfigurationProperties(RedissonProperties.class)
 public class RedissonAutoConfiguration {
 
@@ -75,6 +76,7 @@ public class RedissonAutoConfiguration {
      * @return
      */
     @Bean
+    @ConditionalOnBean(RedissonClient.class)
     DistributedLocker distributedLocker(RedissonClient redissonClient) {
         RedissonDistributedLocker locker = new RedissonDistributedLocker();
         locker.setRedissonClient(redissonClient);

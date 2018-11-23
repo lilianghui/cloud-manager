@@ -7,11 +7,14 @@ import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheManager;
 
+import javax.annotation.Resource;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher {
 
+    @Resource
     private CacheManager cacheManager;
+
     private String cacheName;
     private int total = 5;
     private boolean enable = true;
@@ -19,19 +22,20 @@ public class RetryLimitHashedCredentialsMatcher extends HashedCredentialsMatcher
     public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
         boolean matches = super.doCredentialsMatch(token, info);
         if (!enable) {
-			return matches;
+            return matches;
         }
         String account = (String) token.getPrincipal();
         AtomicInteger retryCount = getPasswordRetryCache().get(account);
         if (retryCount == null) {
             retryCount = new AtomicInteger(0);
-            getPasswordRetryCache().put(account, retryCount);
         }
         if (retryCount.incrementAndGet() > this.total) {
             throw new ExcessiveAttemptsException();
         }
         if (matches) {
             getPasswordRetryCache().remove(account);
+        } else {
+            getPasswordRetryCache().put(account, retryCount);
         }
         return matches;
     }

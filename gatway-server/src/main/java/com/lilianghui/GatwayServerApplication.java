@@ -2,14 +2,19 @@ package com.lilianghui;
 
 import com.lilianghui.config.DefaultRibbonConfiguration;
 import com.lilianghui.config.filter.AuthHeaderFilter;
+import org.apache.catalina.connector.Connector;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
@@ -17,8 +22,14 @@ import tk.mybatis.spring.annotation.MapperScan;
 @MapperScan("com.lilianghui.mapper")
 @EnableFeignClients("com.lilianghui.client")
 //@EnableEurekaClient
-@Import({DefaultRibbonConfiguration.class})
+@RibbonClients(defaultConfiguration = DefaultRibbonConfiguration.class)
 public class GatwayServerApplication extends SpringBootServletInitializer {
+
+    @Value("${server.port}")
+    private int port;
+
+    @Value("${server.https-port}")
+    private int httpsPort;
 
     public static void main(String[] args) {
         SpringApplication.run(GatwayServerApplication.class, args);
@@ -41,4 +52,22 @@ public class GatwayServerApplication extends SpringBootServletInitializer {
 //        return new ResponseFilter();
 //    }
 
+
+//    @Bean
+//    @Primary
+    public ServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        tomcat.addAdditionalTomcatConnectors(createHTTPConnector());
+        return tomcat;
+    }
+
+    private Connector createHTTPConnector() {
+        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        //同时启用http（8080）、https（8443）两个端口
+        connector.setScheme("http");
+        connector.setSecure(false);
+        connector.setPort(port);
+        connector.setRedirectPort(httpsPort);
+        return connector;
+    }
 }

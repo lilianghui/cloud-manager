@@ -3,6 +3,10 @@ spring:
     elasticsearch:
       cluster-name: elasticsearch
       cluster-nodes: llh:9300
+  rocketmq:
+    nameServer: llh:9876
+    producer:
+      group: producer-group
 
 security: false
 management:

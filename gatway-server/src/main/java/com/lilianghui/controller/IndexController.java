@@ -6,6 +6,7 @@ import com.lilianghui.entity.Contract;
 import com.lilianghui.entity.GatWayConfig;
 import com.lilianghui.entity.User;
 import com.lilianghui.service.ContractService;
+import com.lilianghui.service.ShiroService;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ public class IndexController {
     @Resource
     private ContractService contractService;
     @Resource
-    private ShiroFeignClient shiroFeignClient;
+    private ShiroService shiroService;
 //    @Resource
 //    private RedisTemplate redisTemplate;
 //    @Resource
@@ -51,11 +52,11 @@ public class IndexController {
         User user = (User) protocbufRedisTemplate.opsForValue().get(key);
 //        User user = ProtobufUtils.deSerialize((byte[]) redisTemplate.opsForValue().get(key), User.class);
         System.out.println(user);*/
-        System.out.println(gatWayConfig);
-        model.addAttribute("name", "spring cloud" + gatWayConfig);
-        Contract contract = new Contract();
-        List<Contract> list = contractService.selectContract(contract);
-        shiroFeignClient.selectByPrimaryKey(new User());
+//        System.out.println(gatWayConfig);
+//        model.addAttribute("name", "spring cloud" + gatWayConfig);
+//        Contract contract = new Contract();
+//        List<Contract> list = contractService.selectContract(contract);
+//        shiroService.selectByPrimaryKey(new User());
         return new ModelAndView("index");
     }
 
@@ -83,7 +84,7 @@ public class IndexController {
         ModelAndView mv = new ModelAndView();
         try {
             Subject subject = SecurityUtils.getSubject();
-            UsernamePasswordToken token = new UsernamePasswordToken("llh", "llh");
+            UsernamePasswordToken token = new UsernamePasswordToken(user.getId(), user.getCertificateCode());
             token.setRememberMe(true);
             try {
                 subject.login(token);
@@ -101,11 +102,8 @@ public class IndexController {
                 throw e;
             }
             if (subject.isAuthenticated()) {
-                User record = new User();
-                record.setId("llh");
-                record.setCustomer("llh");
-                session.setAttribute("session", record);
-                mv.setViewName("redirect:/main.shtml");
+                session.setAttribute("account", user);
+                mv.setViewName("redirect:/success");
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -116,9 +114,32 @@ public class IndexController {
 
 
     @RequestMapping("success")
-    public ModelAndView success(Model model) {
+    public ModelAndView success(Model model, HttpSession session) {
         try {
-            model.addAttribute("name", "transactional");
+            User user = (User) session.getAttribute("account");
+            model.addAttribute("certificateCode", user == null ? "" : user.getCertificateCode());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return new ModelAndView("success");
+    }
+
+    @RequestMapping("logout")
+    public ModelAndView logout(Model model, HttpSession session) {
+        try {
+            session.invalidate();
+            SecurityUtils.getSubject().logout();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return new ModelAndView("redirect:/");
+    }
+
+
+    @RequestMapping("initContract")
+    public ModelAndView initContract(Model model) {
+        try {
+            contractService.initContract();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

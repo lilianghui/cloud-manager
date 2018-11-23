@@ -12,10 +12,10 @@
     <description>Demo project for Spring Boot</description>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.6.RELEASE</version>
-        <relativePath/>
+        <groupId>com.lilianghui</groupId>
+        <artifactId>springboot-pom</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom/springboot-pom/pom.xml</relativePath>
     </parent>
 
     <properties>
@@ -25,11 +25,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.lilianghui</groupId>
-            <artifactId>parent-pom</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-bus</artifactId>
