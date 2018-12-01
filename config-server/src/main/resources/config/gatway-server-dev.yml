@@ -44,13 +44,19 @@ spring:
     realms:
       - realmClass: com.lilianghui.commons.security.UserRealm
         authenticationCacheName: authenticationCache
+      - realmClass: com.lilianghui.commons.security.StatelessRealm
+        authenticationTokenClass: com.lilianghui.shiro.spring.starter.core.StatelessAuthenticationToken
+        authenticationCacheName: authenticationTokenCache
+        useDefaultMatcher: true
+    filters:
+      statelessAuthc: com.lilianghui.shiro.spring.starter.interceptor.StatelessAuthcFilter
     filterChainDefinitionMap: |
       /: anon
       /actuator/**: anon
-      /login: anon
-      /logout: anon
+      /login**: anon
       /resources/**: anon
-      /**: authc,kickout
+      /logout**: logout
+      /**: noSessionCreation,statelessAuthc
     filterChainDefinitionClass: com.lilianghui.commons.security.ChainDefinitionSectionMetaSource
     redisCache:
       shiroActiveSessionCache: 2h

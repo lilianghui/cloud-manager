@@ -36,7 +36,7 @@
         <activiti-version>5.22.0</activiti-version>
         <log4j2.version>2.3</log4j2.version>
         <disruptor.version>3.3.2</disruptor.version>
-        <poi.version>3.16</poi.version>
+        <poi.version>4.0.0</poi.version>
         <alibaba.druid.version>1.1.4</alibaba.druid.version>
         <p6spy.version>3.7.0</p6spy.version>
         <mysql-connector-java>5.1.38</mysql-connector-java>

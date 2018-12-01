@@ -2,10 +2,9 @@ package com.lilianghui.commons.security;
 
 import com.lilianghui.client.ShiroFeignClient;
 import com.lilianghui.entity.User;
-import com.lilianghui.shiro.spring.starter.core.CaptchaUsernamePasswordToken;
-import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
-import org.apache.commons.lang3.StringUtils;
+import com.lilianghui.shiro.spring.starter.core.StatelessAuthenticationToken;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -15,9 +14,13 @@ import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserRealm extends AuthorizingRealm {
+public class StatelessRealm extends AuthorizingRealm implements CredentialsMatcher {
     @Resource
     private ShiroFeignClient shiroFeignClient;
+
+    public StatelessRealm() {
+        setCredentialsMatcher(this);
+    }
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -47,21 +50,17 @@ public class UserRealm extends AuthorizingRealm {
     /* 这里编写用户登录认证代码 */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authcToken) throws AuthenticationException {
-        UsernamePasswordToken token = (UsernamePasswordToken) authcToken;
-        if (authcToken instanceof CaptchaUsernamePasswordToken) {
-            String captcha = ((CaptchaUsernamePasswordToken) authcToken).getCaptcha();
-            if (StringUtils.isBlank(captcha) || !captcha.equalsIgnoreCase("")) {
-                throw new IncorrectCaptchaException();// 验证码错误
-            }
-        }
+        StatelessAuthenticationToken token = (StatelessAuthenticationToken) authcToken;
+
         User record = new User();
-        record.setId(token.getUsername());
+        record.setId(String.valueOf(token.getPrincipal()));
         User user = shiroFeignClient.selectByPrimaryKey(record);
         if (user == null) {
             throw new UnknownAccountException();// 没找到帐号
         }
+
         // 交给AuthenticatingRealm使用CredentialsMatcher进行密码匹配，如果觉得人家的不好可以自定义实现
-        SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(user.getId(), // 用户信息
+        SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(user, // 用户信息
                 user.getCertificateCode(), // 密码
                 // ByteSource.Util.bytes(user.getCredentialsSalt()),
                 getName());
@@ -81,4 +80,8 @@ public class UserRealm extends AuthorizingRealm {
         clearAllCachedAuthorizationInfo();
     }
 
+    @Override
+    public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
+        return true;
+    }
 }

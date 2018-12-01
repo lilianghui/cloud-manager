@@ -1,8 +1,8 @@
-package com.example.demo.controller;
+package com.lilianghui.controller;
 
-import com.example.demo.entity.Item;
-import com.example.demo.entity.User;
-import com.example.demo.service.IndexService;
+import com.lilianghui.entity.Item;
+import com.lilianghui.entity.User;
+import com.lilianghui.service.IndexService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -10,6 +10,7 @@ import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperConfiguration;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
 import com.dangdang.elasticjob.lite.annotation.ElasticSimpleJob;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -25,11 +26,17 @@ import java.util.Map;
 @EnableConfigurationProperties({ElasticJobProperties.class})
 public class ElasticJobConfiguration {
 
+    private ElasticJobListener[] elasticJobListeners;
+
     @Resource
     private ApplicationContext applicationContext;
 
     @Resource
     private ElasticJobProperties elasticJobProperties;
+
+    public ElasticJobConfiguration(ObjectProvider<ElasticJobListener[]> elasticJobListenerProvider) {
+        this.elasticJobListeners = elasticJobListenerProvider.getIfAvailable();
+    }
 
     @Bean
     public ZookeeperRegistryCenter regCenter() {
@@ -56,23 +63,14 @@ public class ElasticJobConfiguration {
 
                 DataSource dataSource = (DataSource) applicationContext.getBean(dataSourceRef);
                 JobEventRdbConfiguration jobEventRdbConfiguration = new JobEventRdbConfiguration(dataSource);
-                SpringJobScheduler jobScheduler = new SpringJobScheduler(simpleJob, regCenter, liteJobConfiguration, jobEventRdbConfiguration);
+                SpringJobScheduler jobScheduler = new SpringJobScheduler(simpleJob, regCenter, liteJobConfiguration, jobEventRdbConfiguration, elasticJobListeners);
                 jobScheduler.init();
             } else {
-                SpringJobScheduler jobScheduler = new SpringJobScheduler(simpleJob, regCenter, liteJobConfiguration);
+                SpringJobScheduler jobScheduler = new SpringJobScheduler(simpleJob, regCenter, liteJobConfiguration, elasticJobListeners);
                 jobScheduler.init();
             }
         }
         return regCenter;
     }
 
-    /**
-     * 设置活动监听，前提是已经设置好了监听，见下一个目录
-     *
-     * @return
-     */
-    @Bean
-    public ElasticJobListener elasticJobListener() {
-        return new ElasticJobListener(elasticJobProperties.getStartedTimeoutMilliseconds(), elasticJobProperties.getCompletedTimeoutMilliseconds());
-    }
 }

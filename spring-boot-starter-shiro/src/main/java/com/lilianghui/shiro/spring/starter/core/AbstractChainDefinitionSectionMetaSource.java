@@ -20,7 +20,11 @@ public abstract class AbstractChainDefinitionSectionMetaSource {
         if (MapUtils.isNotEmpty(authc)) {
             map.putAll(authc);
         }
-        return map;
+        LinkedHashMap<String, String> cleanMap = new LinkedHashMap<>();
+        map.forEach((s, s2) -> {
+            cleanMap.put(s.trim(),s2.trim());
+        });
+        return cleanMap;
     }
 
 

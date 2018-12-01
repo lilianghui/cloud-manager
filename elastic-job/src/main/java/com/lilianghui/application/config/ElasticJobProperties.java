@@ -9,8 +9,6 @@ public class ElasticJobProperties {
     public static final String PREFIX = "elasticjob";
 
     private ZookeeperProperties zookeeper = new ZookeeperProperties();
-    private int startedTimeoutMilliseconds = 100;
-    private int completedTimeoutMilliseconds = 100;
 
     @Data
     public static class ZookeeperProperties {

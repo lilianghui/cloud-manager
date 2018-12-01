@@ -5,14 +5,18 @@ import com.lilianghui.client.ShiroFeignClient;
 import com.lilianghui.entity.Contract;
 import com.lilianghui.entity.GatWayConfig;
 import com.lilianghui.entity.User;
+import com.lilianghui.framework.core.jackson.JacksonUtils;
 import com.lilianghui.service.ContractService;
 import com.lilianghui.service.ShiroService;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
+import com.lilianghui.shiro.spring.starter.helper.Helper;
+import com.lilianghui.shiro.spring.starter.interceptor.StatelessAuthcFilter;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.subject.Subject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,9 +26,12 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -35,6 +42,8 @@ public class IndexController {
     private ContractService contractService;
     @Resource
     private ShiroService shiroService;
+    @Resource
+    private CacheManager cacheManager;
 //    @Resource
 //    private RedisTemplate redisTemplate;
 //    @Resource
@@ -80,7 +89,7 @@ public class IndexController {
      * @return
      */
     @RequestMapping(value = "login", method = RequestMethod.POST)
-    public ModelAndView login(HttpSession session, User user, RedirectAttributes attributes) {
+    public ModelAndView login(HttpServletResponse response, HttpSession session, User user, RedirectAttributes attributes) {
         ModelAndView mv = new ModelAndView();
         try {
             Subject subject = SecurityUtils.getSubject();
@@ -104,6 +113,12 @@ public class IndexController {
             if (subject.isAuthenticated()) {
                 session.setAttribute("account", user);
                 mv.setViewName("redirect:/success");
+                Map<String, Object> map = new HashMap<>();
+                map.put("id",user.getId());
+                map.put("name",user.getCertificateCode());
+                String jwt = Helper.getTokenManager().createJWT(user.getId(), JacksonUtils.writeValue(map));
+                response.setHeader(StatelessAuthcFilter.AUTHORIZATION_HEADER, jwt);
+                cacheManager.getCache(StatelessAuthcFilter.X_AUTH_TOKEN_CACHE_NAME).put(jwt,1);
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -114,10 +129,12 @@ public class IndexController {
 
 
     @RequestMapping("success")
-    public ModelAndView success(Model model, HttpSession session) {
+    public ModelAndView success(Model model) {//, HttpSession session
         try {
-            User user = (User) session.getAttribute("account");
-            model.addAttribute("certificateCode", user == null ? "" : user.getCertificateCode());
+            System.out.println(SecurityUtils.getSubject().getPrincipal());
+            SecurityUtils.getSubject().hasRole("aaa");
+//            User user = (User) session.getAttribute("account");
+//            model.addAttribute("certificateCode", user == null ? "" : user.getCertificateCode());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

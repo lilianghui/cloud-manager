@@ -53,6 +53,7 @@ public class ShiroProperties {
     @NoArgsConstructor
     public static class RealmProperties {
         private Class<? extends Realm> realmClass;
+        private boolean useDefaultMatcher = false;
         private boolean authenticationCachingEnabled = true;
         private String authenticationCacheName = "authenticationCache";
         private Class<? extends AuthenticationToken> authenticationTokenClass = UsernamePasswordToken.class;

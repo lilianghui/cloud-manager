@@ -5,6 +5,7 @@ import com.lilianghui.shiro.spring.starter.config.ShiroUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheManager;
+import org.apache.shiro.cache.CacheManagerAware;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.session.mgt.DefaultSessionKey;
 import org.apache.shiro.session.mgt.SessionManager;
@@ -21,17 +22,16 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 @Slf4j
-public class KickoutSessionControlFilter extends AccessControlFilter {
+public class KickoutSessionControlFilter extends AccessControlFilter implements CacheManagerAware {
     private final static String ATTRIBUTE_NAME = "kickout";
 
     private ShiroProperties.KickoutProperties kickoutProperties;
     private SessionManager sessionManager;
     private Cache<String, LinkedList<Serializable>> cache;
 
-    public KickoutSessionControlFilter(SessionManager sessionManager, CacheManager cacheManager, ShiroProperties.KickoutProperties kickoutProperties) {
+    public KickoutSessionControlFilter(SessionManager sessionManager, ShiroProperties.KickoutProperties kickoutProperties) {
         this.sessionManager = sessionManager;
         this.kickoutProperties = kickoutProperties;
-        this.cache = cacheManager.getCache(kickoutProperties.getCacheName());
     }
 
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws Exception {
@@ -106,4 +106,8 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
         return true;
     }
 
+    @Override
+    public void setCacheManager(CacheManager cacheManager) {
+        this.cache = cacheManager.getCache(kickoutProperties.getCacheName());
+    }
 }

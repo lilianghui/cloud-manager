@@ -143,13 +143,13 @@
         </filter>
     </appender>
 
-    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <!--安装logstash机器的ip地址-->
+   <!-- <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        &lt;!&ndash;安装logstash机器的ip地址&ndash;&gt;
         <destination>${LOGSTASH-DESTINATION}</destination>
-        <!--引入过滤类-->
-        <!-- <filter class="com.program.interceptor.ELKFilter"/>-->
-        <!-- encoder is required -->
-        <!--net.logstash.logback.encoder.LogstashEncoder-->
+        &lt;!&ndash;引入过滤类&ndash;&gt;
+        &lt;!&ndash; <filter class="com.program.interceptor.ELKFilter"/>&ndash;&gt;
+        &lt;!&ndash; encoder is required &ndash;&gt;
+        &lt;!&ndash;net.logstash.logback.encoder.LogstashEncoder&ndash;&gt;
         <encoder charset="UTF-8" class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <pattern>
@@ -168,7 +168,7 @@
                 </pattern>
             </providers>
         </encoder>
-    </appender>
+    </appender>-->
 
 
     <!-- druid的SQL监控 -->
@@ -198,7 +198,6 @@
             <appender-ref ref="FILE-INFO"/>
             <appender-ref ref="FILE-DEBUG"/>
             <appender-ref ref="STDOUT"/>
-            <appender-ref ref="LOGSTASH"/>
         </root>
     </springProfile>
 

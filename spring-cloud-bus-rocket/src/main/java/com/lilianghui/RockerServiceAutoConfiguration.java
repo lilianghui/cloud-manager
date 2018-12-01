@@ -20,7 +20,7 @@ public class RockerServiceAutoConfiguration {
     private Environment environment;
 
     @Bean
-    public RocketMessageChannelBinder rabbitMessageChannelBinder(@Autowired RocketMQTemplate rocketMQTemplate
+    public RocketMessageChannelBinder rocketMessageChannelBinder(@Autowired RocketMQTemplate rocketMQTemplate
             , @Autowired RocketMQProperties rocketMQProperties) throws Exception {
         String applicationName = environment.getProperty("spring.application.name");
         RocketMessageChannelBinder binder = new RocketMessageChannelBinder(new String[0],applicationName, provisioningProvider(), rocketMQTemplate, rocketMQProperties);

@@ -28,6 +28,7 @@
         <module>spring-boot-starter-commons</module>
         <module>spring-cloud-starter-stream-rocket</module>
         <module>pom</module>
+        <module>demo</module>
         <module>elastic-job</module>
     </modules>
 
@@ -107,25 +108,28 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
-
-
+        <dependency>
+            <groupId>de.codecentric</groupId>
+            <artifactId>spring-boot-admin-starter-client</artifactId>
+            <version>2.0.1</version>
+        </dependency>
 
 
         <!-- spring-boot-admin begin-->
         <!--<dependency>-->
-            <!--<groupId>de.codecentric</groupId>-->
-            <!--<artifactId>spring-boot-admin-starter-client</artifactId>-->
-            <!--<version>${spring-boot-admin.version}</version>-->
+        <!--<groupId>de.codecentric</groupId>-->
+        <!--<artifactId>spring-boot-admin-starter-client</artifactId>-->
+        <!--<version>${spring-boot-admin.version}</version>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>de.codecentric</groupId>-->
-            <!--<artifactId>spring-boot-admin-server</artifactId>-->
-            <!--<version>${spring-boot-admin.version}</version>-->
+        <!--<groupId>de.codecentric</groupId>-->
+        <!--<artifactId>spring-boot-admin-server</artifactId>-->
+        <!--<version>${spring-boot-admin.version}</version>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>de.codecentric</groupId>-->
-            <!--<artifactId>spring-boot-admin-server-ui</artifactId>-->
-            <!--<version>${spring-boot-admin.version}</version>-->
+        <!--<groupId>de.codecentric</groupId>-->
+        <!--<artifactId>spring-boot-admin-server-ui</artifactId>-->
+        <!--<version>${spring-boot-admin.version}</version>-->
         <!--</dependency>-->
 
 
@@ -199,7 +203,6 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.8</version>
         </dependency>
-
 
 
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
@@ -330,68 +333,94 @@
                     </resources>
                 </configuration>
             </plugin>
-        </plugins>
-    </build>
 
 
-
-
-    <reporting>
-        <plugins>
-            <!-- 代码风格验证插件 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${maven.checkstyle.plugin.version}</version>
+                <version>3.0.0</version>
                 <configuration>
-                    <configLocation>${checkstyle.config.location}</configLocation>
+                    <configLocation>${project.basedir}/build/check-style.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <suppressionsLocation>${project.basedir}/build/check-style-suppression.xml</suppressionsLocation>
                     <consoleOutput>true</consoleOutput>
-                    <violationSeverity>warning</violationSeverity>
                     <failsOnError>false</failsOnError>
                 </configuration>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
-
-            <!-- findbugs plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <rulesets>
+                        <ruleset>build/pmd.xml</ruleset>
+                    </rulesets>
+                    <targetJdk>1.8</targetJdk>
+                    <verbose>true</verbose>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                            <goal>cpd-check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
-                <version>${maven.findbugs.plugin.version}</version>
+                <version>3.0.5</version>
                 <configuration>
-                    <effort>Max</effort>
-                    <threshold>Low</threshold>
+                    <excludeFilterFile>build/find-bugs-exclude-filter.xml</excludeFilterFile><!--加入findbugs的静态代码检查@j-->
+                    <threshold>Medium</threshold>
+                    <effort>Default</effort>
+                    <findbugsXmlOutput>true</findbugsXmlOutput>
+                    <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
                     <xmlOutput>true</xmlOutput>
+                    <!--findbugsxml输出路径--><!--<findbugsXmlOutputDirectory>target/site</findbugsXmlOutputDirectory>-->
                 </configuration>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
-
-            <!-- jxr plugin -->
+        </plugins>
+    </build>
+    <reporting>
+        <plugins><!--findbugspmd配置报告-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.14.1</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
-                <version>${maven.jxr.pulgin.version}</version>
+                <version>2.1</version>
             </plugin>
-
-            <!-- covertura plubin -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
-                <version>${maven.cobertura.plugin.version}</version>
-                <configuration>
-                    <formats>
-                        <format>xml</format>
-                        <format>html</format>
-                    </formats>
-                    <check/>
-                    <instrumentation>
-                        <excludes>
-                            <exclude>**/*Test.class</exclude>
-                            <exclude>**/Mock*.class</exclude>
-                            <exclude>**/it/**</exclude>
-                            <exclude>**/st/**</exclude>
-                        </excludes>
-                    </instrumentation>
-                </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.0.1</version>
+            </plugin>
         </plugins>
     </reporting>
 

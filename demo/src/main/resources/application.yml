@@ -1,50 +1,56 @@
-spring.atomikos.datasource:
-  cloudsystem:
-    type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
-    url: jdbc:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
-    username: root
-    password: 123456
-    driver-class-name: com.mysql.jdbc.Driver
-    max-idle: 10
-    max-wait: 10000
-    min-idle: 5
-    initial-size: 5
-    mybatis:
-      configuration: com.lilianghui.spring.starter.mybatis.MyBatisConfiguration
-      mapper-locations: classpath:/mapper/*.xml
-      typeHandlersPackage: com.lilianghui.framework.mybatis.mapping
-      jdbcTypeForNull: NULL
-      mapUnderscoreToCamelCase: true
-    mapper:
-      basePackages: com.example.demo.mapper.db01
-      mappers:
+spring:
+  name: demo
+  atomikos.datasource:
+    cloudsystem:
+      type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+      url: jdbc:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+      username: root
+      password: 123456
+      driver-class-name: com.mysql.jdbc.Driver
+      max-idle: 10
+      max-wait: 10000
+      min-idle: 5
+      initial-size: 5
+      mybatis:
+        configuration: com.lilianghui.spring.starter.mybatis.MyBatisConfiguration
+        mapper-locations: classpath:/mapper/*.xml
+        typeHandlersPackage: com.lilianghui.framework.mybatis.mapping
+        jdbcTypeForNull: NULL
+        mapUnderscoreToCamelCase: true
+      mapper:
+        basePackages: com.lilianghui.mapper.db01
+        mappers:
         - tk.mybatis.mapper.common.Mapper
-      notEmpty: true
-      resolveClass: tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve
-      entityScanPackages: com.example.demo.entity
-  cloudstock:
-    type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
-    url: jdbc:mysql://127.0.0.1:3306/db02?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
-    username: root
-    password: 123456
-    driver-class-name: com.mysql.jdbc.Driver
-    max-idle: 10
-    max-wait: 10000
-    min-idle: 5
-    initial-size: 5
-    mybatis:
-      configuration: com.lilianghui.spring.starter.mybatis.MyBatisConfiguration
-      mapper-locations: classpath:/mapper/*.xml
-      typeHandlersPackage: com.lilianghui.framework.mybatis.mapping
-      jdbcTypeForNull: NULL
-      mapUnderscoreToCamelCase: true
-    mapper:
-      basePackages: com.example.demo.mapper.db02
-      mappers:
+        notEmpty: true
+        resolveClass: tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve
+        entityScanPackages: com.lilianghui.entity
+    cloudstock:
+      type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+      url: jdbc:mysql://127.0.0.1:3306/db02?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+      username: root
+      password: 123456
+      driver-class-name: com.mysql.jdbc.Driver
+      max-idle: 10
+      max-wait: 10000
+      min-idle: 5
+      initial-size: 5
+      mybatis:
+        configuration: com.lilianghui.spring.starter.mybatis.MyBatisConfiguration
+        mapper-locations: classpath:/mapper/*.xml
+        typeHandlersPackage: com.lilianghui.framework.mybatis.mapping
+        jdbcTypeForNull: NULL
+        mapUnderscoreToCamelCase: true
+      mapper:
+        basePackages: com.lilianghui.mapper.db02
+        mappers:
         - tk.mybatis.mapper.common.Mapper
-      notEmpty: true
-      resolveClass: tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve
-      entityScanPackages: com.example.demo.entity
+        notEmpty: true
+        resolveClass: tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve
+        entityScanPackages: com.lilianghui.entity
+  rocketmq:
+    nameServer: llh:9876
+    producer:
+      group: producer-group
   mvc:
     #    static-path-pattern: /**
     view:

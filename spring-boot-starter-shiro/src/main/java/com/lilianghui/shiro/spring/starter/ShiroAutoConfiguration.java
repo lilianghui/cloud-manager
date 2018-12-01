@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lilianghui.shiro.spring.starter.config.*;
 import com.lilianghui.shiro.spring.starter.core.AbstractChainDefinitionSectionMetaSource;
 import com.lilianghui.shiro.spring.starter.core.RetryLimitHashedCredentialsMatcher;
+import com.lilianghui.shiro.spring.starter.core.StatelessSubjectFactory;
 import com.lilianghui.shiro.spring.starter.event.ApplicationRefreshListener;
 import com.lilianghui.shiro.spring.starter.interceptor.*;
 import com.lilianghui.shiro.spring.starter.utils.BeanFactoryUtils;
@@ -21,7 +22,9 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.authz.ModularRealmAuthorizer;
 import org.apache.shiro.cache.CacheManager;
+import org.apache.shiro.cache.CacheManagerAware;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.Realm;
@@ -60,6 +63,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Order
 @Slf4j
@@ -183,22 +187,28 @@ public class ShiroAutoConfiguration {
                     authenticatingRealm.setAuthenticationCachingEnabled(realmProperties.isAuthenticationCachingEnabled());
                     authenticatingRealm.setAuthenticationTokenClass(realmProperties.getAuthenticationTokenClass());
                     CredentialsMatcher credentialsMatcher = resolveCredentialsMatcher(realmProperties.getCredentialsMatcher());
-//                    if (realmProperties.getCredentialsMatcherClass() != null) {
-//                        credentialsMatcher = BeanFactoryUtils.registerBeanDefinitionExist(applicationContext, realmProperties.getCredentialsMatcherClass());
-//                    }
-                    if (credentialsMatcher != null) {
-                        authenticatingRealm.setCredentialsMatcher(credentialsMatcher);
-                    } else {
-                        authenticatingRealm.setCredentialsMatcher(retryLimitHashedCredentialsMatcher(cacheManager));
+                    if (!realmProperties.isUseDefaultMatcher()) {
+                        if (credentialsMatcher != null) {
+                            authenticatingRealm.setCredentialsMatcher(credentialsMatcher);
+                        } else {
+                            authenticatingRealm.setCredentialsMatcher(retryLimitHashedCredentialsMatcher(cacheManager));
+                        }
                     }
                 }
                 realms.add(instance);
             }
         }
+//        securityManager.setRealms(realms);
+        ModularRealmAuthorizer modularRealmAuthorizer = new ModularRealmAuthorizer();
+        modularRealmAuthorizer.setRealms(realms);
+        securityManager.setAuthorizer(modularRealmAuthorizer);
+
         ModularRealmAuthenticator modularRealmAuthenticator = new ModularRealmAuthenticator();
         modularRealmAuthenticator.setAuthenticationStrategy(shiroProperties.getAuthenticationStrategyMode().instance());
         modularRealmAuthenticator.setRealms(realms);
         securityManager.setAuthenticator(modularRealmAuthenticator);
+
+        securityManager.setSubjectFactory(new StatelessSubjectFactory());
         SecurityUtils.setSecurityManager(securityManager);
         return securityManager;
     }
@@ -209,7 +219,7 @@ public class ShiroAutoConfiguration {
         }
         CredentialsMatcher credentialsMatcher = BeanFactoryUtils.registerBeanDefinitionExist(applicationContext, matcherProperties.getCredentialsMatcherClass());
         if (credentialsMatcher instanceof HashedCredentialsMatcher) {
-            HashedCredentialsMatcher hashedCredentialsMatcher=(HashedCredentialsMatcher)credentialsMatcher;
+            HashedCredentialsMatcher hashedCredentialsMatcher = (HashedCredentialsMatcher) credentialsMatcher;
             hashedCredentialsMatcher.setHashAlgorithmName(matcherProperties.getHashAlgorithm());
             hashedCredentialsMatcher.setHashIterations(matcherProperties.getHashIterations());
             hashedCredentialsMatcher.setStoredCredentialsHexEncoded(matcherProperties.isStoredCredentialsHexEncoded());
@@ -290,16 +300,21 @@ public class ShiroAutoConfiguration {
         LinkedHashMap<String, String> filterChainDefinitionMap = abstractChainDefinitionSectionMetaSource.loadAllAuth(shiroProperties.getFilterChainDefinitionMap());
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         LinkedHashMap<String, Filter> filters = new LinkedHashMap<>();
-        shiroProperties.getFilters().forEach((name, filter) -> {
-            filters.put(name, BeanFactoryUtils.registerBeanDefinition(applicationContext, filter));
-        });
         filters.put("orRoles", new RolesOrAuthorizationFilter());
         filters.put("orPerms", new PermissionsOrAuthorizationFilter());
         filters.put("authc", new AuthcFilter());
         filters.put("logout", new LogoutFilter());
         if (StringUtils.isNotBlank(shiroProperties.getKickout().getKickoutUrl())) {
-            filters.put("kickout", new KickoutSessionControlFilter(sessionManager, cacheManager, shiroProperties.getKickout()));
+            filters.put("kickout", new KickoutSessionControlFilter(sessionManager, shiroProperties.getKickout()));
         }
+        for (Map.Entry<String, Class<? extends Filter>> filter : shiroProperties.getFilters().entrySet()) {
+            filters.put(filter.getKey(), filter.getValue().newInstance());
+        }
+        filters.forEach((s, filter) -> {
+            if (filter instanceof CacheManagerAware) {
+                ((CacheManagerAware) filter).setCacheManager(cacheManager);
+            }
+        });
         shiroFilterFactoryBean.setFilters(filters);
         return shiroFilterFactoryBean;
     }

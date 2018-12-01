@@ -4,6 +4,10 @@ spring:
   zipkin:
     baseUrl: http://llh:8083
     enabled: true
+  security:
+    user:
+      name: admin
+      password: 111111
 
 # eureka注册中心
 eureka:

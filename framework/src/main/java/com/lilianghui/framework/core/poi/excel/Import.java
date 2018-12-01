@@ -6,12 +6,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.POIXMLDocument;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.poifs.filesystem.FileMagic;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -165,9 +164,10 @@ public class Import {
 
     private static Workbook createWorkbook(InputStream inputStream) throws Exception {
         Workbook workBook = null;//WorkbookFactory.create(inputStream);
-        if (POIFSFileSystem.hasPOIFSHeader(inputStream)) {
+        FileMagic fileMagic= FileMagic.valueOf(inputStream);
+        if (fileMagic==FileMagic.XML) {
             workBook = new HSSFWorkbook(inputStream);
-        } else if (POIXMLDocument.hasOOXMLHeader(inputStream)) {
+        } else if (fileMagic==FileMagic.OOXML) {
             OPCPackage opcPackage = OPCPackage.open(inputStream);
             workBook = new XSSFWorkbook(opcPackage);
         }
@@ -440,7 +440,7 @@ public class Import {
                 displayText.setComments(text.getString());
             }
             switch (cell.getCellType()) {
-                case Cell.CELL_TYPE_NUMERIC:
+                case NUMERIC:
                     String result = null;
                     if (HSSFDateUtil.isCellDateFormatted(cell)) {// 处理日期格式、时间格式
                         SimpleDateFormat sdf = null;
@@ -483,13 +483,13 @@ public class Import {
                     }
                     displayText.setValue(result);
                     break;
-                case Cell.CELL_TYPE_STRING:
+                case STRING:
                     displayText.setValue(cell.getStringCellValue());
                     break;
-                case Cell.CELL_TYPE_BOOLEAN:
+                case BOOLEAN:
                     displayText.setValue(cell.getBooleanCellValue());
                     break;
-                case Cell.CELL_TYPE_FORMULA:
+                case FORMULA:
                     Object strCell = null;
                     try {
                         if (HSSFDateUtil.isCellDateFormatted(cell)) {
