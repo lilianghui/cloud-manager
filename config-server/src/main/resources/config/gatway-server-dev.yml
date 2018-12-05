@@ -24,7 +24,7 @@ spring:
     cacheManagerConfigFile: classpath:ehcache/shiro-ehcache.xml
     #session失效时间 2小时,单位毫秒
     globalSessionTimeout: 7200000
-    #session定时清理间隔 30分钟,单位毫秒
+    #session定时清理间隔 30分钟,单位毫秒1800000
     sessionValidationInterval: 1800000
     activeSessionsCacheName: shiroActiveSessionCache
     cookieName: shiroCookie
@@ -39,7 +39,7 @@ spring:
       enable: true
       cacheName: credentialsMatcherCache
       hashAlgorithmName: MD5
-      hashIterations: 6
+      hashIterations: 1
       total: 6
     realms:
       - realmClass: com.lilianghui.commons.security.UserRealm
@@ -53,10 +53,13 @@ spring:
     filterChainDefinitionMap: |
       /: anon
       /actuator/**: anon
-      /login**: anon
+      /login*: anon
       /resources/**: anon
-      /logout**: logout
-      /**: noSessionCreation,statelessAuthc
+      /logout*: logout
+      /stateless/: anon
+      /stateless/login*: anon
+      /stateless/**: noSessionCreation,filters[authc,statelessAuthc]
+      /**: authc,kickout
     filterChainDefinitionClass: com.lilianghui.commons.security.ChainDefinitionSectionMetaSource
     redisCache:
       shiroActiveSessionCache: 2h

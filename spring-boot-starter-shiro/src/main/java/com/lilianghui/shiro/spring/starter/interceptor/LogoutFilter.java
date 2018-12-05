@@ -1,6 +1,6 @@
 package com.lilianghui.shiro.spring.starter.interceptor;
 
-import com.lilianghui.shiro.spring.starter.core.LogoutHandle;
+import com.lilianghui.shiro.spring.starter.core.ShiroHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.cache.Cache;
@@ -25,7 +25,7 @@ public class LogoutFilter extends org.apache.shiro.web.filter.authc.LogoutFilter
     @Override
     protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
         try {
-            if (!WebApplicationContextUtils.getWebApplicationContext(request.getServletContext()).getBean(LogoutHandle.class).process(request, response)) {
+            if (!WebApplicationContextUtils.getWebApplicationContext(request.getServletContext()).getBean(ShiroHandler.class).logoutHandle(request, response)) {
                 return false;
             }
         } catch (Exception e) {

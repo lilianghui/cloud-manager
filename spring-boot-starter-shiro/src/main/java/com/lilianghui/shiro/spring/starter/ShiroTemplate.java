@@ -5,6 +5,8 @@ import com.lilianghui.shiro.spring.starter.core.AbstractChainDefinitionSectionMe
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.crypto.hash.Hash;
+import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
@@ -57,6 +59,10 @@ public class ShiroTemplate {
         }
     }
 
+    public String hashProvidedCredentials(String credentials, String salt) {
+        ShiroProperties.RetryLimitHashedCredentialsMatcherProperties credentialsMatcher = shiroProperties.getCredentialsMatcher();
+        return new SimpleHash(credentialsMatcher.getHashAlgorithm(), credentials, salt, credentialsMatcher.getHashIterations()).toString();
+    }
 
     /**
      * 重新加载权限

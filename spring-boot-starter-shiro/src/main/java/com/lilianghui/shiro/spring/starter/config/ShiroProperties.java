@@ -33,6 +33,7 @@ public class ShiroProperties {
     private String cacheManagerConfigFile;
     private long globalSessionTimeout = 7200000;
     private long sessionValidationInterval = 1800000;
+    private int timeToLiveSeconds = 10;
     private String activeSessionsCacheName;
     private String cookieName = "shiroCookie";
     private String cipherKey = "4AvVhmFLUs0KTA3Kprsdag==";

@@ -83,9 +83,7 @@ public class SpringShiroRedisCacheManager implements CacheManager {
         }
 
         private String getKey(Object key) {
-            String k = new StringBuffer(StringUtils.defaultString(this.name)).append(":").append(key).toString();
-            log.info("getKey-------" + k);
-            return k;
+            return new StringBuffer(StringUtils.defaultString(this.name)).append(":").append(key).toString();
         }
 
     }

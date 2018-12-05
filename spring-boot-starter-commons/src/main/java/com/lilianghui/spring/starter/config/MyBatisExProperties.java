@@ -23,6 +23,7 @@ public class MyBatisExProperties {
     private boolean cacheEnabled = true;
     private boolean callSettersOnNulls;
     private boolean useActualParamName = true;
+    private boolean xmlMapperReload = true;
     private boolean returnInstanceForEmptyRow;
 
     private JdbcType jdbcTypeForNull = JdbcType.OTHER;

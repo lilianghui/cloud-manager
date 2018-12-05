@@ -1,22 +1,16 @@
 package com.lilianghui.shiro.spring.starter;
 
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lilianghui.shiro.spring.starter.config.*;
 import com.lilianghui.shiro.spring.starter.core.AbstractChainDefinitionSectionMetaSource;
 import com.lilianghui.shiro.spring.starter.core.RetryLimitHashedCredentialsMatcher;
+import com.lilianghui.shiro.spring.starter.core.ShiroSessionManager;
 import com.lilianghui.shiro.spring.starter.core.StatelessSubjectFactory;
 import com.lilianghui.shiro.spring.starter.event.ApplicationRefreshListener;
 import com.lilianghui.shiro.spring.starter.interceptor.*;
 import com.lilianghui.shiro.spring.starter.utils.BeanFactoryUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.CredentialsMatcher;
@@ -28,10 +22,8 @@ import org.apache.shiro.cache.CacheManagerAware;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.Realm;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.session.mgt.ValidatingSessionManager;
-import org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO;
 import org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator;
 import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -40,6 +32,7 @@ import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -49,17 +42,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import javax.annotation.Resource;
 import javax.servlet.Filter;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -93,6 +83,7 @@ public class ShiroAutoConfiguration {
 //    @ConditionalOnProperty(prefix = ShiroProperties.PREFIX, value = "enableRedisCache", havingValue = "true")
 //    @ConditionalOnBean(RedisTemplate.class)
     @ConditionalOnMissingBean
+    @DependsOn("lifecycleBeanPostProcessor")
     public CacheManager cacheRedisManager(@Autowired @Qualifier("redisTemplateObject") RedisTemplate redisTemplateObject) {
         SpringShiroRedisCacheManager springShiroRedisCacheManager = new SpringShiroRedisCacheManager(redisTemplateObject, shiroProperties.getRedisCache());
         return springShiroRedisCacheManager;
@@ -103,7 +94,8 @@ public class ShiroAutoConfiguration {
 //    @Bean
 //    @ConditionalOnMissingBean
 //    @Order(1)
-////    @ConditionalOnProperty(prefix = ShiroProperties.PREFIX, value = "enableRedisCache", havingValue = "false")
+//    @ConditionalOnProperty(prefix = ShiroProperties.PREFIX, value = "enableRedisCache", havingValue = "false")
+//    @DependsOn("lifecycleBeanPostProcessor")
 //    public CacheManager cacheManager() {
 //        EhCacheManager ehCacheManager = new EhCacheManager();
 //        ehCacheManager.setCacheManagerConfigFile(shiroProperties.getCacheManagerConfigFile());
@@ -115,7 +107,7 @@ public class ShiroAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public DefaultWebSessionManager sessionManager(@Autowired SessionDAO sessionDAO) {
-        DefaultWebSessionManager defaultWebSessionManager = new DefaultWebSessionManager();
+        ShiroSessionManager defaultWebSessionManager = new ShiroSessionManager();
         defaultWebSessionManager.setSessionIdCookieEnabled(true);
         defaultWebSessionManager.setSessionIdCookie(sessionIdCookie());
         defaultWebSessionManager.setGlobalSessionTimeout(shiroProperties.getGlobalSessionTimeout());
@@ -143,7 +135,8 @@ public class ShiroAutoConfiguration {
     @ConditionalOnMissingBean
     public SimpleCookie sessionIdCookie() {
         SimpleCookie sessionIdCookie = new SimpleCookie(shiroProperties.getCookieName());
-        sessionIdCookie.setPath("/");
+        //nginx负载均衡时可能会重新创建sessionId注释掉
+//        sessionIdCookie.setPath("/");
         sessionIdCookie.setMaxAge(-1);
         sessionIdCookie.setHttpOnly(true);
         return sessionIdCookie;
@@ -265,6 +258,7 @@ public class ShiroAutoConfiguration {
     public SessionDAO sessionDAO(@Autowired @Qualifier("redisTemplateObject") RedisTemplate redisTemplateObject) {
         SpringShiroSessionDAO sessionDAO = new SpringShiroSessionDAO();
         sessionDAO.setRedisTemplate(redisTemplateObject);
+        sessionDAO.setTimeToLiveSeconds(shiroProperties.getTimeToLiveSeconds());
         sessionDAO.setActiveSessionsCacheName(shiroProperties.getActiveSessionsCacheName());
         sessionDAO.setSessionIdGenerator(sessionIdGenerator());
         return sessionDAO;
@@ -304,6 +298,7 @@ public class ShiroAutoConfiguration {
         filters.put("orPerms", new PermissionsOrAuthorizationFilter());
         filters.put("authc", new AuthcFilter());
         filters.put("logout", new LogoutFilter());
+        filters.put("filters", new FilterItemSelectable(shiroFilterFactoryBean));
         if (StringUtils.isNotBlank(shiroProperties.getKickout().getKickoutUrl())) {
             filters.put("kickout", new KickoutSessionControlFilter(sessionManager, shiroProperties.getKickout()));
         }
@@ -320,27 +315,15 @@ public class ShiroAutoConfiguration {
     }
 
 
-    /**
-     * Shiro生命周期处理器
-     *
-     * @return
-     */
-//    @Bean
-//    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
-//        return new LifecycleBeanPostProcessor();
-//    }
-//
-//    /**
-//     * DefaultAdvisorAutoProxyCreator，Spring的一个bean，由Advisor决定对哪些类的方法进行AOP代理。
-//     */
-//    @Bean
-//    @ConditionalOnMissingBean
-//    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
-//        DefaultAdvisorAutoProxyCreator defaultAAP = new DefaultAdvisorAutoProxyCreator();
-//        defaultAAP.setProxyTargetClass(true);
-//        return defaultAAP;
-//    }
-//
+    //  DefaultAdvisorAutoProxyCreator，Spring的一个bean，由Advisor决定对哪些类的方法进行AOP代理。
+    @Bean
+    @ConditionalOnMissingBean
+    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
+        DefaultAdvisorAutoProxyCreator defaultAAP = new DefaultAdvisorAutoProxyCreator();
+        defaultAAP.setProxyTargetClass(true);
+        return defaultAAP;
+    }
+
 
     /**
      * AuthorizationAttributeSourceAdvisor，shiro里实现的Advisor类，

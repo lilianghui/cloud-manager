@@ -149,12 +149,13 @@ public class MybatisExAutoConfiguration {
         }
 
         public void init(org.apache.ibatis.session.Configuration configuration) throws Exception {
-            org.springframework.core.io.Resource[] mappers = mybatisProperties.resolveMapperLocations();
-            if (ArrayUtils.isNotEmpty(mappers)) {
-                thread = new Thread(new MybatisMapperRefresh(applicationContext,configuration, mappers),"mybatis xml refresh thread");
-                thread.start();
+            if (myBatisExProperties.isXmlMapperReload()) {
+                org.springframework.core.io.Resource[] mappers = mybatisProperties.resolveMapperLocations();
+                if (ArrayUtils.isNotEmpty(mappers)) {
+                    thread = new Thread(new MybatisMapperRefresh(applicationContext, configuration, mappers), "mybatis xml refresh thread");
+                    thread.start();
+                }
             }
-
         }
 
         private Field[] getDeclaredFields(Class<?> clazz, boolean deep) {

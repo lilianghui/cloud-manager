@@ -1,3 +1,27 @@
+CentOS7 Docker安装
+    
+    卸载旧版本(如果安装过旧版本的话)
+    sudo yum remove docker  docker-common docker-selinux docker-engine
+    
+    安装需要的软件包， yum-util 提供yum-config-manager功能，另外两个是devicemapper驱动依赖的
+    yum install -y yum-utils device-mapper-persistent-data lvm2
+    
+    设置yum源
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    
+    可以查看所有仓库中所有docker版本，并选择特定版本安装
+    yum list docker-ce --showduplicates | sort -r
+    
+    安装docker
+    yum install -y <FQPN>  #由于repo中默认只开启stable仓库，故这里安装的是最新稳定版17.12.0 例如：sudo yum install docker-ce-17.12.0.ce
+    
+    启动并加入开机启动
+    systemctl start docker
+    systemctl enable docker
+    
+    验证安装是否成功(有client和service两部分表示docker安装启动都成功了)
+    docker version
+
 Docker Deamon:
 
 1.生成CA私钥ca-key.pem，使用该私钥对CA证书签名, ca-key.pem是一个临时文件，最后可以删除。
