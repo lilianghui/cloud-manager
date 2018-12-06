@@ -1,18 +1,57 @@
-1.搜索fastdfs镜像 
-    docker search fastdfs
-    
-2.下载fastdfs镜像，这里选择mypjb/fastdfs
-    docker pull mypjb/fastdfs
-    
-3.创建宿主机保存fastdfs文件目录
-    mkdir /root/data/fastdfs
-    
-4.执行命令运行fastdfs容器(将下面的【192.168.1.40】替换成自己机器的ip即可)
-    docker run --add-host fastdfs.net:212.64.26.25 --name fastdfs --net=host -e TRACKER_ENABLE=1 -e NGINX_PORT=81 -v /root/data/fastdfs:/storage/fastdfs -it mypjb/fastdfs
+nginx-fastdfs
 
-5.重启fastdfs容器
-    docker restart fastdfs
-    
-6.开放81端口
-    firewall-cmd --zone=public --add-port=81/tcp --permanent
-    firewall-cmd --reload
+git clone https://github.com/happyfish100/fastdfs-nginx-module.git
+cp fastdfs-nginx-module/src/mod_fastdfs.conf /etc/fdfs
+
+
+cp https://github.com/happyfish100/fastdfs/blob/master/conf/http.conf   /etc/fdfs
+cp https://github.com/happyfish100/fastdfs/blob/master/conf/mime.types   /etc/fdfs
+
+#默认图片
+sed -i "s|^http.anti_steal.token_check_fail.*$|http.anti_steal.token_check_fail=/etc/fdfs/default.jpg|g" /etc/fdfs/http.conf
+
+sed -i "s|^store_path0.*$|store_path0=/var/local/fdfs/storage|g" /etc/fdfs/mod_fastdfs.conf
+sed -i "s|^url_have_group_name =.*$|url_have_group_name = true|g" /etc/fdfs/mod_fastdfs.conf
+sed -i "s|^tracker_server=.*$|tracker_server = 10.250.209.43:22122|g" /etc/fdfs/mod_fastdfs.conf
+
+vim /usr/local/nginx/conf/nginx.conf
+
+events {
+    worker_connections  1024;
+}
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    server {
+        listen 8888;
+        server_name localhost;
+        location ~ /group[0-9]/M00 {
+            ngx_fastdfs_module;
+        }
+    }
+}
+
+
+
+
+设置tracker nginx 指向storage里的nginx 
+
+upstream fdfs_group1 {
+    server 10.250.209.43:8080 weight=1 max_fails=2 fail_timeout=30s;
+}
+
+server{
+    location /group1/M00 {
+      proxy_pass http://fdfs_group1;
+    }
+}
+
+
+
+
+
+https://blog.csdn.net/qq_26440803/article/details/83066132
+http://www.cnblogs.com/ityouknow/p/8240976.html
+https://blog.csdn.net/u012979009/article/details/55052318
+https://blog.csdn.net/ForeverSunshine/article/details/51226061
+http://www.ityouknow.com/fastdfs/2017/10/10/cluster-building-fastdfs.html

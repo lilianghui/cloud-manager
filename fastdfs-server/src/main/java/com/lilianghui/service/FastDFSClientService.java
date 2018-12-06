@@ -1,6 +1,7 @@
 package com.lilianghui.service;
 
 
+import com.github.tobato.fastdfs.domain.MataData;
 import com.github.tobato.fastdfs.domain.StorePath;
 import com.github.tobato.fastdfs.exception.FdfsUnsupportStorePathException;
 import com.github.tobato.fastdfs.proto.storage.DownloadCallback;
@@ -18,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <p>Description: FastDFS文件上传下载包装类</p>
@@ -38,7 +41,10 @@ public class FastDFSClientService {
      * @throws IOException io异常
      */
     public String uploadFile(MultipartFile file) throws IOException {
-        StorePath storePath = fastFileStorageClient.uploadFile(file.getInputStream(), file.getSize(), FilenameUtils.getExtension(file.getOriginalFilename()), null);
+        Set<MataData> data = new HashSet<>();
+        data.add(new MataData("name", file.getOriginalFilename()));
+        data.add(new MataData("contentType", file.getContentType()));
+        StorePath storePath = fastFileStorageClient.uploadFile(file.getInputStream(), file.getSize(), FilenameUtils.getExtension(file.getOriginalFilename()), data);
         return storePath.getFullPath();
     }
 

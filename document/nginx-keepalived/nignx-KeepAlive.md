@@ -54,7 +54,10 @@ vi /etc/rsyslog.conf(添加)
 
 
 Nginx安装:
+wget http://nginx.org/download/nginx-1.15.4.tar.gz
+
 下载pcre  ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+或 wget https://ftp.pcre.org/pub/pcre/pcre-8.39.tar.gz
 unzip pcre-8.39.zip
 scp -r  /home/hadoop/pcre-8.39 hadoop@llh003:/home/hadoop/
 scp -r  /home/hadoop/pcre-8.39 hadoop@llh004:/home/hadoop/
