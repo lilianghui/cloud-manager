@@ -45,7 +45,7 @@ public class FastDFSClientService {
         data.add(new MataData("name", file.getOriginalFilename()));
         data.add(new MataData("contentType", file.getContentType()));
         StorePath storePath = fastFileStorageClient.uploadFile(file.getInputStream(), file.getSize(), FilenameUtils.getExtension(file.getOriginalFilename()), data);
-        return storePath.getFullPath();
+        return getResAccessUrl(storePath, file.getOriginalFilename());
     }
 
     /**
@@ -59,12 +59,12 @@ public class FastDFSClientService {
         byte[] buff = content.getBytes(Charset.forName("UTF-8"));
         ByteArrayInputStream stream = new ByteArrayInputStream(buff);
         StorePath storePath = fastFileStorageClient.uploadFile(stream, buff.length, fileExtension, null);
-        return getResAccessUrl(storePath);
+        return getResAccessUrl(storePath, "");
     }
 
     // 封装图片完整URL地址
-    private String getResAccessUrl(StorePath storePath) {
-        String fileUrl = "http://127.0.0.1:8080/" + storePath.getFullPath();
+    private String getResAccessUrl(StorePath storePath, String fileName) {
+        String fileUrl = storePath.getFullPath() + "?attname=" + fileName;
         return fileUrl;
     }
 
