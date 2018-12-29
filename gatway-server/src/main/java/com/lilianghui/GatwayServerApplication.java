@@ -2,6 +2,7 @@ package com.lilianghui;
 
 import com.lilianghui.config.DefaultRibbonConfiguration;
 import com.lilianghui.config.filter.AuthHeaderFilter;
+import com.lilianghui.spring.starter.annotation.EnableNettyRpcClients;
 import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -23,6 +24,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableFeignClients("com.lilianghui.client")
 //@EnableEurekaClient
 @RibbonClients(defaultConfiguration = DefaultRibbonConfiguration.class)
+@EnableNettyRpcClients(basePackages = {"com.lilianghui.interfaces"})
 public class GatwayServerApplication extends SpringBootServletInitializer {
 
     @Value("${server.port}")
@@ -53,7 +55,7 @@ public class GatwayServerApplication extends SpringBootServletInitializer {
 //    }
 
 
-//    @Bean
+    //    @Bean
 //    @Primary
     public ServletWebServerFactory servletContainer() {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();

@@ -11,5 +11,5 @@ public interface ShiroFeignClient {
 
 
     @RequestMapping("/user/selectByPrimaryKey")
-    User selectByPrimaryKey(@RequestBody User user);
+    User selectByPrimaryKey(@RequestBody(required = false) User user);
 }

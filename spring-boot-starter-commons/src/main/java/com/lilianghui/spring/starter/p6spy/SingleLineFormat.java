@@ -20,6 +20,7 @@
 package com.lilianghui.spring.starter.p6spy;
 
 import com.lilianghui.spring.starter.P6spyAutoConfiguration;
+import com.lilianghui.spring.starter.utils.WebUtils;
 import com.p6spy.engine.common.P6Util;
 import com.p6spy.engine.spy.appender.MessageFormattingStrategy;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +62,7 @@ public class SingleLineFormat implements MessageFormattingStrategy {
             HttpServletRequest request = attrs.getRequest();
             if (request != null) {
                 requestURL = request.getRequestURI();
-                ip = getRemoteHost(request);
+                ip = WebUtils.getRemoteHost(request);
                 Object user = request.getSession().getAttribute(P6spyAutoConfiguration.P_6_SPY_PROPERTIES.getSessionName());
                 if (user != null) {
                     id = getValue(P6spyAutoConfiguration.P_6_SPY_PROPERTIES.getIdField(), user);
@@ -88,18 +89,5 @@ public class SingleLineFormat implements MessageFormattingStrategy {
         return value == null ? "" : value.toString();
     }
 
-    private String getRemoteHost(HttpServletRequest request) {
-        String ip = request.getHeader("x-forwarded-for");
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        return "0:0:0:0:0:0:0:1".equalsIgnoreCase(ip) ? "127.0.0.1" : ip;
-    }
 
 }

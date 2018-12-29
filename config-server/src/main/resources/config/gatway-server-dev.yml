@@ -17,6 +17,7 @@ spring:
     template-loader-path: /templates
   thymeleaf:
     template-resolver-order: 122
+    cache: false
   shiro:
     loginUrl: /
     successUrl: /success
@@ -107,6 +108,10 @@ spring:
       max-wait: -1
     timeout: 5000
 
+  netty.rpc:
+    zookeeperAddress: 127.0.0.1:2181
+    httpTimeout: 300
+
 #  rabbitmq:
 #    host: 127.0.0.1
 #    port: 5672
@@ -119,7 +124,14 @@ spring:
   p6spy:
     logFile: /home/${spring.application.name}/spy.log
 
-
+shell:
+  ssh:
+    port: 12000
+  auth:
+    simple:
+      user:
+        name: admin
+        password: 123456
 # routes to serviceId
 zuul:
   routes:

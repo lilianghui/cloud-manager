@@ -1,16 +1,21 @@
 package com.lilianghui.controller;
 
 import com.hazelcast.client.AuthenticationException;
-import com.lilianghui.client.ShiroFeignClient;
-import com.lilianghui.entity.Contract;
 import com.lilianghui.entity.GatWayConfig;
 import com.lilianghui.entity.User;
+import com.lilianghui.interfaces.HelloService;
 import com.lilianghui.service.ContractService;
 import com.lilianghui.service.ShiroService;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.curator.RetryPolicy;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.recipes.locks.InterProcessMultiLock;
+import org.apache.curator.framework.recipes.locks.InterProcessMutex;
+import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
@@ -24,7 +29,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -35,6 +39,8 @@ public class IndexController {
     private ContractService contractService;
     @Resource
     private ShiroService shiroService;
+    @Resource
+    private HelloService helloService;
 //    @Resource
 //    private RedisTemplate redisTemplate;
 //    @Resource
@@ -45,6 +51,17 @@ public class IndexController {
 
     @RequestMapping("/")
     public ModelAndView index(Model model) {
+        for (int i = 0; i < 100; i++) {
+            long start = System.currentTimeMillis();
+            System.err.println("-" + i + "-----rpc--" + helloService.hello("aaaaaaaaaaaaaaa") + "------" + new Date(System.currentTimeMillis() - start).toLocaleString());
+        }
+        for (int i = 0; i < 100; i++) {
+            long start = System.currentTimeMillis();
+            User user = new User();
+            user.setId("1");
+            user = shiroService.selectByPrimaryKey(user);
+            System.err.println("------http--------" + new Date(System.currentTimeMillis() - start).toLocaleString());
+        }
        /* String key=DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss:S");
         redisTemplate.boundListOps("list").leftPush(key);
         byte[] val = ProtobufUtils.serialize(User.builder().account("account").name("lilianghui").build(), User.class);
@@ -57,7 +74,7 @@ public class IndexController {
 //        Contract contract = new Contract();
 //        List<Contract> list = contractService.selectContract(contract);
 //        shiroService.selectByPrimaryKey(new User());
-        model.addAttribute("action","/login");
+        model.addAttribute("action", "/login");
         return new ModelAndView("index");
     }
 
@@ -176,6 +193,47 @@ public class IndexController {
                 System.out.println(getCurrentDate() + " " + name + " end...");
 
                 RedissLockUtils.unlock(_lock);
+            }
+        }).start();
+        model.addAttribute("name", "lock");
+        return new ModelAndView("index");
+    }
+
+    @RequestMapping("zkplock")
+    public ModelAndView zkplock(Model model) {
+        String name = "";
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 3);
+                    CuratorFramework client =
+                            CuratorFrameworkFactory.builder()
+                                    .connectString("127.0.0.1:2181")
+                                    .sessionTimeoutMs(5000)
+                                    .connectionTimeoutMs(5000)
+                                    .retryPolicy(retryPolicy)
+                                    .namespace("base")
+                                    .build();
+                    client.start();
+                    InterProcessMutex mutex = new InterProcessMutex(client, "/curator/lock");
+                    mutex.acquire();
+                    System.out.println(getCurrentDate() + " " + name + " begin...");
+                    for (int i = 0; i < 100; i++) {
+                        try {
+                            Thread.sleep(1000);
+                            System.out.println(getCurrentDate() + " " + name + " " + i);
+                        } catch (InterruptedException e) {
+                            log.error(e.getMessage(), e);
+                        }
+                    }
+                    System.out.println(getCurrentDate() + " " + name + " end...");
+                    mutex.release();
+                    client.close();
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
             }
         }).start();
         model.addAttribute("name", "lock");

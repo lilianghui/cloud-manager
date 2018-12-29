@@ -8,6 +8,7 @@ import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.cache.CacheManagerAware;
 import org.apache.shiro.session.SessionException;
 import org.apache.shiro.subject.Subject;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletRequest;
@@ -28,6 +29,7 @@ public class LogoutFilter extends org.apache.shiro.web.filter.authc.LogoutFilter
             if (!WebApplicationContextUtils.getWebApplicationContext(request.getServletContext()).getBean(ShiroHandler.class).logoutHandle(request, response)) {
                 return false;
             }
+        } catch (NoSuchBeanDefinitionException e) {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

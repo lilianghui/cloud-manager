@@ -3,6 +3,7 @@ package com.lilianghui.shiro.spring.starter.interceptor;
 import com.lilianghui.shiro.spring.starter.core.ShiroHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletRequest;
@@ -18,6 +19,7 @@ public class AuthcFilter extends FormAuthenticationFilter {
             if (WebApplicationContextUtils.getWebApplicationContext(request.getServletContext()).getBean(ShiroHandler.class).authcFailedHandle(request, response)) {
                 super.saveRequestAndRedirectToLogin(request, response);
             }
+        } catch (NoSuchBeanDefinitionException e) {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
