@@ -188,6 +188,25 @@ function main() {
 		}
          **/
     });
+
+    graph.convertValueToString = function(cell) {
+        if (mxUtils.isNode(cell.value)) {
+            return cell.getAttribute('label', '')
+        }
+    };
+
+    var cellLabelChanged = graph.cellLabelChanged;
+    graph.cellLabelChanged = function(cell, newValue, autoSize) {
+        if (mxUtils.isNode(cell.value)) {
+            // clone正确撤消/重做的值
+            var elt = cell.value.cloneNode(true);
+            elt.setAttribute('label', newValue);
+            newValue = elt;
+        }
+
+        cellLabelChanged.apply(this, arguments);
+    };
+
     //*****************************************************************************************8
 
 

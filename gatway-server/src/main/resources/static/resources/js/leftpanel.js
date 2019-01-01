@@ -55,7 +55,11 @@ function initLeftPanel(graph) {
                 var parent = graph.getDefaultParent();
                 try {
                     graph.getModel().beginUpdate();
-                    var mcell = graph.insertVertex(parent, null, item.name, x, y, item.sWidth, item.sHeight, initType(item) + ';rounded=true;strokeColor=none;fillColor=yellow;size=12');
+                    var doc = mxUtils.createXmlDocument();
+                    var node = doc.createElement('mxCellEx')
+                    node.setAttribute('label', item.name);
+                    node.setAttribute('attribute1', 'value1');
+                    var mcell = graph.insertVertex(parent, null, node, x, y, item.sWidth, item.sHeight, initType(item) + ';rounded=true;strokeColor=none;fillColor=yellow;size=12');
                     mcell.type = item.type;
                     mcell.row = {};
                     if (null != mcell) {
