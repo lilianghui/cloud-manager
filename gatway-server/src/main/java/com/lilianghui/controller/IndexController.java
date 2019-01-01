@@ -8,6 +8,10 @@ import com.lilianghui.service.ContractService;
 import com.lilianghui.service.ShiroService;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
+import com.mxgraph.io.mxCodec;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.util.mxUtils;
+import com.mxgraph.view.mxGraph;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.curator.RetryPolicy;
@@ -23,12 +27,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.w3c.dom.Document;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -75,8 +83,26 @@ public class IndexController {
 //        List<Contract> list = contractService.selectContract(contract);
 //        shiroService.selectByPrimaryKey(new User());
         model.addAttribute("action", "/login");
-        return new ModelAndView("index");
+        return new ModelAndView("MXGraph");
     }
+
+    @ResponseBody
+    @RequestMapping("modal")
+    public Map<String, Object> modal(String graphXml) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            mxGraph graph = new mxGraph();
+            mxCodec codec = new mxCodec();
+            Document doc = mxUtils.parseXml(graphXml);
+            codec.decode(doc.getDocumentElement(), graph.getModel());
+            mxCell root = (mxCell) graph.getDefaultParent();
+            System.out.println(root);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return result;
+    }
+
 
     @RequestMapping("transactional")
     public ModelAndView transactional(Model model) {

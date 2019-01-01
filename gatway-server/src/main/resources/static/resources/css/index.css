@@ -1,0 +1,17 @@
+div.tuyuan {
+    width: 120px;
+    border: 1px #e7efde solid;
+    background: #e7efde;
+    color: red;
+    padding: 0;
+    margin: 5px;
+    cursor: pointer;
+}
+
+div.tuyuan img.pic {
+    width: 25px;
+}
+
+div.tuyuan span.name {
+    margin-left: 5px;
+}

@@ -1,77 +1,30 @@
 var graph;
 var nodes = [];
+var historyManager;
 var editor;
 
 $(function () {
     main();
-    addMap();
+    initLeftPanel(graph);
+    addMouse();
+    $("#basicForm button[type='button']").click(global_event["parse"]);
 })
 
-function addMap() {
-    var div = document.createElement('div');
-    div.style.background = "round";//圆角
-    div.style.height = "50px";
-    div.style.width = "120px";
-    div.style.border = "1px";
-    div.style.left = '20px';
-    div.style.background = "#f4f5f8";
-    div.style.marginTop = "-10px";
-
-    // 创建拖动源的预览
-    var dragElt = document.createElement('div');
-    dragElt.style.border = 'dashed black 1px';
-    dragElt.style.width = '110px';
-    dragElt.style.height = '50px';
-
-    $("#sidebar").append(div);
-
-
-    var ds = mxUtils.makeDraggable(div, graph, funct, dragElt, 0, 0, true, true);
-    ds.setGuidesEnabled(true);
-}
-
-function funct(graph, evt, target,x,y) {
-    //创建默认窗体
-    var parent = graph.getDefaultParent();
-    try {
-        graph.getModel().beginUpdate();
-        var mcell = graph.insertVertex(parent, null, "aa", x, y, 32, 32, 'start_image4gray;rounded=true;strokeColor=none;fillColor=yellow;');
-        if (null != mcell) {
-            // var nums = new Date().getTime();
-            // mcell.node_type = node_type;
-            // mcell.nodeID = node_type + nums;
-            // mcell.value = label;
-        }
-
-
-
-      /*  var cell = new mxCell('测试CELL', new mxGeometry(0, 0, 120, 40));
-        cell.vertex = true;
-        var cells = graph.importCells([cell], x, y, target);
-
-        if (cells != null && cells > 0)
-        {
-            graph.scrollCellToVisible(cells[0]);
-            graph.setSelectionCells(cells);
-        }
-        */
-
-        graph.stopEditing(false);
-    } finally {
-        graph.getModel().endUpdate();
-    }
-}
 
 function main() {
     if (!mxClient.isBrowserSupported()) {
         // Displays an error message if the browser is not supported.
         mxUtils.error('Browser is not supported!', 200, false);
     }
+    // var config=mxUtils.load("../static/resources/mxgraph/editors/config/keyhandler-commons.xml").getDocumentElement();
     editor = new mxEditor();
     graph = editor.graph;
-    graph.setConnectable(true);
+    var parent = graph.getDefaultParent();
+
+    // graph.setConnectable(true);
     graph.setDropEnabled(true);//从工具栏拖动到目标细胞时细胞边界是否产生光圈
     graph.setTooltips(true);
+    graph.setCellsEditable(true);
     //点击节点连线 不生成新的节点出来 false true为生成新节点
     graph.connectionHandler.setCreateTarget(false);
     //重复连接
@@ -82,6 +35,17 @@ function main() {
     //graph.setCellsLocked(true);
     //节点不可改变大小
     graph.setCellsResizable(true);
+    // 允许移动 Vertex 的 Label
+    graph.setVertexLabelsMovable(true);
+    // graph.setCellsMovable(true);
+    graph.setHtmlLabels(true);
+// 连线的样式
+    var style = graph.getStylesheet().getDefaultEdgeStyle();
+    style[mxConstants.STYLE_ROUNDED] = true;//圆角连线
+    style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector; //自己拐弯的连线
+
+    //*****************************************************************************************8
+
     /**
      *邓纯杰
      *创建连线
@@ -94,18 +58,21 @@ function main() {
 
     //移动元素触发事件
     // graph.addListener(mxEvent.CELLS_MOVED, function (sender, evt) {
-    //
+    //     return true;
     // });
     //禁止连接线晃动即不可以离开节点
     graph.setAllowDanglingEdges(false);
     //允许连线的目标和源是同一元素
-    graph.setAllowLoops(false);
+    // graph.setAllowLoops(false);
     //导航线 显示细胞位置标尺
     mxGraphHandler.prototype.guidesEnabled = true;
     //自动导航目标
     mxEdgeHandler.prototype.snapToTerminals = true;
     //去锯齿效果
     mxRectangleShape.prototype.crisp = true;
+    // mxGraphHandler.prototype.setMoveEnabled(false);//是否可以移动
+
+
     /**
      *邓纯杰
      *节点拖动事件包括移动 拖动 复制 粘贴（注意不包括在节点上生成新的节点）
@@ -145,7 +112,7 @@ function main() {
     };
 
     graph.translateCell = function (cell, dx, dy) {
-
+        mxGraph.prototype.translateCell.apply(this, arguments);
     };
     graph.isCellLocked = function (cell) {
         return false;
@@ -176,7 +143,7 @@ function main() {
             cell.geometry.relative == relativeChildVerticesVisible;
     };
     //创建历史
-    var history = new mxUndoManager();
+    historyManager = new mxUndoManager();
     // 移动/调整大小已被重新绘制的元素
     ////////////////////////////////子标签操作结束////////////////////////////
 
@@ -195,19 +162,18 @@ function main() {
     };
     //双击事件
     graph.addListener(mxEvent.DOUBLE_CLICK, function (sender, evt) {
-        var cell = evt.getProperty('cell');
+        var key = "dblclick";
+        if ($.isFunction(global_event[key])) {
+            global_event[key](sender, evt);
+        }
     });
     //单击事件
+
     graph.addListener(mxEvent.CLICK, function (sender, evt) {
-        var cell = evt.getProperty('cell');
-        /**
-         if(typeof(cell) != "undefined" && null != cell && (cell.node_type == 'timerBoundaryEvent')){
-			graph.setCellsResizable(false);
-			return;
-		}else{
-			graph.setCellsResizable(true);
-		}
-         **/
+        var key = "click";
+        if ($.isFunction(global_event[key])) {
+            global_event[key](sender, evt);
+        }
     });
     //改变大小事件
     graph.addListener(mxEvent.CELLS_RESIZED, function (sender, evt) {
@@ -222,9 +188,8 @@ function main() {
 		}
          **/
     });
-    //捕获任务节点的鼠标点击事件
-    graph.addListener(mxEvent.CLICK, function (sender, evt) {
-    });
+    //*****************************************************************************************8
+
 
     //初始化mxGraph图形面板
     var container = document.getElementById("container");
@@ -234,14 +199,158 @@ function main() {
     container.style.top = '0px';
     container.style.right = '0px';
     container.style.bottom = '0px';
+
+
+    container.style.background = 'url("../static/resources/images/grid.gif") repeat white';
+    container.style.cursor = 'hand';
+
     graph.init(container);
-    if (mxClient.IS_GC || mxClient.IS_SF) {
-        graph.container.style.background = '-webkit-gradient(linear, 0% 0%, 100% 0%, from(#FFFFFF), to(#FFFFFF))';
-    } else if (mxClient.IS_NS) {
-        graph.container.style.background = '-moz-linear-gradient(left, #FFFFFF, #FFFFFF)';
-    } else if (mxClient.IS_IE) {
-        graph.container.style.filter = 'progid:DXImageTransform.Microsoft.Gradient(' + 'StartColorStr=\'#FFFFFF\', EndColorStr=\'#FFFFFF\', GradientType=1)';
-    }
+    // if (mxClient.IS_GC || mxClient.IS_SF) {
+    //     graph.container.style.background = '-webkit-gradient(linear, 0% 0%, 100% 0%, from(#FFFFFF), to(#FFFFFF))';
+    // } else if (mxClient.IS_NS) {
+    //     graph.container.style.background = '-moz-linear-gradient(left, #FFFFFF, #FFFFFF)';
+    // } else if (mxClient.IS_IE) {
+    //     graph.container.style.filter = 'progid:DXImageTransform.Microsoft.Gradient(' + 'StartColorStr=\'#FFFFFF\', EndColorStr=\'#FFFFFF\', GradientType=1)';
+    // }
+
+
+    $.contextMenu({
+        selector: "#container",
+        callback: function (key, options) {
+            if ($.isFunction(global_event[key])) {
+                global_event[key](key, options);
+            }
+        },
+        items: {
+            "undo": {name: "撤消", icon: "undo"},
+            "redo": {name: "重做", icon: "redo"},
+            "delete": {name: "删除", icon: "delete"},
+            "sep1": "---------",
+            "show": {name: "预览", icon: "add"}
+        },
+        events: {
+            show: function (options) {
+                $(this).addClass("dataTableHighlight");
+                return true;
+            },
+            hide: function (options) {
+                $(this).removeClass("dataTableHighlight");
+                return true;
+            }
+        }
+    });
+
+    historyManager = new mxUndoManager();
+    var undoHandler = function (sender, evt) {
+        var changes = evt.getProperty('edit').changes;
+        graph.setSelectionCells(graph.getSelectionCellsForChanges(changes));
+    };
+
+    historyManager.addListener(mxEvent.UNDO, undoHandler);
+    historyManager.addListener(mxEvent.REDO, undoHandler);
+
+    var listener = function (sender, evt) {
+        historyManager.undoableEditHappened(evt.getProperty('edit'));
+    };
+
+    graph.getModel().addListener(mxEvent.UNDO, listener);
+    graph.getView().addListener(mxEvent.UNDO, listener);
+
+    var keyHandler = new mxKeyHandler(graph);
+    keyHandler.enter = function () {
+    };
+    keyHandler.bindKey(8, function () {
+        graph.foldCells(true);
+    });
+    keyHandler.bindKey(13, function () {
+        graph.foldCells(false);
+    });
+    keyHandler.bindKey(33, function () {
+        graph.exitGroup();
+    });
+    keyHandler.bindKey(34, function () {
+        graph.enterGroup();
+    });
+    keyHandler.bindKey(36, function () {
+        graph.home();
+    });
+    keyHandler.bindKey(35, function () {
+        graph.refresh();
+    });
+    keyHandler.bindKey(KEY_MAP.LEFT, function () {
+        graph.selectPreviousCell();
+    });
+    //UP
+    keyHandler.bindKey(KEY_MAP.UP, function () {
+        graph.selectParentCell();
+    });
+    keyHandler.bindKey(KEY_MAP.RIGHT, function () {
+        graph.selectNextCell();
+    });
+    keyHandler.bindKey(KEY_MAP.DOWN, function () {
+        graph.selectChildCell();
+    });
+    keyHandler.bindKey(KEY_MAP.DELETE, function () {
+        graph.removeCells();
+    });
+    keyHandler.bindKey(107, function () {
+        graph.zoomIn();
+    });
+    keyHandler.bindKey(109, function () {
+        graph.zoomOut();
+    });
+    keyHandler.bindKey(113, function () {
+        graph.startEditingAtCell();
+    });
+    keyHandler.bindControlKey(65, function () {
+        graph.selectAll();
+    });
+    keyHandler.bindControlKey(89, function () {
+        historyManager.redo();
+    });
+    keyHandler.bindControlKey(90, function () {
+        historyManager.undo();
+    });
+    keyHandler.bindControlKey(88, function () {
+        mxClipboard.cut(graph);
+    });
+    keyHandler.bindControlKey(67, function () {
+        mxClipboard.copy(graph);
+    });
+    keyHandler.bindControlKey(86, function () {
+        mxClipboard.paste(graph);
+    });
+    keyHandler.bindControlKey(71, function () {
+        graph.setSelectionCell(graph.groupCells(null, 20));
+    });
+    keyHandler.bindControlKey(85, function () {
+        graph.setSelectionCells(graph.ungroupCells());
+    });
+
+
+    // 设置自动扩大鼠标悬停
+    graph.panningHandler.autoExpand = true;
+    // 覆写右键单击事件
+    graph.panningHandler.factoryMethod = function (menu, cell, evt) {
+        menu.addItem('Item 1', null, function () {
+            alert('Item 1');
+        });
+
+        menu.addItem('Item 2', null, function () {
+            alert('Item 2');
+        });
+
+        menu.addSeparator();
+
+        var submenu1 = menu.addItem('Submenu 1', null, null);
+
+        menu.addItem('Subitem 1', null, function () {
+            alert('Subitem 1');
+        }, submenu1);
+        menu.addItem('Subitem 1', null, function () {
+            alert('Subitem 2');
+        }, submenu1);
+    };
 }
 
 var x = 120;
@@ -252,7 +361,7 @@ function append() {
     try {
         x += 100;
         var v2 = graph.insertVertex(parent, null,
-            'World!' + x, x, 150, 80, 30);
+            '<div style="color: red;">World! </div>' + x, x, 150, 80, 30);
         var e1 = graph.insertEdge(parent, null, '', nodes[nodes.length - 1], v2);
         nodes.push(v2);
     }
@@ -266,4 +375,116 @@ function toXML() {
     var enc = new mxCodec();
     var node = enc.encode(graph.getModel());
     console.log(mxUtils.getXml(node))
+
+    //获取mxgraph拓扑图数据
+    //var enc = new mxCodec(mxUtils.createXmlDocument());
+    //var node1 = enc.encode(graph.getModel());
+    //var mxgraphxml = mxUtils.getXml(node1);
+    var enc = new mxCodec(mxUtils.createXmlDocument());
+    var node = enc.encode(graph.getModel());
+    var mxgraphxml = mxUtils.getPrettyXml(node);
+    mxgraphxml = mxgraphxml.replace(/\"/g, "'");
+    //mxgraphxml = encodeURIComponent(mxgraphxml);
+
+    var xmlDoc = mxUtils.createXmlDocument();
+    var root = xmlDoc.createElement('output');
+    xmlDoc.appendChild(root);
+    var xmlCanvas = new mxXmlCanvas2D(root);
+    var imgExport = new mxImageExport();
+    imgExport.drawState(graph.getView().getState(graph.model.root), xmlCanvas);
+    var bounds = graph.getGraphBounds();
+    var w = Math.round(bounds.x + bounds.width + 4);
+    var h = Math.round(bounds.y + bounds.height + 4);
+    var imgxml = mxUtils.getXml(root);
+    //imgxml = "<output>"+imgxml+"</output>";
+    //imgxml = encodeURIComponent(imgxml);
+    // save_process(mxgraphxml,w,h,imgxml);
+    $.ajax({
+        url: "/modal",
+        type: "POST",
+        data: {graphXml: mxgraphxml},
+        dataType: "json",
+        success: function (data) {
+            window.location.reload();
+        }
+    });
+}
+
+var perX;
+var global_event = {
+    "delete": function (key, options) {
+        var v2 = graph.getSelectionCell();
+        console.log(v2)
+        graph.removeCells();
+    },
+    "undo": function () {
+        historyManager.undo();
+    },
+    "redo": function () {
+        historyManager.redo();
+    },
+    "show": function () {
+        var url = editor.getUrlImage();
+        if (url == null || mxClient.IS_LOCAL) {
+            editor.execute('show');
+        } else {
+            var node = mxUtils.getViewXml(editor.graph, 1);
+            var xml = mxUtils.getXml(node, '\n');
+            mxUtils.submit(url, graph.postParameterName + '=' +
+                encodeURIComponent(xml), document, '_blank');
+        }
+    },
+    "dblclick": function (sender, evt) {
+
+    },
+    "parse": function () {
+        var basicForm = $(this).closest("form");
+        var cell = basicForm.data("cell");
+        var row = cell.row;
+        row.name = basicForm.find("[name='name']").val();
+        row.type = basicForm.find("[name='type']").val();
+        return false;
+    },
+    "click": function (sender, evt) {
+        var cell = evt.getProperty('cell');
+        var value = {};
+        var basicForm = $("#basicForm");
+        if (cell) {
+            cell.row = cell.row || {};
+            value = cell.row;
+        }
+        basicForm.data("cell", cell);
+        basicForm.find("[name='name']").val(value.name);
+        basicForm.find("[name='type']").val(value.type);
+        /* var v2 = graph.getSelectionCell();
+         if (!v2 || v2.edge) {
+             return;
+         }
+         if (perX) {
+             if (v2 && perX.id != v2.id) {
+                 graph.insertEdge(parent, null, '', perX, v2);
+             }
+             perX = null;
+         } else {
+             perX = v2;
+         }*/
+
+
+        /**
+         if(typeof(cell) != "undefined" && null != cell && (cell.node_type == 'timerBoundaryEvent')){
+			graph.setCellsResizable(false);
+			return;
+		}else{
+			graph.setCellsResizable(true);
+		}
+         **/
+    }
+}
+
+var KEY_MAP = {
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
+    DELETE: 46,
 }
