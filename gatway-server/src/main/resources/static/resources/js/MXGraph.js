@@ -16,7 +16,7 @@ function main() {
         // Displays an error message if the browser is not supported.
         mxUtils.error('Browser is not supported!', 200, false);
     }
-    // var config=mxUtils.load("../static/resources/mxgraph/editors/config/keyhandler-commons.xml").getDocumentElement();
+    // var config=mxUtils.load("/resources/mxgraph/editors/config/keyhandler-commons.xml").getDocumentElement();
     editor = new mxEditor();
     graph = editor.graph;
     var parent = graph.getDefaultParent();
@@ -188,6 +188,25 @@ function main() {
 		}
          **/
     });
+
+   /* graph.convertValueToString = function(cell) {
+        if (mxUtils.isNode(cell.value)) {
+            return cell.getAttribute('label', '')
+        }
+    };
+
+    var cellLabelChanged = graph.cellLabelChanged;
+    graph.cellLabelChanged = function(cell, newValue, autoSize) {
+        if (mxUtils.isNode(cell.value)) {
+            // clone正确撤消/重做的值
+            var elt = cell.value.cloneNode(true);
+            elt.setAttribute('label', newValue);
+            newValue = elt;
+        }
+
+        cellLabelChanged.apply(this, arguments);
+    };
+*/
     //*****************************************************************************************8
 
 
@@ -201,7 +220,7 @@ function main() {
     container.style.bottom = '0px';
 
 
-    container.style.background = 'url("../static/resources/images/grid.gif") repeat white';
+    container.style.background = 'url("/resources/images/grid.gif") repeat white';
     container.style.cursor = 'hand';
 
     graph.init(container);
@@ -351,6 +370,38 @@ function main() {
             alert('Subitem 2');
         }, submenu1);
     };
+
+
+
+    // 居中缩放
+    graph.centerZoom = true;
+    // 放大按钮
+    document.body.appendChild(mxUtils.button('放大 +', function(evt){
+        graph.zoomIn();
+    }));
+    // 缩小按钮
+    document.body.appendChild(mxUtils.button('缩小 -', function(evt){
+        graph.zoomOut();
+    }));
+    // 还原按钮
+    document.body.appendChild(mxUtils.button('还原 #', function(evt){
+        graph.zoomActual();
+        graph.zoomFactor = 1.2;
+        input.value = 1.2;
+    }));
+    var input = document.createElement("input");
+    input.type = "text";
+    input.value = graph.zoomFactor;
+    input.addEventListener("blur", function(){
+        graph.zoomFactor = parseFloat(this.value, 10);
+    });
+    document.body.appendChild(input);
+    document.body.appendChild(mxUtils.button('View XML', function()
+    {
+        var encoder = new mxCodec();
+        var node = encoder.encode(graph.getModel());
+        mxUtils.popup(mxUtils.getPrettyXml(node), true);   //以窗口的方式展示处理
+    }));
 }
 
 var x = 120;
@@ -405,9 +456,40 @@ function toXML() {
         data: {graphXml: mxgraphxml},
         dataType: "json",
         success: function (data) {
-            window.location.reload();
+            // window.location.reload();
         }
     });
+    var root=graph.getDefaultParent();
+    console.log(root)
+}
+
+function restore() {
+    var xml=
+        '<mxGraphModel>'+
+        '  <root>'+
+        '    <mxCell id="0"/>'+
+        '    <mxCell id="1" parent="0"/>'+
+        '    <mxCellEx label="Excel输入" attribute1="value1" id="2">'+
+        '      <mxCell style="e_input;rounded=true;strokeColor=none;fillColor=yellow;size=12" vertex="1" parent="1" type="e_input">'+
+        '        <mxGeometry x="235" y="60" width="50" height="50" as="geometry"/>'+
+        '        <Object name="A" type="B" as="row"/>'+
+        '      </mxCell>'+
+        '    </mxCellEx>'+
+        '    <mxCellEx label="Excel输出" attribute1="value1" id="3">'+
+        '      <mxCell style="e_output;rounded=true;strokeColor=none;fillColor=yellow;size=12" vertex="1" parent="1" type="e_output">'+
+        '        <mxGeometry x="380" y="160" width="50" height="50" as="geometry"/>'+
+        '        <Object name="C" type="D" as="row"/>'+
+        '      </mxCell>'+
+        '    </mxCellEx>'+
+        '    <mxCell id="4" value="" edge="1" parent="1" source="2" target="3">'+
+        '      <mxGeometry relative="1" as="geometry"/>'+
+        '      <Object name="E" type="F" as="row"/>'+
+        '    </mxCell>'+
+        '  </root>'+
+        '</mxGraphModel>';
+    var doc = mxUtils.parseXml(xml);
+    var codec = new mxCodec(doc);
+    codec.decode(doc.documentElement, graph.getModel());
 }
 
 var perX;

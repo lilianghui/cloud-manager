@@ -1,23 +1,24 @@
 package com.lilianghui.controller;
 
 import com.hazelcast.client.AuthenticationException;
+import com.lilianghui.entity.CellAttr;
 import com.lilianghui.entity.GatWayConfig;
 import com.lilianghui.entity.User;
+import com.lilianghui.entity.MxCellEx;
 import com.lilianghui.interfaces.HelloService;
 import com.lilianghui.service.ContractService;
 import com.lilianghui.service.ShiroService;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
-import com.mxgraph.io.mxCodec;
+import com.mxgraph.io.*;
 import com.mxgraph.model.mxCell;
-import com.mxgraph.util.mxUtils;
+import com.mxgraph.util.mxXmlUtils;
 import com.mxgraph.view.mxGraph;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.locks.InterProcessMultiLock;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.shiro.SecurityUtils;
@@ -34,9 +35,7 @@ import org.w3c.dom.Document;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -57,19 +56,23 @@ public class IndexController {
     @Resource
     private GatWayConfig gatWayConfig;
 
+
+    public IndexController() {
+
+        mxCodecRegistry.register(new mxCellCodec(new MxCellEx(), null, new String[]{"parent", "source", "target"}, null) {
+            public String getName() {
+                return "mxCell";
+            }
+        });
+        mxCodecRegistry.register(new mxObjectCodec(new CellAttr()) {
+            public String getName() {
+                return "Object";
+            }
+        });
+    }
+
     @RequestMapping("/")
     public ModelAndView index(Model model) {
-        for (int i = 0; i < 100; i++) {
-            long start = System.currentTimeMillis();
-            System.err.println("-" + i + "-----rpc--" + helloService.hello("aaaaaaaaaaaaaaa") + "------" + new Date(System.currentTimeMillis() - start).toLocaleString());
-        }
-        for (int i = 0; i < 100; i++) {
-            long start = System.currentTimeMillis();
-            User user = new User();
-            user.setId("1");
-            user = shiroService.selectByPrimaryKey(user);
-            System.err.println("------http--------" + new Date(System.currentTimeMillis() - start).toLocaleString());
-        }
        /* String key=DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss:S");
         redisTemplate.boundListOps("list").leftPush(key);
         byte[] val = ProtobufUtils.serialize(User.builder().account("account").name("lilianghui").build(), User.class);
@@ -83,7 +86,34 @@ public class IndexController {
 //        List<Contract> list = contractService.selectContract(contract);
 //        shiroService.selectByPrimaryKey(new User());
         model.addAttribute("action", "/login");
+        return new ModelAndView("index");
+    }
+
+    @RequestMapping("mxgraph")
+    public ModelAndView mxgraph(Model model) {
         return new ModelAndView("MXGraph");
+    }
+
+    @ResponseBody
+    @RequestMapping("rpc")
+    public Map<String, Object> rpc() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            for (int i = 0; i < 100; i++) {
+                long start = System.currentTimeMillis();
+                System.err.println("-" + i + "-----rpc--" + helloService.hello("aaaaaaaaaaaaaaa") + "------" + new Date(System.currentTimeMillis() - start).toLocaleString());
+            }
+            for (int i = 0; i < 100; i++) {
+                long start = System.currentTimeMillis();
+                User user = new User();
+                user.setId("1");
+                user = shiroService.selectByPrimaryKey(user);
+                System.err.println("------http--------" + new Date(System.currentTimeMillis() - start).toLocaleString());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return result;
     }
 
     @ResponseBody
@@ -93,7 +123,8 @@ public class IndexController {
         try {
             mxGraph graph = new mxGraph();
             mxCodec codec = new mxCodec();
-            Document doc = mxUtils.parseXml(graphXml);
+
+            Document doc = mxXmlUtils.parseXml(graphXml);
             codec.decode(doc.getDocumentElement(), graph.getModel());
             mxCell root = (mxCell) graph.getDefaultParent();
             System.out.println(root);

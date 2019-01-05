@@ -8,150 +8,24 @@
     <script src="/resources/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
     <script src="/resources/js/index.js"></script>
     <script type="text/javascript">
-        mxBasePath = '/resources/mxgraph/src';
-    </script>
-    <script type="text/javascript" src="/resources/mxgraph/mxClient.js"></script>
-    <stylesheet name="/resources/mxgraph/editors/css/process.css"/>
-    <!-- Example code -->
-    <script type="text/javascript">
-        var graph ;
-        var nodes=[] ;
-            // Program starts here. Creates a sample graph in the
-        // DOM node with the specified ID. This function is invoked
-        // from the onLoad event handler of the document (see below).
-        function main() {
-            // Checks if the browser is supported
-            if (!mxClient.isBrowserSupported()) {
-                // Displays an error message if the browser is not supported.
-                mxUtils.error('Browser is not supported!', 200, false);
-            }
-            else {
-                var container = document.getElementById('lala');
-                container.style.position = 'absolute';
-                container.style.overflow = 'hidden';
-                container.style.left = '0px';
-                container.style.top = '0px';
-                container.style.right = '0px';
-                container.style.bottom = '0px';
-                // document.body.appendChild(container);
-
-                // var model = new mxGraphModel();
-                // var graph = new mxGraph(container, model);
-                // var style = new Object();
-                // style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE;
-                // style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
-                // style[mxConstants.STYLE_IMAGE] = 'images/start_event_empty.png';
-                // style[mxConstants.STYLE_IMAGE_WIDTH] = '48';
-                // style[mxConstants.STYLE_IMAGE_HEIGHT] = '48';
-                // style[mxConstants.STYLE_FONTCOLOR] = '#000000';
-                // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_CENTER;
-                // graph.getStylesheet().putCellStyle('start-s', style);
-                // graph.getModel().beginUpdate();
-                // var req = mxUtils.load('mxgraph.xml');
-                // var root = req.getDocumentElement();
-                // var dec = new mxCodec(root);
-                // dec.decode(root, graph.getModel());
-                // graph.getModel().endUpdate();
-
-                var config = mxUtils.load('/resources/mxgraph/editors/config/keyhandler-commons.xml').getDocumentElement();
-                var editor = new mxEditor(config);
-
-                // 在指定容器中创建图形
-                graph = new mxGraph(container);
-                // 覆写右键单击事件
-                graph.panningHandler.factoryMethod = function (menu, cell, evt) {
-                    menu.addItem('删除已选元素', null, function () {
-                        that.graph.removeCells(that.graph.getSelectionCells());
-                        return false;
-                    });
-                    menu.addItem('删除所有元素', null, function () {
-                        that.graph.removeCells(that.graph.getChildVertices(that.graph.getDefaultParent()));
-                        return false;
-                    });
-                    menu.addItem('保存表单', null, function () {
-                        that.SaveForm($("#btnSave")[0]);
-                        return false;
-                    });
-                };
-
-                //添加双击事件
-                graph.addListener(mxEvent.DOUBLE_CLICK, function(sender, evt) {
-                    var cell = evt.getProperty('cell');
-                    mxUtils.alert('Doubleclick: '+((cell != null) ? 'Cell' : 'Graph'));
-                    evt.consume();
-                });
-
-                //删除选中Cell或者Edge
-
-                var keyHandler = new mxKeyHandler(graph);
-
-                keyHandler.bindKey(46, function (evt) {
-
-                    if (graph.isEnabled()) {
-
-                        graph.removeCells();
-
-                    }
-
-                });
-
-
-                // 激活橡皮圈选择
-                new mxRubberband(graph);
-
-                // 拿到插入单元的默认父节点。
-                // 这通常是根节点的第一子节点（如0层）。
-                var parent = graph.getDefaultParent();
-
-                // 在一个步骤中，加入所有的单元到模型中
-                graph.getModel().beginUpdate();
-                try {
-                    var v1 = graph.insertVertex(parent, null,
-                        'Hello', 20, 150, 80, 30);
-                    var v2 = graph.insertVertex(parent, null,
-                        'World!', 120, 150, 80, 30);
-                    var e1 = graph.insertEdge(parent, null, '', v1, v2);
-                    nodes.push(v1);
-                    nodes.push(v2);
+        function rpc() {
+            $.ajax({
+                url: "/rpc",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    // window.location.reload();
                 }
-                finally {
-                    // 更新显示
-                    graph.getModel().endUpdate();
-                }
-
-            }
-        }
-
-        var x=120;
-        function append() {
-            var parent = graph.getDefaultParent();
-            graph.getModel().beginUpdate();
-            try {
-                x+=100;
-                var v2 = graph.insertVertex(parent, null,
-                    'World!'+x, x, 150, 80, 30);
-                var e1 = graph.insertEdge(parent, null, '', nodes[nodes.length-1], v2);
-                nodes.push(v2);
-            }
-            finally {
-                // 更新显示
-                graph.getModel().endUpdate();
-            }
-        }
-        function toXML() {
-            var enc = new mxCodec();
-            var node = enc.encode(graph.getModel());
-            console.log(mxUtils.getXml(node))
+            });
         }
     </script>
 </head>
 
-<body onload="main();" style="margin:0px;">
+<body  style="margin:0px;">
 <div>
-    Login User: <span th:text="${certificateCode}"></span>
-    <button onclick="toXML()">TOXML</button>
-    <button onclick="append()">Append</button>
+    <div>Login User: <span th:text="${certificateCode}"></span></div>
+    <div><a href="/mxgraph">MXGraph</a></div>
+    <div><button onclick="rpc()">RPC</button></div>
 </div>
-<div id="lala" style="border: 1px red solid;margin-top: 50px;"></div>
 </body>
 </html>

@@ -63,7 +63,7 @@ function mxIconSet(state) {
 
     var img = $("<img>").attr({
         "title": "连线",
-        "src": "../static/resources/images/i_quato.png",
+        "src": "/resources/images/i_quato.png",
     }).css({
         "position": "absolute",
         "cursor": "pointer",

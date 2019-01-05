@@ -40,9 +40,12 @@ var $element_tp = "<div class='tuyuan'><img class='pic'><span class='name'></spa
 
 function initLeftPanel(graph) {
     $.each(p_data, function (index, item) {
+        initType(item);
+    });
+    $.each(p_data, function (index, item) {
         var $element = $($element_tp);
         $element.find("span.name").html(item.name);
-        $element.find("img.pic").attr("src", "../static/resources/images/" + item.image);
+        $element.find("img.pic").attr("src", "/resources/images/" + item.image);
 
         // 创建拖动源的预览
         var $dragElt = $("<div>").css({});
@@ -55,6 +58,10 @@ function initLeftPanel(graph) {
                 var parent = graph.getDefaultParent();
                 try {
                     graph.getModel().beginUpdate();
+                    var doc = mxUtils.createXmlDocument();
+                    var node = doc.createElement('mxCellEx')
+                    node.setAttribute('label', item.name);
+                    node.setAttribute('attribute1', 'value1');
                     var mcell = graph.insertVertex(parent, null, item.name, x, y, item.sWidth, item.sHeight, initType(item) + ';rounded=true;strokeColor=none;fillColor=yellow;size=12');
                     mcell.type = item.type;
                     mcell.row = {};
@@ -141,7 +148,7 @@ function initType(item) {
         start_style[mxConstants.STYLE_FONTSIZE] = '8';
         start_style[mxConstants.STYLE_FONTCOLOR] = '#f5f5f5';
         start_style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
-        start_style[mxConstants.STYLE_IMAGE] = "../static/resources/images/" + item.image;
+        start_style[mxConstants.STYLE_IMAGE] = "/resources/images/" + item.image;
         graph.getStylesheet().putCellStyle(item.id, start_style);
         map_type[item.id] = 1;
     }
