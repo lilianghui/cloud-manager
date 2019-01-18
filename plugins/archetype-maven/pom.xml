@@ -320,7 +320,7 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql-connector-java}</version>
         </dependency>
-`        <!--<dependency>-->
+        <!--<dependency>-->
             <!--<groupId>com.microsoft.sqlserver</groupId>-->
             <!--<artifactId>sqljdbc4</artifactId>-->
             <!--<version>${sqlserver.jdbc4}</version>-->
