@@ -2,14 +2,35 @@ var graph;
 var nodes = [];
 var historyManager;
 var editor;
+var vm;
 
 $(function () {
+    initVue();
     main();
     initLeftPanel(graph);
     addMouse();
     $("#basicForm button[type='button']").click(global_event["parse"]);
 })
 
+function initVue() {
+    vm = new Vue({
+        el: '#app',
+        data: {
+            row: {
+                name: "",
+                type: ""
+            }
+        },
+        watch: {
+            row: {
+                handler: function (val, oldval) {
+                    console.log(vm)
+                },
+                deep: true//对象内部的属性监听，也叫深度监听
+            }
+        },//以V-model绑定数据时使用的数据变化监测
+    });
+}
 
 function main() {
     if (!mxClient.isBrowserSupported()) {
@@ -372,19 +393,18 @@ function main() {
     };
 
 
-
     // 居中缩放
     graph.centerZoom = true;
     // 放大按钮
-    document.body.appendChild(mxUtils.button('放大 +', function(evt){
+    document.body.appendChild(mxUtils.button('放大 +', function (evt) {
         graph.zoomIn();
     }));
     // 缩小按钮
-    document.body.appendChild(mxUtils.button('缩小 -', function(evt){
+    document.body.appendChild(mxUtils.button('缩小 -', function (evt) {
         graph.zoomOut();
     }));
     // 还原按钮
-    document.body.appendChild(mxUtils.button('还原 #', function(evt){
+    document.body.appendChild(mxUtils.button('还原 #', function (evt) {
         graph.zoomActual();
         graph.zoomFactor = 1.2;
         input.value = 1.2;
@@ -392,12 +412,11 @@ function main() {
     var input = document.createElement("input");
     input.type = "text";
     input.value = graph.zoomFactor;
-    input.addEventListener("blur", function(){
+    input.addEventListener("blur", function () {
         graph.zoomFactor = parseFloat(this.value, 10);
     });
     document.body.appendChild(input);
-    document.body.appendChild(mxUtils.button('View XML', function()
-    {
+    document.body.appendChild(mxUtils.button('View XML', function () {
         var encoder = new mxCodec();
         var node = encoder.encode(graph.getModel());
         mxUtils.popup(mxUtils.getPrettyXml(node), true);   //以窗口的方式展示处理
@@ -459,33 +478,33 @@ function toXML() {
             // window.location.reload();
         }
     });
-    var root=graph.getDefaultParent();
+    var root = graph.getDefaultParent();
     console.log(root)
 }
 
 function restore() {
-    var xml=
-        '<mxGraphModel>'+
-        '  <root>'+
-        '    <mxCell id="0"/>'+
-        '    <mxCell id="1" parent="0"/>'+
-        '    <mxCellEx label="Excel输入" attribute1="value1" id="2">'+
-        '      <mxCell style="e_input;rounded=true;strokeColor=none;fillColor=yellow;size=12" vertex="1" parent="1" type="e_input">'+
-        '        <mxGeometry x="235" y="60" width="50" height="50" as="geometry"/>'+
-        '        <Object name="A" type="B" as="row"/>'+
-        '      </mxCell>'+
-        '    </mxCellEx>'+
-        '    <mxCellEx label="Excel输出" attribute1="value1" id="3">'+
-        '      <mxCell style="e_output;rounded=true;strokeColor=none;fillColor=yellow;size=12" vertex="1" parent="1" type="e_output">'+
-        '        <mxGeometry x="380" y="160" width="50" height="50" as="geometry"/>'+
-        '        <Object name="C" type="D" as="row"/>'+
-        '      </mxCell>'+
-        '    </mxCellEx>'+
-        '    <mxCell id="4" value="" edge="1" parent="1" source="2" target="3">'+
-        '      <mxGeometry relative="1" as="geometry"/>'+
-        '      <Object name="E" type="F" as="row"/>'+
-        '    </mxCell>'+
-        '  </root>'+
+    var xml =
+        '<mxGraphModel>' +
+        '  <root>' +
+        '    <mxCell id="0"/>' +
+        '    <mxCell id="1" parent="0"/>' +
+        '    <mxCellEx label="Excel输入" attribute1="value1" id="2">' +
+        '      <mxCell style="e_input;rounded=true;strokeColor=none;fillColor=yellow;size=12" vertex="1" parent="1" type="e_input">' +
+        '        <mxGeometry x="235" y="60" width="50" height="50" as="geometry"/>' +
+        '        <Object name="A" type="B" as="row"/>' +
+        '      </mxCell>' +
+        '    </mxCellEx>' +
+        '    <mxCellEx label="Excel输出" attribute1="value1" id="3">' +
+        '      <mxCell style="e_output;rounded=true;strokeColor=none;fillColor=yellow;size=12" vertex="1" parent="1" type="e_output">' +
+        '        <mxGeometry x="380" y="160" width="50" height="50" as="geometry"/>' +
+        '        <Object name="C" type="D" as="row"/>' +
+        '      </mxCell>' +
+        '    </mxCellEx>' +
+        '    <mxCell id="4" value="" edge="1" parent="1" source="2" target="3">' +
+        '      <mxGeometry relative="1" as="geometry"/>' +
+        '      <Object name="E" type="F" as="row"/>' +
+        '    </mxCell>' +
+        '  </root>' +
         '</mxGraphModel>';
     var doc = mxUtils.parseXml(xml);
     var codec = new mxCodec(doc);
@@ -530,14 +549,15 @@ var global_event = {
     "click": function (sender, evt) {
         var cell = evt.getProperty('cell');
         var value = {};
-        var basicForm = $("#basicForm");
+        // var basicForm = $("#basicForm");
         if (cell) {
             cell.row = cell.row || {};
             value = cell.row;
         }
-        basicForm.data("cell", cell);
-        basicForm.find("[name='name']").val(value.name);
-        basicForm.find("[name='type']").val(value.type);
+        // basicForm.data("cell", cell);
+        vm.row=value;
+        // basicForm.find("[name='name']").val(value.name);
+        // basicForm.find("[name='type']").val(value.type);
         /* var v2 = graph.getSelectionCell();
          if (!v2 || v2.edge) {
              return;
