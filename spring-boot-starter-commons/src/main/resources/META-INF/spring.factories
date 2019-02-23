@@ -4,4 +4,6 @@ com.lilianghui.spring.starter.P6spyAutoConfiguration,\
 com.lilianghui.spring.starter.WebMveAutoConfiguration,\
 com.lilianghui.spring.starter.RedissonAutoConfiguration,\
 com.lilianghui.spring.starter.P6spyAutoConfiguration,\
+com.lilianghui.spring.starter.OpenReplicatorAutoConfiguration,\
+com.lilianghui.spring.starter.OpenReplicatorListenerAutoConfiguration,\
 com.lilianghui.spring.starter.MybatisExAutoConfiguration

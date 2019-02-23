@@ -60,11 +60,13 @@ public class IndexController {
     public IndexController() {
 
         mxCodecRegistry.register(new mxCellCodec(new MxCellEx(), null, new String[]{"parent", "source", "target"}, null) {
+            @Override
             public String getName() {
                 return "mxCell";
             }
         });
         mxCodecRegistry.register(new mxObjectCodec(new CellAttr()) {
+            @Override
             public String getName() {
                 return "Object";
             }

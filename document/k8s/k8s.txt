@@ -1,0 +1,221 @@
+规划
+	centos01  192.168.1.111 master		docker docker-compose etcd flannel kube-apiserver kube-scheduler kube-controller-manager
+	centos02  192.168.1.112 node		docker docker-compose etcd flannel kubelet kube-proxy
+	centos03  192.168.1.113 node		docker docker-compose etcd flannel kubelet kube-proxy
+	
+vim /etc/hosts
+192.168.1.111   centos01
+192.168.1.112   centos02
+192.168.1.113   centos03
+
+etcd下载https://github.com/etcd-io/etcd/releases
+flannel下载 https://github.com/coreos/flannel/releases
+下载kubernetes  Server Binaries kubernetes-server-linux-amd64.tar.gz https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.13.md#v1132
+docker企业级仓库下载 https://github.com/goharbor/harbor/releases
+
+
+安装cfssl证书生成工具
+wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
+chmod +x cfssl_linux-amd64 cfssljson_linux-amd64 cfssl-certinfo_linux-amd64
+mv cfssl_linux-amd64 /usr/local/bin/cfssl
+mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
+mv cfssl-certinfo_linux-amd64 /usr/bin/cfssl-certinfo
+
+证书
+https://www.cnblogs.com/netsa/p/8126155.html
+
+
+cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes admin-csr.json | cfssljson -bare admin
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes  kube-proxy-csr.json | cfssljson -bare kube-proxy
+
+创建目录:
+	mkdir -p /root/kubernetes/{bin,config,ssl}
+	mv /root/soft/kubernetes/server/bin/{apiextensions-apiserver,cloud-controller-manager,hyperkube,kubeadm,kube-apiserver,kube-controller-manager,kubectl,kubelet,kube-proxy,kube-scheduler,mounter} /root/kubernetes/bin/
+	mv *.pem /root/kubernetes/ssl
+	
+添加环境变量
+	export KUBERNETES_HOME=/root/kubernetes
+	export KUBERNETES_CONFIG=$KUBERNETES_HOME/config
+	export KUBERNETES_SSL=$KUBERNETES_HOME/ssl
+	export PATH=$PATH:$KUBERNETES_HOME/bin
+	
+vim /usr/lib/systemd/system/etcd.service
+vim /root/kubernetes/config/etcd.conf
+vim /usr/lib/systemd/system/flannel.service
+vim /root/kubernetes/config/flannel.conf
+
+
+etcd/flanneld:
+	/root/kubernetes/bin/etcd --name=etcd01 --cert-file=/root/kubernetes/ssl/kubernetes.pem --key-file=/root/kubernetes/ssl/kubernetes-key.pem --peer-cert-file=/root/kubernetes/ssl/kubernetes.pem --peer-key-file=/root/kubernetes/ssl/kubernetes-key.pem --trusted-ca-file=/root/kubernetes/ssl/ca.pem --peer-trusted-ca-file=/root/kubernetes/ssl/ca.pem --data-dir=/var/lib/etcd/default.etcd --listen-peer-urls=https://0.0.0.0:2380 --listen-client-urls=https://0.0.0.0:2379 --advertise-client-urls=https://centos01:2379 --initial-advertise-peer-urls=https://centos01:2380 --initial-cluster=etcd01=https://centos01:2380,etcd02=https://centos02:2380,etcd03=https://centos03:2380 --initial-cluster-token=k8s-etcd-cluster --initial-cluster-state=new
+	/root/kubernetes/bin/flanneld ${FLANNEL_ETCD} ${FLANNEL_ETCD_KEY} ${FLANNEL_ETCD_CAFILE} ${FLANNEL_ETCD_CERTFILE} ${FLANNEL_ETCD_KEYFILE}
+	
+apiserver/controller-manager/kube-scheduler:
+	/root/kubernetes/bin/kube-apiserver --logtostderr=true --v=0 --port=8080 --etcd-servers=https://centos01:2379,https://centos02:2379,https://centos03:2379  --advertise-address=0.0.0.0 --bind-address=0.0.0.0 --insecure-bind-address=0.0.0.0 --allow-privileged=true --service-cluster-ip-range=10.254.0.0/16 --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction --authorization-mode=RBAC,Node --runtime-config=rbac.authorization.k8s.io/v1beta1 --kubelet-https=true --enable-bootstrap-token-auth --token-auth-file=/root/kubernetes/config/token.csv --service-node-port-range=30000-32767 --tls-cert-file=/root/kubernetes/ssl/kubernetes.pem --tls-private-key-file=/root/kubernetes/ssl/kubernetes-key.pem --client-ca-file=/root/kubernetes/ssl/ca.pem --service-account-key-file=/root/kubernetes/ssl/ca-key.pem --etcd-cafile=/root/kubernetes/ssl/ca.pem --etcd-certfile=/root/kubernetes/ssl/kubernetes.pem --etcd-keyfile=/root/kubernetes/ssl/kubernetes-key.pem --enable-swagger-ui=true --apiserver-count=3 --audit-log-maxage=30 --audit-log-maxbackup=3 --audit-log-maxsize=100 --audit-log-path=/var/lib/audit.log --event-ttl=1h
+	/root/kubernetes/bin/kube-controller-manager --logtostderr=true --v=0 --master=http://centos01:8080 --address=127.0.0.1 --service-cluster-ip-range=10.254.0.0/16 --cluster-name=kubernetes --cluster-signing-cert-file=/root/kubernetes/ssl/ca.pem --cluster-signing-key-file=/root/kubernetes/ssl/ca-key.pem  --service-account-private-key-file=/root/kubernetes/ssl/ca-key.pem --root-ca-file=/root/kubernetes/ssl/ca.pem --leader-elect=true
+	/root/kubernetes/bin/kube-scheduler --logtostderr=true --v=0 --master=http://centos01:8080 --leader-elect=true --address=127.0.0.1
+	
+kubelet/kube-proxy:
+	/root/kubernetes/bin/kubelet --logtostderr=true --v=0  --address=0.0.0.0 --port=10250 --hostname-override=192.168.1.112 --allow-privileged=true --pod-infra-container-image=pause-amd64:3.0 --cgroup-driver=systemd --cluster-dns=10.254.0.2 --experimental-bootstrap-kubeconfig=/root/kubernetes/config/bootstrap.kubeconfig --kubeconfig=/root/kubernetes/config/kubelet.kubeconfig  --cert-dir=/root/kubernetes/ssl --cluster-domain=cluster.local --hairpin-mode promiscuous-bridge --serialize-image-pulls=false
+	/root/kubernetes/bin/kube-proxy --logtostderr=true --v=0 --master=http://centos01:8080 --bind-address=0.0.0.0 --hostname-override=192.168.1.112 --kubeconfig=/root/kubernetes/config/kube-proxy.kubeconfig --cluster-cidr=10.254.0.0/16
+	
+注意要修改其它节点中的/root/kubernetes/config/etcd.conf
+
+在etcd中添加flannel网段
+etcdctl --ca-file /root/kubernetes/ssl/ca.pem --cert-file /root/kubernetes/ssl/kubernetes.pem --key-file /root/kubernetes/ssl/kubernetes-key.pem \
+--no-sync -C https://centos01:2379,https://centos02:2379,https://centos03:2379 \
+mk /kubernetes/network/config '{ "Network": "10.2.0.0/16", "Backend": { "Type": "vxlan", "VNI": 1 }}'
+
+etcdctl --ca-file /root/kubernetes/ssl/ca.pem --cert-file /root/kubernetes/ssl/kubernetes.pem --key-file /root/kubernetes/ssl/kubernetes-key.pem \
+--no-sync -C https://centos01:2379,https://centos02:2379,https://centos03:2379 \
+get /kubernetes/network/config
+
+etcdctl --ca-file /root/kubernetes/ssl/ca.pem --cert-file /root/kubernetes/ssl/kubernetes.pem --key-file /root/kubernetes/ssl/kubernetes-key.pem \
+--no-sync -C https://centos01:2379,https://centos02:2379,https://centos03:2379 \
+cluster-health
+
+解压flannel源码
+	cp  /root/soft/kubernetes/cluster/centos/node/bin/{remove-docker0.sh,mk-docker-opts.sh} $KUBERNETES_HOME/bin
+
+master上执行这个，否则kubelet启动报错
+kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap
+
+ectd开机自启动
+systemctl daemon-reload
+systemctl enable etcd
+systemctl start etcd
+systemctl status etcd
+systemctl enable flannel
+systemctl start flannel
+systemctl status flannel
+
+systemd-analyze verify etcd.service
+
+
+证书kubeconfig文件创建:
+export BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
+cat > token.csv <<EOF
+${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
+EOF
+
+
+mv token.csv /root/kubernetes/config -f
+
+export KUBE_APISERVER="https://centos01:6443"
+
+# 设置集群参数
+kubectl config set-cluster kubernetes \
+  --certificate-authority=/root/kubernetes/ssl/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER} \
+  --kubeconfig=bootstrap.kubeconfig
+
+# 设置客户端认证参数
+kubectl config set-credentials kubelet-bootstrap \
+  --token=${BOOTSTRAP_TOKEN} \
+  --kubeconfig=bootstrap.kubeconfig
+
+# 设置上下文参数
+kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=kubelet-bootstrap \
+  --kubeconfig=bootstrap.kubeconfig
+
+# 设置默认上下文
+kubectl config use-context default --kubeconfig=bootstrap.kubeconfig
+
+
+
+
+
+export KUBE_APISERVER="https://centos01:6443"
+# 设置集群参数
+kubectl config set-cluster kubernetes \
+  --certificate-authority=/root/kubernetes/ssl/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER} \
+  --kubeconfig=kube-proxy.kubeconfig
+# 设置客户端认证参数
+kubectl config set-credentials kube-proxy \
+  --client-certificate=/root/kubernetes/ssl/kube-proxy.pem \
+  --client-key=/root/kubernetes/ssl/kube-proxy-key.pem \
+  --embed-certs=true \
+  --kubeconfig=kube-proxy.kubeconfig
+# 设置上下文参数
+kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=kube-proxy \
+  --kubeconfig=kube-proxy.kubeconfig
+# 设置默认上下文
+kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
+
+systemctl daemon-reload
+systemctl start kube-apiserver
+systemctl start kube-controller-manager
+systemctl start kube-scheduler
+
+systemctl enable kube-apiserver
+systemctl enable kube-controller-manager
+systemctl enable kube-scheduler
+
+
+
+
+
+
+mkdir -p /var/lib/kubelet
+
+systemctl daemon-reload
+systemctl start kubelet.service
+systemctl start kube-proxy.service
+systemctl stop kubelet.service
+systemctl stop kube-proxy.service
+
+systemctl enable docker
+
+systemctl enable kubelet.service
+systemctl enable kube-proxy.service
+
+
+
+查看集群状态
+	kubectl get cs
+	kubectl run nginx --image=nginx --replicas=3
+	kubectl get pod -o wide
+	
+
+yum install -y etcd kubernetes
+
+
+OPTIONS='--selinux-enabled --log-driver=journald --signature-verification=false'
+
+命令 ssh-copy-id -i
+etcd安装(集群)开机自启动
+flannel安装(集群)开机自启动 set etcd网段
+
+	
+	
+	
+systemctl start etcd.service
+systemctl start docker
+systemctl start kube-apiserver.service
+systemctl start kube-controller-manager.service
+systemctl start kube-scheduler.service
+systemctl start kubelet.service
+systemctl start kube-proxy.service
+
+
+kubernetes下载该镜像可能超时。所以最好自己下载拉取
+docker pull registry.access.redhat.com/rhel7/pod-infrastructure:latest
+
+
+kubectl delete pods mysql-vm0cj
+
+
+https://blog.csdn.net/yjf2013/article/details/80609468
+https://www.cnblogs.com/zhenyuyaodidiao/p/6500830.html
+
+	Warning	FailedSync	Error syncing pod, skipping: failed to "StartContainer" for "POD" with ErrImagePull: "image pull failed for registry.access.redhat.com/rhel7/pod-infrastructure:latest, this may be because there are no credentials on this request.  details: (Get https://registry.access.redhat.com/v2/rhel7/pod-infrastructure/manifests/sha256:92d43c37297da3ab187fc2b9e9ebfb243c1110d446c783ae1b989088495db931: net/http: TLS handshake timeout)"

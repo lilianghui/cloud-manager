@@ -1,0 +1,17 @@
+[Unit]
+Description=Etcd Server
+After=network.target
+
+[Service]
+Type=notify
+WorkingDirectory=/var/lib/etcd
+EnvironmentFile=-/root/kubernetes/config/etcd.conf
+
+
+ExecStart=/root/kubernetes/bin/etcd --name=${ETCD_NAME} --cert-file=/root/kubernetes/ssl/kubernetes.pem --key-file=/root/kubernetes/ssl/kubernetes-key.pem --peer-cert-file=/root/kubernetes/ssl/kubernetes.pem --peer-key-file=/root/kubernetes/ssl/kubernetes-key.pem --trusted-ca-file=/root/kubernetes/ssl/ca.pem --peer-trusted-ca-file=/root/kubernetes/ssl/ca.pem --data-dir=${ETCD_DATA_DIR} --listen-peer-urls=${ETCD_LISTEN_PEER_URLS} --listen-client-urls=${ETCD_LISTEN_CLIENT_URLS} --advertise-client-urls=${ETCD_ADVERTISE_CLIENT_URLS} --initial-advertise-peer-urls=${ETCD_INITIAL_ADVERTISE_PEER_URLS} --initial-cluster=${ETCD_INITIAL_CLUSTER} --initial-cluster-token=${ETCD_INITIAL_CLUSTER_TOKEN} --initial-cluster-state=${ETCD_INITIAL_CLUSTER_STATE}
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

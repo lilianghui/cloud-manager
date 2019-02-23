@@ -1,8 +1,6 @@
-package com.lilianghui.application.entity;
+package com.lilianghui.spring.starter.entity;
 
 import java.util.concurrent.ConcurrentLinkedDeque;
-
-import com.lilianghui.application.entity.CDCEvent;
 
 public class CDCEventManager {
     public static final ConcurrentLinkedDeque<CDCEvent> queue = new ConcurrentLinkedDeque<>();

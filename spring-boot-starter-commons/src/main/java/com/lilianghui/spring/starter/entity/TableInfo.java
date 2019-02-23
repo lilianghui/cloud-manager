@@ -1,4 +1,4 @@
-package com.lilianghui.application.entity;
+package com.lilianghui.spring.starter.entity;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -1,12 +1,12 @@
-package com.lilianghui.application.entity;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+package com.lilianghui.spring.starter.entity;
 
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractBinlogEventV4;
 import lombok.Data;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Data
 public class CDCEvent {
@@ -39,7 +39,6 @@ public class CDCEvent {
     private void init(final BinlogEventV4 be) {
         this.eventId = uuid.getAndAdd(1);
         BinlogEventV4Header header = be.getHeader();
-
         this.timestamp = header.getTimestamp();
         this.eventType = header.getEventType();
         this.serverId = header.getServerId();

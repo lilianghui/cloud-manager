@@ -143,34 +143,6 @@
         </filter>
     </appender>
 
-    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <!--安装logstash机器的ip地址-->
-        <destination>${LOGSTASH-DESTINATION}</destination>
-        <!--引入过滤类-->
-        <!-- <filter class="com.program.interceptor.ELKFilter"/>-->
-        <!-- encoder is required -->
-        <!--net.logstash.logback.encoder.LogstashEncoder-->
-        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <pattern>
-                    <pattern>
-                        {
-                        "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
-                        "thread": "%thread",
-                        "level": "%level",
-                        "logger_name": "%logger",
-                        "class_name": "%class",
-                        "method_name": "%method",
-                        "line_number": "%line",
-                        "message": "%message"
-                        }
-                    </pattern>
-                </pattern>
-            </providers>
-        </encoder>
-    </appender>
-
-
     <!-- druid的SQL监控 -->
     <logger name="druid.sql.DataSource" level="WARN"/>
     <logger name="druid.sql.Connection" level="WARN"/>
@@ -198,7 +170,6 @@
             <appender-ref ref="FILE-INFO"/>
             <appender-ref ref="FILE-DEBUG"/>
             <appender-ref ref="STDOUT"/>
-            <appender-ref ref="LOGSTASH"/>
         </root>
     <!--</springProfile>-->
 

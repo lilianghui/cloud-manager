@@ -1,59 +1,52 @@
-package com.lilianghui.application.support;
+package com.lilianghui.spring.starter.core;
+
+import com.google.code.or.binlog.BinlogEventListener;
+import com.google.code.or.binlog.BinlogEventV4;
+import com.google.code.or.binlog.impl.event.*;
+import com.google.code.or.common.glossary.Column;
+import com.google.code.or.common.glossary.Pair;
+import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.util.MySQLConstants;
+import com.lilianghui.spring.starter.entity.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-import com.lilianghui.application.entity.CDCEvent;
-import com.lilianghui.application.entity.CDCEventManager;
-import com.lilianghui.application.entity.ColumnInfo;
-import com.lilianghui.application.entity.TableInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.code.or.binlog.BinlogEventListener;
-import com.google.code.or.binlog.BinlogEventV4;
-import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
-import com.google.code.or.binlog.impl.event.QueryEvent;
-import com.google.code.or.binlog.impl.event.TableMapEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
-import com.google.code.or.binlog.impl.event.WriteRowsEvent;
-import com.google.code.or.binlog.impl.event.XidEvent;
-import com.google.code.or.common.glossary.Column;
-import com.google.code.or.common.glossary.Pair;
-import com.google.code.or.common.glossary.Row;
-import com.google.code.or.common.util.MySQLConstants;
-
+@Slf4j
 public class InstanceListener implements BinlogEventListener {
-    private static final Logger logger = LoggerFactory.getLogger(InstanceListener.class);
+    private TableInfoKeeper tableInfoKeeper;
+
+    public InstanceListener(TableInfoKeeper tableInfoKeeper) {
+        this.tableInfoKeeper = tableInfoKeeper;
+    }
 
     @Override
     public void onEvents(BinlogEventV4 be) {
         if (be == null) {
-            logger.error("binlog event is null");
+            log.error("binlog event is null");
             return;
         }
-
         int eventType = be.getHeader().getEventType();
         switch (eventType) {
             case MySQLConstants.FORMAT_DESCRIPTION_EVENT: {
-                logger.trace("FORMAT_DESCRIPTION_EVENT");
+                log.trace("FORMAT_DESCRIPTION_EVENT");
                 break;
             }
-            case MySQLConstants.TABLE_MAP_EVENT: {//每次ROW_EVENT前都伴随一个TABLE_MAP_EVENT事件，保存一些表信息，如tableId, tableName, databaseName, 而ROW_EVENT只有tableId
-
+            //每次ROW_EVENT前都伴随一个TABLE_MAP_EVENT事件，保存一些表信息，如tableId, tableName, databaseName, 而ROW_EVENT只有tableId
+            case MySQLConstants.TABLE_MAP_EVENT: {
                 TableMapEvent tme = (TableMapEvent) be;
-                TableInfoKeeper.saveTableIdMap(tme);
-                logger.trace("TABLE_MAP_EVENT:tableId:{}", tme.getTableId());
+                tableInfoKeeper.saveTableIdMap(tme);
+                log.trace("TABLE_MAP_EVENT:tableId:{}", tme.getTableId());
                 break;
             }
             case MySQLConstants.DELETE_ROWS_EVENT: {
                 DeleteRowsEvent dre = (DeleteRowsEvent) be;
                 long tableId = dre.getTableId();
-                logger.trace("DELETE_ROW_EVENT:tableId:{}", tableId);
+                log.trace("DELETE_ROW_EVENT:tableId:{}", tableId);
 
-                TableInfo tableInfo = TableInfoKeeper.getTableInfo(tableId);
+                TableInfo tableInfo = tableInfoKeeper.getTableInfo(tableId);
                 String databaseName = tableInfo.getDatabaseName();
                 String tableName = tableInfo.getTableName();
 
@@ -67,7 +60,7 @@ public class InstanceListener implements BinlogEventListener {
                         cdcEvent.setSql(null);
                         cdcEvent.setBefore(beforeMap);
                         CDCEventManager.queue.addLast(cdcEvent);
-                        logger.info("cdcEvent:{}", cdcEvent);
+                        log.info("cdcEvent:{}", cdcEvent);
                     }
                 }
                 break;
@@ -75,9 +68,9 @@ public class InstanceListener implements BinlogEventListener {
             case MySQLConstants.UPDATE_ROWS_EVENT: {
                 UpdateRowsEvent upe = (UpdateRowsEvent) be;
                 long tableId = upe.getTableId();
-                logger.info("UPDATE_ROWS_EVENT:tableId:{}", tableId);
+                log.info("UPDATE_ROWS_EVENT:tableId:{}", tableId);
 
-                TableInfo tableInfo = TableInfoKeeper.getTableInfo(tableId);
+                TableInfo tableInfo = tableInfoKeeper.getTableInfo(tableId);
                 String databaseName = tableInfo.getDatabaseName();
                 String tableName = tableInfo.getTableName();
 
@@ -95,7 +88,7 @@ public class InstanceListener implements BinlogEventListener {
                         cdcEvent.setBefore(beforeMap);
                         cdcEvent.setAfter(afterMap);
                         CDCEventManager.queue.addLast(cdcEvent);
-                        logger.info("cdcEvent:{}", cdcEvent);
+                        log.info("cdcEvent:{}", cdcEvent);
                     }
                 }
                 break;
@@ -103,9 +96,9 @@ public class InstanceListener implements BinlogEventListener {
             case MySQLConstants.WRITE_ROWS_EVENT: {
                 WriteRowsEvent wre = (WriteRowsEvent) be;
                 long tableId = wre.getTableId();
-                logger.trace("WRITE_ROWS_EVENT:tableId:{}", tableId);
+                log.trace("WRITE_ROWS_EVENT:tableId:{}", tableId);
 
-                TableInfo tableInfo = TableInfoKeeper.getTableInfo(tableId);
+                TableInfo tableInfo = tableInfoKeeper.getTableInfo(tableId);
                 String databaseName = tableInfo.getDatabaseName();
                 String tableName = tableInfo.getTableName();
 
@@ -119,7 +112,7 @@ public class InstanceListener implements BinlogEventListener {
                         cdcEvent.setSql(null);
                         cdcEvent.setAfter(afterMap);
                         CDCEventManager.queue.addLast(cdcEvent);
-                        logger.info("cdcEvent:{}", cdcEvent);
+                        log.info("cdcEvent:{}", cdcEvent);
                     }
                 }
                 break;
@@ -127,28 +120,29 @@ public class InstanceListener implements BinlogEventListener {
             case MySQLConstants.QUERY_EVENT: {
                 QueryEvent qe = (QueryEvent) be;
                 TableInfo tableInfo = createTableInfo(qe);
-                if (tableInfo == null)
+                if (tableInfo == null) {
                     break;
+                }
                 String databaseName = tableInfo.getDatabaseName();
                 String tableName = tableInfo.getTableName();
-                logger.trace("QUERY_EVENT:databaseName:{},tableName:{}", databaseName, tableName);
+                log.trace("QUERY_EVENT:databaseName:{},tableName:{}", databaseName, tableName);
 
                 CDCEvent cdcEvent = new CDCEvent(qe, databaseName, tableName);
                 cdcEvent.setIsDdl(true);
                 cdcEvent.setSql(qe.getSql().toString());
 
                 CDCEventManager.queue.addLast(cdcEvent);
-                logger.info("cdcEvent:{}", cdcEvent);
+                log.info("cdcEvent:{}", cdcEvent);
 
                 break;
             }
             case MySQLConstants.XID_EVENT: {
                 XidEvent xe = (XidEvent) be;
-                logger.trace("XID_EVENT: xid:{}", xe.getXid());
+                log.trace("XID_EVENT: xid:{}", xe.getXid());
                 break;
             }
             default: {
-                logger.trace("DEFAULT:{}", eventType);
+                log.trace("DEFAULT:{}", eventType);
                 break;
             }
         }
@@ -171,22 +165,24 @@ public class InstanceListener implements BinlogEventListener {
         }
 
         String fullName = databaseName + "." + tableName;
-        List<ColumnInfo> columnInfoList = TableInfoKeeper.getColumns(fullName);
-        if (columnInfoList == null)
+        List<ColumnInfo> columnInfoList = tableInfoKeeper.getColumns(fullName);
+        if (columnInfoList == null) {
             return null;
+        }
         if (columnInfoList.size() != cols.size()) {
-            TableInfoKeeper.refreshColumnsMap();
+            tableInfoKeeper.refreshColumnsMap();
             if (columnInfoList.size() != cols.size()) {
-                logger.warn("columnInfoList.size is not equal to cols.");
+                log.warn("columnInfoList.size is not equal to cols.");
                 return null;
             }
         }
 
         for (int i = 0; i < columnInfoList.size(); i++) {
-            if (cols.get(i).getValue() == null)
+            if (cols.get(i).getValue() == null) {
                 map.put(columnInfoList.get(i).getName(), "");
-            else
+            } else {
                 map.put(columnInfoList.get(i).getName(), cols.get(i).toString());
+            }
         }
 
         return map;
@@ -210,7 +206,7 @@ public class InstanceListener implements BinlogEventListener {
         } else if (checkFlag(sql, "truncate")) {
             tableName = getTableName(sql, "truncate");
         } else {
-            logger.warn("can not find table name from sql:{}", sql);
+            log.warn("can not find table name from sql:{}", sql);
             return null;
         }
         ti.setDatabaseName(databaseName);
