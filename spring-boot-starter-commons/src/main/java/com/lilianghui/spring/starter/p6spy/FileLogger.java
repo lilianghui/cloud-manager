@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -32,6 +33,11 @@ public class FileLogger extends com.p6spy.engine.spy.appender.FileLogger {
             int index = originalFileName.lastIndexOf(".");
             if (index >= 0) {
                 fileName = originalFileName.substring(0, index) + "-" + DateFormatUtils.format(new Date(), "yyyyMMdd") + originalFileName.substring(index);
+            }
+            String path = originalFileName.substring(0,originalFileName.lastIndexOf("/"));
+            File file = new File(path);
+            if(!file.exists()){
+                file.mkdirs();
             }
             printStream = new PrintStream(new FileOutputStream(fileName, P6SpyOptions.getActiveInstance().getAppend()));
         } catch (IOException e) {

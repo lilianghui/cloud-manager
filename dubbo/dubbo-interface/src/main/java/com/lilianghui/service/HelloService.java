@@ -1,9 +1,9 @@
 package com.lilianghui.service;
 
+import com.lilianghui.entity.User;
+
 public interface HelloService {
 
-    String sayHello(String name);
-
-    String sayGoodbye(String name);
+    int save(User user);
 
 }

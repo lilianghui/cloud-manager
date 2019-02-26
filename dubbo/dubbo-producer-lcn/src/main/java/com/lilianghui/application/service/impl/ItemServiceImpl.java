@@ -1,23 +1,24 @@
 package com.lilianghui.application.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Service;
-import com.lilianghui.application.mapper.UserMapper;
-import com.lilianghui.entity.User;
-import com.lilianghui.service.HelloService;
+import com.lilianghui.application.mapper.ItemMapper;
+import com.lilianghui.entity.Item;
+import com.lilianghui.service.ItemService;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
 @Service(version = "1.0.0")
 @org.springframework.stereotype.Service
-public class HelloServiceImpl implements HelloService {
+public class ItemServiceImpl implements ItemService {
 
     @Resource
-    private UserMapper userMapper;
+    private ItemMapper itemMapper;
+
 
     @Override
     @Transactional
-    public int save(User user) {
-        return userMapper.insert(user);
+    public int save(Item item) {
+        return itemMapper.insert(item);
     }
 }

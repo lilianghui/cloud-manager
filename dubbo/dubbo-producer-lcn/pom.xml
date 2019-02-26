@@ -9,15 +9,13 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>com.lilianghui</groupId>
-    <artifactId>dubbo-consumer</artifactId>
+    <artifactId>dubbo-producer-lcn</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>dubbo-consumer</name>
+    <name>dubbo-producer-lcn</name>
     <description>Demo project for Spring Boot</description>
-
 
     <properties>
         <java.version>1.8</java.version>
-        <lcn.last.version>4.1.0</lcn.last.version>
     </properties>
 
     <dependencies>
@@ -84,45 +82,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!--<dependency>
-            <groupId>com.codingapi</groupId>
-            <artifactId>transaction-springcloud</artifactId>
-            <version>${lcn.last.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/com.codingapi/transaction-dubbo -->
-
-        <dependency>
-            <groupId>com.codingapi</groupId>
-            <artifactId>transaction-dubbo</artifactId>
-            <version>${lcn.last.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.codingapi</groupId>
-            <artifactId>tx-plugins-db</artifactId>
-            <version>${lcn.last.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-
 
     </dependencies>
 
@@ -133,7 +92,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.lilianghui.application.DubboConsumerApplication</mainClass>
+                    <mainClass>com.lilianghui.application.DubboProducerLcnApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

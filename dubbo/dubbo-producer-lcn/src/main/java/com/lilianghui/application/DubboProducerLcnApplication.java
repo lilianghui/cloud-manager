@@ -5,11 +5,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
+//@EnableDubboConfiguration
 @MapperScan("com.lilianghui.application.mapper")
-public class DubboProducerApplication {
+public class DubboProducerLcnApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DubboProducerApplication.class, args);
+        SpringApplication.run(DubboProducerLcnApplication.class, args);
     }
 
 }
