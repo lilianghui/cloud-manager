@@ -1,22 +1,11 @@
 server:
-  port: 8788
+  port: 7970
 
 spring:
   application:
-    name: dubbo-producer    # 对应config server所获取的配置文件的{application}
-  dubbo:
-    application:
-      name: dubbo-producer
-    registry:
-      address: zookeeper://127.0.0.1:2181                  # zookeeper注册中心的地址
-    protocol:
-      name: dubbo
-      port: 20881
-      serialization: hessian2
-    provider:
-      retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
+    name: tx-manager    # 对应config server所获取的配置文件的{application}
   datasource:
-    url: jdbc:p6spy:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+    url: jdbc:p6spy:mysql://127.0.0.1:3306/tx-manager?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
     username: root
     password: 123456
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
@@ -37,6 +26,12 @@ spring:
   p6spy:
     logFile: /home/${spring.application.name}/spy.log
 
+
+  redis:
+    password:
+    port: 6379
+    host: 127.0.0.1
+
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
   #  config-location: classpath:/spring-mybatis-cfg.xml
@@ -46,5 +41,23 @@ mybatis:
     mapUnderscoreToCamelCase: true
 
 tx-lcn:
-  client:
-    manager-address: 127.0.0.1:8070
+  manager:
+    dtx-lock-time: ${tx-lcn.manager.dtx-time}
+    seq-len: 12
+    heart-time: 300000
+    port: 8070
+    host: 127.0.0.1
+    admin-key: codingapi
+    ex-url-enabled: false
+    dtx-time: 8000
+    concurrent-level: 160
+    ex-url: /provider/email-to/***@**.com
+  logger:
+    jdbc-url: ${spring.datasource.url}
+    password: ${spring.datasource.password}
+    driver-class-name: ${spring.datasource.driver-class-name}
+    enabled: false
+    username: ${spring.datasource.username}
+  message:
+    netty:
+      attr-delay-time: ${tx-lcn.manager.dtx-time}

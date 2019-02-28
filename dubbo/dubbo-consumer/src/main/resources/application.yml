@@ -4,6 +4,16 @@ server:
 spring:
   application:
     name: dubbo-consumer    # 对应config server所获取的配置文件的{application}
+  dubbo:
+    application:
+      name: dubbo-consumer
+    registry:
+      address: zookeeper://127.0.0.1:2181                  # zookeeper注册中心的地址
+    protocol:
+      name: dubbo
+      serialization: hessian2
+    provider:
+      retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
   datasource:
     url: jdbc:p6spy:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
     username: root
@@ -14,13 +24,6 @@ spring:
     min-idle: 5
     initial-size: 5
 
-dubbo:
-  application:
-    name: dubbo-consumer
-  registry:
-    address: zookeeper://127.0.0.1:2181                  # zookeeper注册中心的地址
-  protocol:
-    name: dubbo
-    serialization: hessian2
-  provider:
-    retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
+tx-lcn:
+  client:
+    manager-address: 127.0.0.1:8070

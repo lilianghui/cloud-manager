@@ -34,10 +34,13 @@ public class FileLogger extends com.p6spy.engine.spy.appender.FileLogger {
             if (index >= 0) {
                 fileName = originalFileName.substring(0, index) + "-" + DateFormatUtils.format(new Date(), "yyyyMMdd") + originalFileName.substring(index);
             }
-            String path = originalFileName.substring(0,originalFileName.lastIndexOf("/"));
-            File file = new File(path);
-            if(!file.exists()){
-                file.mkdirs();
+            int pathIndex = originalFileName.lastIndexOf("/");
+            if (pathIndex > 0) {
+                String path = originalFileName.substring(0, pathIndex);
+                File file = new File(path);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
             }
             printStream = new PrintStream(new FileOutputStream(fileName, P6SpyOptions.getActiveInstance().getAppend()));
         } catch (IOException e) {
@@ -76,7 +79,7 @@ public class FileLogger extends com.p6spy.engine.spy.appender.FileLogger {
                 getStream().println(text);
             }
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
         }
     }
 }

@@ -4,7 +4,17 @@ server:
 spring:
   application:
     name: dubbo-producer-lcn    # 对应config server所获取的配置文件的{application}
-
+  dubbo:
+    application:
+      name: dubbo-producer-lcn
+    registry:
+      address: zookeeper://127.0.0.1:2181                  # zookeeper注册中心的地址
+    protocol:
+      name: dubbo
+      port: 20882
+      serialization: hessian2
+    provider:
+      retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
   datasource:
     url: jdbc:p6spy:mysql://127.0.0.1:3306/db02?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
     username: root
@@ -27,18 +37,6 @@ spring:
   p6spy:
     logFile: /home/${spring.application.name}/spy.log
 
-dubbo:
-  application:
-    name: dubbo-producer-lcn
-  registry:
-    address: zookeeper://127.0.0.1:2181                  # zookeeper注册中心的地址
-  protocol:
-    name: dubbo
-    port: 20882
-    serialization: hessian2
-  provider:
-    retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
-
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
   #  config-location: classpath:/spring-mybatis-cfg.xml
@@ -46,3 +44,7 @@ mybatis:
   configurationProperties:
     jdbcTypeForNull: OTHER
     mapUnderscoreToCamelCase: true
+
+tx-lcn:
+  client:
+    manager-address: 127.0.0.1:8070

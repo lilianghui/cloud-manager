@@ -1,7 +1,7 @@
 package com.lilianghui.application.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.codingapi.tx.annotation.TxTransaction;
+import com.codingapi.txlcn.tc.annotation.LcnTransaction;
 import com.lilianghui.application.service.TransactionalService;
 import com.lilianghui.entity.Item;
 import com.lilianghui.entity.User;
@@ -21,11 +21,10 @@ public class TransactionalImpl implements TransactionalService {
 
 
     @Override
-    @TxTransaction(isStart=true)
+    @LcnTransaction
     @Transactional
     public int save(User user, Item item) {
         helloService.save(user);
-        System.out.println(1/0);
         lcnService.save(item);
         return 0;
     }
