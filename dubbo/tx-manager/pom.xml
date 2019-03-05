@@ -32,6 +32,12 @@
             <groupId>com.lilianghui</groupId>
             <artifactId>spring-boot-starter-commons</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-boot-starter-jta-atomikos</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

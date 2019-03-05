@@ -5,9 +5,9 @@ import com.lilianghui.entity.User;
 import com.lilianghui.mapper.db01.UserMapper;
 import com.lilianghui.mapper.db02.ItemMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.jta.JtaTransactionManager;
 
 import javax.annotation.Resource;
 
@@ -15,17 +15,16 @@ import javax.annotation.Resource;
 @Transactional
 public class IndexService {
 
-    @Resource
-    private ApplicationContext applicationContext;
-    @Resource
-//    @Autowired(required = false)
+//    @Resource
+    @Autowired
     private UserMapper userMapper;
-    @Resource
-//    @Autowired(required = false)
+//    @Resource
+    @Autowired
     private ItemMapper itemMapper;
+    @Resource
+    private JtaTransactionManager transactionManager;
 
     public void saveData(User user, Item item){
-        UserMapper u = applicationContext.getBean(UserMapper.class);
         userMapper.insert(user);
         itemMapper.insert(item);
     }

@@ -1,5 +1,6 @@
 spring:
-  name: demo
+  application:
+    name: demo
   atomikos.datasource:
     cloudsystem:
       type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
@@ -47,10 +48,6 @@ spring:
         notEmpty: true
         resolveClass: tk.mybatis.mapper.mapperhelper.resolve.DefaultEntityResolve
         entityScanPackages: com.lilianghui.entity
-  rocketmq:
-    nameServer: llh:9876
-    producer:
-      group: producer-group
   mvc:
     #    static-path-pattern: /**
     view:

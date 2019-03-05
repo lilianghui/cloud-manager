@@ -13,6 +13,11 @@ spring:
     max-wait: 10000
     min-idle: 5
     initial-size: 5
+  jpa:
+    hibernate:
+      use-new-id-generator-mappings: false
+      # 第一次运行可以设置为: create, 为TM创建持久化数据库表  create/validate
+      ddl-auto: create
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     deserialization:
@@ -43,20 +48,24 @@ mybatis:
 tx-lcn:
   manager:
     dtx-lock-time: ${tx-lcn.manager.dtx-time}
+    # 雪花算法的sequence位长度，默认为12位.
     seq-len: 12
     heart-time: 300000
     port: 8070
     host: 127.0.0.1
+    # TM后台登陆密码，默认值为codingapi
     admin-key: codingapi
+    # 异常回调开关。开启时请制定ex-url
     ex-url-enabled: false
     dtx-time: 8000
     concurrent-level: 160
+    # 事务异常通知（任何http协议地址。未指定协议时，为TM提供内置功能接口）。默认是邮件通知
     ex-url: /provider/email-to/***@**.com
   logger:
     jdbc-url: ${spring.datasource.url}
     password: ${spring.datasource.password}
     driver-class-name: ${spring.datasource.driver-class-name}
-    enabled: false
+    enabled: true
     username: ${spring.datasource.username}
   message:
     netty:

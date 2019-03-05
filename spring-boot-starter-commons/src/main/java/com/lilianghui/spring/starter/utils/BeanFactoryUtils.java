@@ -1,6 +1,7 @@
 package com.lilianghui.spring.starter.utils;
 
 
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -25,5 +26,11 @@ public class BeanFactoryUtils {
         DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) context.getBeanFactory();
         beanFactory.registerSingleton(name, instance);
         return instance;
+    }
+
+    public static void registerBean(ApplicationContext applicationContext, String name, BeanDefinition beanDefinition) {
+        ConfigurableApplicationContext context = (ConfigurableApplicationContext) applicationContext;
+        DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) context.getBeanFactory();
+        beanFactory.registerBeanDefinition(name,beanDefinition);
     }
 }

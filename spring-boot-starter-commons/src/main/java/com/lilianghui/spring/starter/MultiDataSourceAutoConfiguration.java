@@ -16,8 +16,12 @@ import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -48,6 +52,7 @@ import java.util.List;
 
 @Slf4j
 @Configuration
+@Order(Integer.MIN_VALUE)
 @EnableConfigurationProperties({MultiDataSourceProperties.class})
 @ConditionalOnClass(com.atomikos.jdbc.AtomikosDataSourceBean.class)
 //@ConditionalOnProperty(value = "spring.atomikos.datasource")
@@ -95,18 +100,25 @@ public class MultiDataSourceAutoConfiguration implements InitializingBean, Envir
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        registerSessionFactoryBean();
+    }
+
+    public void registerSessionFactoryBean() {
         if (MapUtils.isNotEmpty(multiDataSourceProperties.getDatasource())) {
             multiDataSourceProperties.getDatasource().forEach((name, dataSourceProperties) -> {
                 AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
                 ds.setUniqueResourceName(name);
                 ds.setXaDataSource((XADataSource) dataSourceProperties.initializeDataSourceBuilder().build());
-                BeanFactoryUtils.registerBean(applicationContext, name, ds);
+//                BeanFactoryUtils.registerBean(applicationContext, name, ds);
+                BeanFactoryUtils.registerBean(applicationContext, name, BeanFactoryDS.create(AtomikosDataSourceBean.class, ds));
                 String sqlSessionFactoryName = String.format("%sSqlSessionFactory", name);
                 String sqlSessionTemplateBeanName = String.format("%sSqlSessionTemplate", name);
                 try {
                     SqlSessionFactory sqlSessionFactory = sqlSessionFactory(ds, dataSourceProperties.getMybatis());
-                    BeanFactoryUtils.registerBean(applicationContext, sqlSessionFactoryName, sqlSessionFactory);
-                    BeanFactoryUtils.registerBean(applicationContext, sqlSessionTemplateBeanName, sqlSessionTemplate(sqlSessionFactory));
+                    BeanFactoryUtils.registerBean(applicationContext, sqlSessionFactoryName, BeanFactoryDS.create(SqlSessionFactory.class, sqlSessionFactory));
+//                    BeanFactoryUtils.registerBean(applicationContext, sqlSessionFactoryName, sqlSessionFactory);
+                    BeanFactoryUtils.registerBean(applicationContext, sqlSessionTemplateBeanName, BeanFactoryDS.create(SqlSessionTemplate.class, sqlSessionTemplate(sqlSessionFactory)));
+//                    BeanFactoryUtils.registerBean(applicationContext, sqlSessionTemplateBeanName, sqlSessionTemplate(sqlSessionFactory));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -238,6 +250,36 @@ public class MultiDataSourceAutoConfiguration implements InitializingBean, Envir
         public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
 
             return true;
+        }
+    }
+
+
+    static class BeanFactoryDS<T> implements FactoryBean<T> {
+        private T object;
+        private Class<?> clazz;
+
+        public static AbstractBeanDefinition create(Class clazz, Object object) {
+            BeanDefinitionBuilder bean = BeanDefinitionBuilder.rootBeanDefinition(BeanFactoryDS.class);
+            bean.setRole(BeanDefinition.ROLE_APPLICATION);
+            bean.addConstructorArgValue(object);
+            bean.addConstructorArgValue(clazz);
+            return bean.getBeanDefinition();
+        }
+
+
+        public BeanFactoryDS(T object, Class<T> clazz) {
+            this.object = object;
+            this.clazz = clazz;
+        }
+
+        @Override
+        public T getObject() throws Exception {
+            return object;
+        }
+
+        @Override
+        public Class<?> getObjectType() {
+            return clazz;
         }
     }
 }

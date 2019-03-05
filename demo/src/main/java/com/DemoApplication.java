@@ -1,44 +1,23 @@
 package com;
 
-import com.mysql.jdbc.AbandonedConnectionCleanupThread;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.boot.CommandLineRunner;
+import com.lilianghui.spring.starter.MultiDataSourceAutoConfiguration;
+import com.lilianghui.spring.starter.MybatisExAutoConfiguration;
+import com.lilianghui.spring.starter.OpenReplicatorAutoConfiguration;
+import com.lilianghui.spring.starter.RedissonAutoConfiguration;
+import com.lilianghui.spring.starter.netty.rpc.server.NettyRpcServerRegistrar;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.Import;
 
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Enumeration;
-
-@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
-public class DemoApplication implements CommandLineRunner, DisposableBean {
+@Import(MultiDataSourceAutoConfiguration.class)
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, MybatisExAutoConfiguration.class,
+        RedissonAutoConfiguration.class, OpenReplicatorAutoConfiguration.class, NettyRpcServerRegistrar.class})
+public class DemoApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(DemoApplication.class, args);
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        Enumeration<Driver> drivers = DriverManager.getDrivers();
-        Driver d = null;
-        while (drivers.hasMoreElements()) {
-            try {
-                d = drivers.nextElement();
-                DriverManager.deregisterDriver(d);
-                System.out.println(String.format("ContextFinalizer:Driver %s deregistered", d));
-            } catch (SQLException ex) {
-                System.out.println(String.format("ContextFinalizer:Error deregistering driver %s", d) + ":" + ex);
-            }
-        }
-        AbandonedConnectionCleanupThread.checkedShutdown();
-
-    }
 
 }
