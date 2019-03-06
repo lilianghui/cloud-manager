@@ -34,6 +34,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.TransactionManagementConfigurer;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -45,6 +47,7 @@ import tk.mybatis.spring.mapper.MapperFactoryBean;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -57,7 +60,7 @@ import java.util.List;
 @ConditionalOnClass(com.atomikos.jdbc.AtomikosDataSourceBean.class)
 //@ConditionalOnProperty(value = "spring.atomikos.datasource")
 //@Conditional(MultiDataSourceAutoConfiguration.AatomikosCondition.class)
-public class MultiDataSourceAutoConfiguration implements InitializingBean, EnvironmentAware {
+public class MultiDataSourceAutoConfiguration implements InitializingBean, EnvironmentAware, TransactionManagementConfigurer {
 
 
     private Environment environment;
@@ -94,8 +97,21 @@ public class MultiDataSourceAutoConfiguration implements InitializingBean, Envir
     @Bean
     public JtaTransactionManager transactionManager() {
         UserTransactionManager userTransactionManager = new UserTransactionManager();
+        userTransactionManager.setForceShutdown(true);
         UserTransaction userTransaction = new UserTransactionImp();
-        return new JtaTransactionManager(userTransaction, userTransactionManager);
+        try {
+            userTransaction.setTransactionTimeout(300);
+        } catch (SystemException e) {
+            log.error(e.getMessage(), e);
+        }
+        JtaTransactionManager jtaTransactionManager = new JtaTransactionManager(userTransaction, userTransactionManager);
+        jtaTransactionManager.setAllowCustomIsolationLevels(true);
+        return jtaTransactionManager;
+    }
+
+    @Override
+    public PlatformTransactionManager annotationDrivenTransactionManager() {
+        return transactionManager();
     }
 
     @Override

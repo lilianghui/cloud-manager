@@ -21,6 +21,8 @@
         <module>dubbo-consumer</module>
         <module>dubbo-interface</module>
         <module>dubbo-producer</module>
+        <module>dubbo-producer-lcn</module>
+        <module>tx-manager</module>
     </modules>
 
     <properties>

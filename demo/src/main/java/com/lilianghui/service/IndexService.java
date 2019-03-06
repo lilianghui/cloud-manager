@@ -15,14 +15,11 @@ import javax.annotation.Resource;
 @Transactional
 public class IndexService {
 
-//    @Resource
-    @Autowired
-    private UserMapper userMapper;
-//    @Resource
-    @Autowired
-    private ItemMapper itemMapper;
     @Resource
-    private JtaTransactionManager transactionManager;
+    private UserMapper userMapper;
+
+    @Resource
+    private ItemMapper itemMapper;
 
     public void saveData(User user, Item item){
         userMapper.insert(user);
