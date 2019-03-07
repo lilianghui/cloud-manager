@@ -26,7 +26,7 @@
         <module>spring-boot-starter-commons</module>
         <module>spring-cloud-starter-stream-rocket</module>
         <module>pom</module>
-        <module>demo</module>
+        <module>atomikos</module>
         <module>elastic-job</module>
         <module>plugins</module>
         <module>crawler-java-server</module>

@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Import;
 @Import(MultiDataSourceAutoConfiguration.class)
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, MybatisExAutoConfiguration.class,
         RedissonAutoConfiguration.class, OpenReplicatorAutoConfiguration.class, NettyRpcServerRegistrar.class})
-public class DemoApplication {
+public class AtomikosApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
+        SpringApplication.run(AtomikosApplication.class, args);
     }
 
 }

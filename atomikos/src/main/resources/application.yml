@@ -1,6 +1,6 @@
 spring:
   application:
-    name: demo
+    name: atomikos
   atomikos.datasource:
     cloudsystem:
       type: com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
