@@ -1,6 +1,7 @@
 package com.lilianghui.application.service.impl;
 
 import com.alibaba.dubbo.config.annotation.Reference;
+import com.alibaba.fescar.spring.annotation.GlobalTransactional;
 import com.codingapi.txlcn.tc.annotation.LcnTransaction;
 import com.lilianghui.application.service.TransactionalService;
 import com.lilianghui.entity.Item;
@@ -21,8 +22,9 @@ public class TransactionalImpl implements TransactionalService {
 
 
     @Override
-    @LcnTransaction
-    @Transactional
+//    @LcnTransaction
+//    @Transactional
+    @GlobalTransactional(timeoutMills = 300000, name = "dubbo-gts-fescar-example")
     public int save(User user, Item item) {
         helloService.save(user);
         lcnService.save(item);

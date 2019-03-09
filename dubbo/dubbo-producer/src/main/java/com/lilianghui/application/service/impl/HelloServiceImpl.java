@@ -17,8 +17,8 @@ public class HelloServiceImpl implements HelloService {
     private UserMapper userMapper;
 
     @Override
-    @LcnTransaction //分布式事务注解
-    @Transactional //本地事务注解
+//    @LcnTransaction //分布式事务注解
+//    @Transactional //本地事务注解
     public int save(User user) {
         return userMapper.insert(user);
     }

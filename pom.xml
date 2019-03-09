@@ -66,6 +66,9 @@
         <maven.findbugs.plugin.version>3.0.5</maven.findbugs.plugin.version>
         <maven.cobertura.plugin.version>2.7</maven.cobertura.plugin.version>
         <maven.jxr.pulgin.version>2.5</maven.jxr.pulgin.version>
+
+        <fescar.version>0.2.3</fescar.version>
+        <txlcn-tc.version>5.0.2.RELEASE</txlcn-tc.version>
     </properties>
 
 
@@ -81,6 +84,43 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!--阿里fescar分布式事务框架-->
+            <dependency>
+                <groupId>com.alibaba.fescar</groupId>
+                <artifactId>fescar-spring</artifactId>
+                <version>${fescar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.fescar</groupId>
+                <artifactId>fescar-dubbo-alibaba</artifactId>
+                <version>${fescar.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.fescar</groupId>
+                <artifactId>fescar-server</artifactId>
+                <version>${fescar.version}</version>
+            </dependency>
+
+
+            <!--txlcn分布式事务框架-->
+            <dependency>
+                <groupId>com.codingapi.txlcn</groupId>
+                <artifactId>txlcn-tc</artifactId>
+                <version>${txlcn-tc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.codingapi.txlcn</groupId>
+                <artifactId>txlcn-txmsg-netty</artifactId>
+                <version>${txlcn-tc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codingapi.txlcn</groupId>
+                <artifactId>txlcn-tm</artifactId>
+                <version>${txlcn-tc.version}</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
