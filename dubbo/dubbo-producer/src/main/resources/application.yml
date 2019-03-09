@@ -6,7 +6,7 @@ spring:
     name: dubbo-producer    # 对应config server所获取的配置文件的{application}
   dubbo:
     application:
-      name: dubbo-producer
+      name: ${spring.application.name}
     registry:
       address: zookeeper://127.0.0.1:2181                  # zookeeper注册中心的地址
     protocol:
@@ -15,15 +15,15 @@ spring:
       serialization: hessian2
     provider:
       retries: 0                           # 服务调用重试次数，服务发布者不给重试，让服务调用者自己重试
-  datasource:
-    url: jdbc:p6spy:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
-    username: root
-    password: 123456
-    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    max-idle: 10
-    max-wait: 10000
-    min-idle: 5
-    initial-size: 5
+#  datasource:
+#    url: jdbc:p6spy:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+#    username: root
+#    password: 123456
+#    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+#    max-idle: 10
+#    max-wait: 10000
+#    min-idle: 5
+#    initial-size: 5
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     deserialization:
@@ -48,3 +48,72 @@ mybatis:
 tx-lcn:
   client:
     manager-address: 127.0.0.1:8070
+
+#sharding-jdbc的配置
+sharding.jdbc:
+  datasource:
+    names: ds-master,ds-slave-0
+    ds-master:
+      url: jdbc:p6spy:mysql://192.168.1.111:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+      username: root
+      password: 123456
+      driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+      type: com.alibaba.druid.pool.DruidDataSource
+      druid:
+        initialSize: 3
+        minIdle: 5
+        maxActive: 20
+        maxWait: 6000
+        timeBetweenEvictionRunsMillis: 30000
+        minEvictableIdleTimeMillis: 11111
+        validationQuery: select 1 from dual
+        testWhileIdle: false
+        testOnBorrow: true
+        testOnReturn: false
+        poolPreparedStatements: true
+        MaxPoolPreparedStatementPerConnectionSize: 50
+    ds-slave-0:
+      url: jdbc:p6spy:mysql://127.0.0.1:3306/db01?allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+      username: root
+      password: 123456
+      driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+      type: com.alibaba.druid.pool.DruidDataSource
+      druid:
+        initialSize: 3
+        minIdle: 5
+        maxActive: 20
+        maxWait: 6000
+        timeBetweenEvictionRunsMillis: 30000
+        minEvictableIdleTimeMillis: 11111
+        validationQuery: select 1 from dual
+        testWhileIdle: false
+        testOnBorrow: true
+        testOnReturn: false
+        poolPreparedStatements: true
+        MaxPoolPreparedStatementPerConnectionSize: 50
+  config:
+    sharding:
+      masterSlaveRules:
+        db01:
+          name: db01
+          master-data-source-name: ds-master
+          slave-data-source-names: ds-slave-0
+          load-balance-algorithm-type: round_robin
+      defaultKeyGeneratorClassName: io.shardingsphere.core.keygen.DefaultKeyGenerator
+      tables:
+        users:
+          logicTable: users
+          actualDataNodes: db01.users_${0..1}
+          keyGeneratorColumnName: id
+          databaseStrategy:
+            standard:
+              precise-algorithm-class-name: com.lilianghui.application.algorithm.TablePreciseShardingAlgorithm
+              sharding-column: id
+          table-strategy:
+#            inline:
+#              algorithm-expression: users_${id.longValue() % 2}
+            standard:
+              sharding-column: id
+              precise-algorithm-class-name: com.lilianghui.application.algorithm.TablePreciseShardingAlgorithm
+    props:
+      sql.show: true

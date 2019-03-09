@@ -22,13 +22,23 @@ public class TransactionalImpl implements TransactionalService {
 
 
     @Override
-//    @LcnTransaction
-//    @Transactional
-    @GlobalTransactional(timeoutMills = 300000, name = "dubbo-gts-fescar-example")
+    @LcnTransaction
+    @Transactional
+//    @GlobalTransactional(timeoutMills = 300000, name = "dubbo-gts-fescar-example")
     public int save(User user, Item item) {
-        helloService.save(user);
         lcnService.save(item);
+        helloService.save(user);
         return 0;
+    }
+
+    @Override
+    public User selectByPrimaryKey(Long id) {
+        return helloService.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public Item selectItemByPrimaryKey(Long itemId) {
+        return lcnService.selectByPrimaryKey(itemId);
     }
 
 }

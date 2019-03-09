@@ -6,7 +6,7 @@ spring:
     name: dubbo-consumer    # 对应config server所获取的配置文件的{application}
   dubbo:
     application:
-      name: dubbo-consumer
+      name: ${spring.application.name}
     registry:
       address: zookeeper://127.0.0.1:2181                  # zookeeper注册中心的地址
     protocol:

@@ -7,4 +7,7 @@ public interface TransactionalService {
 
     int save(User user, Item item);
 
+    User selectByPrimaryKey(Long id);
+
+    Item selectItemByPrimaryKey(Long itemId);
 }

@@ -18,9 +18,17 @@ public class ItemServiceImpl implements ItemService {
 
 
     @Override
-//    @LcnTransaction //分布式事务注解
-//    @Transactional //本地事务注解
+    @LcnTransaction //分布式事务注解
+    @Transactional //本地事务注解
     public int save(Item item) {
-        return itemMapper.insert(item);
+        int count = itemMapper.insert(item);
+        item = itemMapper.selectByPrimaryKey(item.getId());
+        System.out.println(item);
+        return count;
+    }
+
+    @Override
+    public Item selectByPrimaryKey(Long itemId) {
+        return itemMapper.selectByPrimaryKey(itemId);
     }
 }

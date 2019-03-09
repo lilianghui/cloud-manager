@@ -7,4 +7,5 @@ public interface ItemService {
 
     int save(Item item);
 
+    Item selectByPrimaryKey(Long itemId);
 }
