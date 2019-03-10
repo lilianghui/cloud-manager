@@ -11,8 +11,8 @@ import java.util.Date;
 public class User implements Serializable {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer id;
+//    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    private Long id;
     @Column(name = "name")
     private String name;
     @Column(name = "indate")

@@ -49,6 +49,10 @@
                     <artifactId>spring-boot-starter-jta-atomikos</artifactId>
                     <groupId>org.springframework.boot</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>zookeeper</artifactId>
+                    <groupId>org.apache.zookeeper</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -94,12 +98,6 @@
             <artifactId>txlcn-txmsg-netty</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.shardingsphere/sharding-jdbc-core -->
-        <dependency>
-            <groupId>io.shardingsphere</groupId>
-            <artifactId>sharding-jdbc-core</artifactId>
-            <version>3.1.0</version>
-        </dependency>
         <dependency>
             <groupId>com.alibaba.fescar</groupId>
             <artifactId>fescar-spring</artifactId>
@@ -108,6 +106,20 @@
         <dependency>
             <groupId>com.alibaba.fescar</groupId>
             <artifactId>fescar-dubbo-alibaba</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.shardingsphere</groupId>
+            <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.shardingsphere</groupId>
+            <artifactId>sharding-jdbc-spring-namespace</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
         </dependency>
 
     </dependencies>

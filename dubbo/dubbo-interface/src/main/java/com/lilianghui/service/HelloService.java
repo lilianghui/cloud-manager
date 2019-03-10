@@ -6,4 +6,6 @@ public interface HelloService {
 
     int save(User user);
 
+    User selectByPrimaryKey(Object id);
+
 }
