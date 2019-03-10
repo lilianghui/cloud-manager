@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Insert title here</title>
+    <script src="/resources/js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript">
+        function openWin(url) {
+            window.open(url, "newwindow", "height=300, width=400, toolbar =no, menubar=no, scrollbars=no, resizable=no, location=no, status=no"); //写成一行
+        }
+    </script>
+</head>
+<body>
+    <a th:href="${action}" target="_blank">OAuth2</a>
+    <button onclick="openWin('/client')">OAuth2登录</button>
+</body>
+</html>

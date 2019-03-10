@@ -24,6 +24,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +56,9 @@ public class IndexController {
 
     @Resource
     private GatWayConfig gatWayConfig;
+
+    @Value("${extra.user-name}")
+    private String userName;
 
 
     public IndexController() {
@@ -160,25 +164,9 @@ public class IndexController {
     public ModelAndView login(HttpSession session, User user, RedirectAttributes attributes) {
         ModelAndView mv = new ModelAndView();
         try {
-            Subject subject = SecurityUtils.getSubject();
-            UsernamePasswordToken token = new UsernamePasswordToken(user.getId(), user.getCertificateCode());
-            token.setRememberMe(true);
-            try {
-                subject.login(token);
-            } catch (IncorrectCaptchaException e) {
-                throw e;
-            } catch (UnknownAccountException e) {
-                throw e;
-            } catch (IncorrectCredentialsException e) {
-                throw e;
-            } catch (LockedAccountException e) {
-                throw e;
-            } catch (ExcessiveAttemptsException e) {
-                throw e;
-            } catch (AuthenticationException e) {
-                throw e;
-            }
-            if (subject.isAuthenticated()) {
+
+            boolean login = shiroService.login(user);
+            if (login) {
                 session.setAttribute("account", user);
                 mv.setViewName("redirect:/success");
             }

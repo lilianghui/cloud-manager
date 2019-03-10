@@ -32,6 +32,7 @@
         <module>crawler-java-server</module>
         <module>spring-cloud-bus-rocket</module>
         <module>dubbo</module>
+        <module>oauth2-client</module>
     </modules>
 
     <parent>

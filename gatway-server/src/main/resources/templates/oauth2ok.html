@@ -6,23 +6,13 @@
     <script src="/resources/js/jquery-1.10.2.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/resources/bootstrap-3.3.7-dist/css/bootstrap.css">
     <script src="/resources/bootstrap-3.3.7-dist/js/bootstrap.js"></script>
-    <script src="/resources/js/index.js"></script>
 </head>
 <body>
 
-<form name="loginForm" method="post" th:action="${action}" style="width: 80%;margin-left: 10%;text-align: center;">
+<form name="loginForm" method="post"  th:action="${action}" style="width: 80%;margin-left: 10%;text-align: center;">
     <input type="hidden" name="client_id" th:value="${client_id}">
     <input type="hidden" name="response_type" th:value="${response_type}">
     <input type="hidden" name="redirect_uri" th:value="${redirect_uri}">
-    <div class="form-group">
-        <label>Email address</label>
-        <input type="text" class="form-control" name="id" placeholder="id" value="0b210989febf437d93065c18df047e24"
-               autocomplete="off">
-    </div>
-    <div class="form-group">
-        <label>Password</label>
-        <input type="password" class="form-control" name="certificateCode" placeholder="certificateCode" value="310229197912193422" autocomplete="off">
-    </div>
     <button type="submit" class="btn btn-default">Submit</button>
 </form>
 </body>

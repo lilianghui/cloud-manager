@@ -7,17 +7,19 @@ import com.p6spy.engine.spy.P6SpyOptions;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 
 @Configuration
 @Slf4j
 @Order
-@Conditional(P6spyAutoConfiguration.P6spyCondition.class)
+//@Conditional(P6spyAutoConfiguration.P6spyCondition.class)
 @EnableConfigurationProperties(P6spyProperties.class)
 //@ConditionalOnProperty("spring.datasource.url")
 //@AutoConfigureAfter({DataSourceAutoConfiguration.class})
@@ -77,16 +79,16 @@ public class P6spyAutoConfiguration implements InitializingBean {
     }
 
 
-    static class P6spyCondition implements Condition {
-
-        @Override
-        public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
-            String value = conditionContext.getEnvironment().getProperty("spring.datasource.url");
-            if (StringUtils.isBlank(value)) {
-                return false;
-            }
-            return value.toLowerCase().startsWith("jdbc:p6spy:");
-        }
-    }
+//    static class P6spyCondition implements Condition {
+//
+//        @Override
+//        public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
+//            String value = conditionContext.getEnvironment().getProperty("spring.datasource.url");
+//            if (StringUtils.isBlank(value)) {
+//                return false;
+//            }
+//            return value.toLowerCase().startsWith("jdbc:p6spy:");
+//        }
+//    }
 
 }
