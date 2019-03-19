@@ -2,9 +2,14 @@ spring:
   application:
     name: gatway-server    # 对应config server所获取的配置文件的{application}
   zipkin:
-    baseUrl: http://llh:8083
+    #    baseUrl: http://llh:8083
     enabled: true
-    sender.type: web
+    sender:
+      type: kafka
+    kafka:
+      topic: zipkin
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
   sleuth:
     sampler:
       percentage: 1.0

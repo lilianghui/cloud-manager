@@ -18,6 +18,19 @@ spring:
     #schema-username:
     sql-script-encoding: utf-8
     separator: ;
+  #表示当前程序不使用sleuth
+  sleuth:
+    enabled: false
+
+#表示zipkin数据存储方式是mysql
+zipkin:
+  collector:
+    kafka:
+      bootstrap-servers: 127.0.0.1:9092
+      zookeeper: 127.0.0.1:2181
+      topic: zipkin
+  storage:
+    type: mysql
 
 server:
   port: 8083

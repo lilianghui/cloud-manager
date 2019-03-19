@@ -66,6 +66,17 @@
             <groupId>io.zipkin.zipkin2</groupId>
             <artifactId>zipkin-storage-mysql-v1</artifactId>
             <version>2.11.3</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jooq</artifactId>
+                    <groupId>org.jooq</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>3.11.9</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -75,6 +86,13 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>io.zipkin.java</groupId>
+            <artifactId>zipkin-autoconfigure-collector-kafka</artifactId>
+            <version>2.12.5</version>
         </dependency>
 
     </dependencies>
