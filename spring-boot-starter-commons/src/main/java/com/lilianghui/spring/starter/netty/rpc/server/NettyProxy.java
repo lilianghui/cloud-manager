@@ -2,12 +2,12 @@ package com.lilianghui.spring.starter.netty.rpc.server;
 
 import com.google.common.collect.Sets;
 import com.lilianghui.spring.starter.annotation.NettyRpcClient;
+import com.lilianghui.spring.starter.netty.rpc.DiscoveryService;
+import com.lilianghui.spring.starter.netty.rpc.common.MessageRecvChannelInitializer;
 import com.lilianghui.spring.starter.netty.rpc.common.OutputClientHandler;
 import com.lilianghui.spring.starter.netty.rpc.entity.MessageCallBack;
-import com.lilianghui.spring.starter.netty.rpc.common.MessageRecvChannelInitializer;
 import com.lilianghui.spring.starter.netty.rpc.entity.MessageRequest;
 import com.lilianghui.spring.starter.netty.rpc.entity.NettyRpcProperties;
-import com.lilianghui.spring.starter.netty.rpc.zookeeper.ZookeeperCenter;
 import com.lilianghui.spring.starter.utils.WebUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -37,12 +37,12 @@ public class NettyProxy implements InvocationHandler {
     private static final Set<String> IGNORE_METHOD_NAME = Sets.newHashSet("toString", "hashCode", "equals", "wait");
     private Class nettyInterface;
     private NettyRpcClient nettyRpcClient;
-    private ZookeeperCenter zookeeperCenter;
+    private DiscoveryService discoveryService;
     private NettyRpcProperties nettyRpcProperties;
 
-    public NettyProxy(Class<? extends Annotation> nettyInterface, ZookeeperCenter zookeeperCenter, NettyRpcProperties nettyRpcProperties) throws Exception {
+    public NettyProxy(Class<? extends Annotation> nettyInterface, DiscoveryService discoveryService, NettyRpcProperties nettyRpcProperties) throws Exception {
         this.nettyInterface = nettyInterface;
-        this.zookeeperCenter = zookeeperCenter;
+        this.discoveryService = discoveryService;
         this.nettyRpcProperties = nettyRpcProperties;
         nettyRpcClient = nettyInterface.getDeclaredAnnotation(NettyRpcClient.class);
     }
@@ -104,7 +104,7 @@ public class NettyProxy implements InvocationHandler {
     public String getIpAddress(String clientIp) throws Exception {
         String address = nettyRpcClient.address();
         if (StringUtils.isBlank(address)) {
-            address = zookeeperCenter.getServiceAddress(nettyRpcClient.value(), clientIp);
+            address = discoveryService.getServiceAddress(nettyRpcClient.value(), clientIp);
         }
         return address;
     }

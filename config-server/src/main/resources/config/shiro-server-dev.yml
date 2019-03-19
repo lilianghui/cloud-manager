@@ -37,6 +37,9 @@ mybatis:
     jdbcTypeForNull: OTHER
     mapUnderscoreToCamelCase: true
 
+grpc:
+  server:
+    port: 0
 
 mapper:
   mappers:

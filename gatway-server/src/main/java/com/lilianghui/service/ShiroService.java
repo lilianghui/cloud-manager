@@ -3,7 +3,11 @@ package com.lilianghui.service;
 import com.hazelcast.client.AuthenticationException;
 import com.lilianghui.client.ShiroFeignClient;
 import com.lilianghui.entity.User;
+import com.lilianghui.grpc.cloud.lib.GreeterGrpc;
+import com.lilianghui.grpc.cloud.lib.GreeterOuterClass;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
+import io.grpc.Channel;
+import net.devh.springboot.autoconfigure.grpc.client.GrpcClient;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
@@ -16,6 +20,15 @@ public class ShiroService {
 
     @Resource
     private ShiroFeignClient shiroFeignClient;
+
+    @GrpcClient("shiro-server")
+    private Channel serverChannel;
+
+    public String sendMessage(String name) {
+        GreeterGrpc.GreeterBlockingStub stub= GreeterGrpc.newBlockingStub(serverChannel);
+        GreeterOuterClass.HelloReply response = stub.sayHello(GreeterOuterClass.HelloRequest.newBuilder().setName(name).build());
+        return response.getMessage();
+    }
 
     public User selectByPrimaryKey(User user) {
         return shiroFeignClient.selectByPrimaryKey(user);

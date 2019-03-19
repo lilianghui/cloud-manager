@@ -125,6 +125,10 @@ spring:
   p6spy:
     logFile: /home/${spring.application.name}/spy.log
 
+grpc:
+  server:
+    port: 0
+
 shell:
   ssh:
     port: 12000

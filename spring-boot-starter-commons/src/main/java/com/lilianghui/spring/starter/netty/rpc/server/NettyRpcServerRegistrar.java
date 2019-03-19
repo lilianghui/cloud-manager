@@ -52,7 +52,7 @@ public class NettyRpcServerRegistrar implements ApplicationContextAware, Initial
 
     @Bean
 //    @Conditional(ZookeeperCenterCondition.class)
-    public ZookeeperCenter zookeeperCenter() throws Exception {
+    public DiscoveryService discoveryService() throws Exception {
         ZookeeperCenter zookeeperCenter = new ZookeeperCenter(nettyRpcProperties.getZookeeperAddress(), nettyRpcProperties.getSessionTimeout());
         zookeeperCenter.register(applicationName, String.format("%s:%s", WebUtils.getLocalIp(), nettyRpcProperties.getPort()));
         return zookeeperCenter;

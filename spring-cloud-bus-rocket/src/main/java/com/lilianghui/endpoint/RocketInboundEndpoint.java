@@ -45,7 +45,6 @@ public class RocketInboundEndpoint extends MessageProducerSupport {
     private void initializeConsumers() {
         try {
             DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(applicationName + "-" + UUID.randomUUID().toString().replaceAll("-",""));
-            System.out.println(applicationName + "-" + UUID.randomUUID().toString().replaceAll("-",""));
             consumer.setNamesrvAddr(rocketMQProperties.getNameServer());
             consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
             consumer.setMessageModel(MessageModel.BROADCASTING);

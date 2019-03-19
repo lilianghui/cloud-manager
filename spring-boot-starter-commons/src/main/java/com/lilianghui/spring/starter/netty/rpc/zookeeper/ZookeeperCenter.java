@@ -1,5 +1,6 @@
 package com.lilianghui.spring.starter.netty.rpc.zookeeper;
 
+import com.lilianghui.spring.starter.netty.rpc.DiscoveryService;
 import com.lilianghui.spring.starter.netty.rpc.zookeeper.loadbalance.IpAddressRibbon;
 import com.lilianghui.spring.starter.netty.rpc.zookeeper.loadbalance.PollRibbon;
 import org.apache.zookeeper.*;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-public class ZookeeperCenter implements Watcher {
+public class ZookeeperCenter implements Watcher, DiscoveryService {
     private static final Map<String, IpAddressRibbon> SERVICE_ADDRESS_ROBIN = new HashMap<>();
     private static final String ROOT = "/registry";
     private CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -20,6 +21,7 @@ public class ZookeeperCenter implements Watcher {
         countDownLatch.await();
     }
 
+    @Override
     public void register(String serviceName, String registration) throws Exception {
         serviceName = serviceName.toLowerCase();
         if (zooKeeper.exists(ROOT, false) == null) {
@@ -43,7 +45,8 @@ public class ZookeeperCenter implements Watcher {
         }
     }
 
-    public String getServiceAddress(String serviceName,String clientIp) throws Exception {
+    @Override
+    public String getServiceAddress(String serviceName, String clientIp) throws Exception {
         serviceName = serviceName.toLowerCase();
         IpAddressRibbon ipAddressRobin = SERVICE_ADDRESS_ROBIN.get(serviceName);
         if (ipAddressRobin == null) {
@@ -72,7 +75,7 @@ public class ZookeeperCenter implements Watcher {
         }).start();
         for (int i = 0; i < 50; i++) {
             Thread.sleep(1000);
-            System.err.println(zookeeperCenter.getServiceAddress("api-gate-way",null));
+            System.err.println(zookeeperCenter.getServiceAddress("api-gate-way", null));
         }
     }
 }

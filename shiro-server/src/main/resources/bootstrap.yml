@@ -34,3 +34,17 @@ eureka:
     leaseRenewalIntervalInSeconds: 10
     metadataMap:
       instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
+
+
+#调用超时时间设定
+ribbon:
+  ReadTimeout: 30000
+  ConnectTimeout: 30000
+  MaxAutoRetries: 1
+  MaxAutoRetriesNextServer: 2
+
+feign:
+  okhttp:
+    enabled: true
+  httpclient:
+    enabled: false

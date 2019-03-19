@@ -18,6 +18,19 @@
                 }
             });
         }
+        function grpc() {
+            $.ajax({
+                url: "/grpc",
+                type: "POST",
+                data:{
+                    name: "[[${certificateCode}]]"
+                },
+                dataType: "json",
+                success: function (data) {
+                    // window.location.reload();
+                }
+            });
+        }
     </script>
 </head>
 
@@ -26,6 +39,7 @@
     <div>Login User: <span th:text="${certificateCode}"></span></div>
     <div><a href="/mxgraph">MXGraph</a></div>
     <div><button onclick="rpc()">RPC</button></div>
+    <div><button onclick="grpc()">gRPC</button></div>
 </div>
 </body>
 </html>

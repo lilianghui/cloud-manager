@@ -33,6 +33,7 @@
         <module>spring-cloud-bus-rocket</module>
         <module>dubbo</module>
         <module>oauth2-client</module>
+        <module>grpc-interface</module>
     </modules>
 
     <parent>
@@ -72,6 +73,8 @@
         <txlcn-tc.version>5.0.2.RELEASE</txlcn-tc.version>
         <sharding-jdbc.version>3.1.0</sharding-jdbc.version>
         <druid.version>1.1.14</druid.version>
+
+        <net-devh-grpc.version>2.0.1.RELEASE</net-devh-grpc.version>
     </properties>
 
 
@@ -140,6 +143,18 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>druid</artifactId>
                 <version>${druid.version}</version>
+            </dependency>
+
+            <!--核心grpc-spring-boot依赖-->
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-client-spring-boot-starter</artifactId>
+                <version>${net-devh-grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.devh</groupId>
+                <artifactId>grpc-server-spring-boot-starter</artifactId>
+                <version>${net-devh-grpc.version}</version>
             </dependency>
 
         </dependencies>

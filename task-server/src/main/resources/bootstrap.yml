@@ -57,3 +57,9 @@ ribbon:
   ConnectTimeout: 30000
   MaxAutoRetries: 1
   MaxAutoRetriesNextServer: 2
+
+feign:
+  okhttp:
+    enabled: true
+  httpclient:
+    enabled: false

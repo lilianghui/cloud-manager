@@ -101,6 +101,19 @@ public class IndexController {
     }
 
     @ResponseBody
+    @RequestMapping("grpc")
+    public Map<String, Object> grpc(String name) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            shiroService.sendMessage(name);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return result;
+    }
+
+
+    @ResponseBody
     @RequestMapping("rpc")
     public Map<String, Object> rpc() {
         Map<String, Object> result = new HashMap<>();
