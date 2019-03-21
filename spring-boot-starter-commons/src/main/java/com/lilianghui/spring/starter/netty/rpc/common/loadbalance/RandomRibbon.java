@@ -1,9 +1,6 @@
-package com.lilianghui.spring.starter.netty.rpc.zookeeper.loadbalance;
-
-import org.apache.zookeeper.ZooKeeper;
+package com.lilianghui.spring.starter.netty.rpc.common.loadbalance;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Title:
@@ -15,12 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RandomRibbon extends IpAddressRibbon {
 
-    public RandomRibbon(ZooKeeper zooKeeper) {
-        super(zooKeeper);
-    }
 
     @Override
-    public String getIpAddress(String clientIp) {
+    public String getIpAddress(Map<String, Integer> ipMap, String clientIp) {
 
         Set<String> ipSet = ipMap.keySet();
 

@@ -17,6 +17,7 @@ public class StaticApplication implements ApplicationContextAware, ServletContex
     private static String contentPath = "/";
     public static ServletContext servletContext;
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         StaticApplication.applicationContext = applicationContext;
     }

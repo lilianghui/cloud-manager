@@ -6,24 +6,21 @@
  * @version 1.0
  * @date on 15:49 2017/10/26
  */
-package com.lilianghui.spring.starter.netty.rpc.zookeeper.loadbalance;
+package com.lilianghui.spring.starter.netty.rpc.common.loadbalance;
 
 
-import org.apache.zookeeper.ZooKeeper;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 
 public class PollRibbon extends IpAddressRibbon {
     //    Integer sum=0;
     Integer pos = 0;
 
-    public PollRibbon(ZooKeeper zooKeeper) {
-        super(zooKeeper);
-    }
 
-    public String getIpAddress(String clientIp) {
+    @Override
+    public String getIpAddress(Map<String, Integer> ipMap, String clientIp) {
 
 
         //    2.取出来key,放到set中

@@ -1,21 +1,15 @@
-package com.lilianghui.spring.starter.netty.rpc.zookeeper.loadbalance;
+package com.lilianghui.spring.starter.netty.rpc.common.loadbalance;
 
-
-import org.apache.zookeeper.ZooKeeper;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PollWeightRibbon extends IpAddressRibbon {
 
     Integer pos = 0;
 
-    public PollWeightRibbon(ZooKeeper zooKeeper) {
-        super(zooKeeper);
-    }
 
     @Override
-    public String getIpAddress(String clientIp) {
+    public String getIpAddress(Map<String, Integer> ipMap, String clientIp) {
 
         Set<String> ipSet = ipMap.keySet();
         Iterator<String> ipIterator = ipSet.iterator();

@@ -1,20 +1,14 @@
-package com.lilianghui.spring.starter.netty.rpc.zookeeper.loadbalance;
-
-import org.apache.zookeeper.ZooKeeper;
+package com.lilianghui.spring.starter.netty.rpc.common.loadbalance;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class IpHashRibbon extends IpAddressRibbon {
 
-    public IpHashRibbon(ZooKeeper zooKeeper) {
-        super(zooKeeper);
-    }
 
     @Override
-    public String getIpAddress(String clientIp) {
+    public String getIpAddress(Map<String, Integer> ipMap, String clientIp) {
         //    2.取出来key,放到set中
         Set<String> ipset = ipMap.keySet();
 
