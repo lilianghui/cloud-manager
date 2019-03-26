@@ -16,6 +16,8 @@ import org.mybatis.spring.boot.autoconfigure.ConfigurationCustomizer;
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,6 +34,7 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -50,8 +53,11 @@ import javax.sql.XADataSource;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -264,8 +270,27 @@ public class MultiDataSourceAutoConfiguration implements InitializingBean, Envir
 
         @Override
         public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
+            MultiDataSourceProperties multiDataSourceProperties = bind(conditionContext.getEnvironment(), MultiDataSourceProperties.class, MultiDataSourceProperties.PREFIX);
+            return MapUtils.isNotEmpty(multiDataSourceProperties.getDatasource());
+        }
 
-            return true;
+        public <T> T bind(Environment environment, Class<T> targetClass, String prefix) {
+            try {
+                Class<?> resolverClass = Class.forName("org.springframework.boot.bind.RelaxedPropertyResolver");
+                Constructor<?> resolverConstructor = resolverClass.getDeclaredConstructor(PropertyResolver.class);
+                Method getSubPropertiesMethod = resolverClass.getDeclaredMethod("getSubProperties", String.class);
+                Object resolver = resolverConstructor.newInstance(environment);
+                Map<String, Object> properties = (Map) getSubPropertiesMethod.invoke(resolver, "");
+                T target = targetClass.newInstance();
+                Class<?> binderClass = Class.forName("org.springframework.boot.bind.RelaxedDataBinder");
+                Constructor<?> binderConstructor = binderClass.getDeclaredConstructor(Object.class, String.class);
+                Method bindMethod = binderClass.getMethod("bind", PropertyValues.class);
+                Object binder = binderConstructor.newInstance(target, prefix);
+                bindMethod.invoke(binder, new MutablePropertyValues(properties));
+                return target;
+            } catch (Exception var14) {
+                throw new RuntimeException(var14);
+            }
         }
     }
 

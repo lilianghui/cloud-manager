@@ -42,6 +42,7 @@ public class StaticApplication implements ApplicationContextAware, ServletContex
         return applicationContext;
     }
 
+    @Override
     public void setServletContext(ServletContext servletContext) {
         servletContext.setAttribute(ctx, servletContext.getContextPath() + "/");
         StaticApplication.contentPath = (String) servletContext.getAttribute(ctx);

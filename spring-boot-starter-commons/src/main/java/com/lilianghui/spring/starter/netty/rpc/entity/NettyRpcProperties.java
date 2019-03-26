@@ -13,6 +13,7 @@ public class NettyRpcProperties {
 
     private String zookeeperAddress = "127.0.0.1:2181";
     private String host = "0.0.0.0";
+    private boolean registerEureka = true;
     private Random random = new Random();
     private int sessionTimeout = 30000;
     private int httpTimeout = 30000;

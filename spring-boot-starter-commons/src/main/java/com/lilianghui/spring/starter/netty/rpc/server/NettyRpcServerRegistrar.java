@@ -1,6 +1,7 @@
 package com.lilianghui.spring.starter.netty.rpc.server;
 
 import com.lilianghui.spring.starter.annotation.NettyRpcService;
+import com.lilianghui.spring.starter.config.OpenReplicatorProperties;
 import com.lilianghui.spring.starter.netty.rpc.DiscoveryService;
 import com.lilianghui.spring.starter.netty.rpc.common.MessageRecvChannelInitializer;
 import com.lilianghui.spring.starter.netty.rpc.common.NamedThreadFactory;
@@ -8,6 +9,7 @@ import com.lilianghui.spring.starter.netty.rpc.entity.NettyRpcProperties;
 import com.lilianghui.spring.starter.netty.rpc.eureka.EurekaService;
 import com.lilianghui.spring.starter.netty.rpc.zookeeper.ZookeeperService;
 import com.lilianghui.spring.starter.utils.WebUtils;
+import com.netflix.appinfo.ApplicationInfoManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -19,7 +21,9 @@ import org.apache.commons.collections.MapUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -52,20 +56,19 @@ public class NettyRpcServerRegistrar implements ApplicationContextAware, Initial
     private NettyRpcProperties nettyRpcProperties;
 
 
-//    @Bean
-////    @Conditional(ZookeeperCenterCondition.class)
-//    public DiscoveryService discoveryService() throws Exception {
-//        ZookeeperService zookeeperService = new ZookeeperService(nettyRpcProperties);
-//        zookeeperService.register(applicationName, String.format("%s:%s", WebUtils.getLocalIp(), nettyRpcProperties.getPort()));
-//        return zookeeperService;
-//    }
-
     @Bean
-//    @Conditional(ZookeeperCenterCondition.class)
-    public DiscoveryService eurekaService() throws Exception {
-        EurekaService eurekaService = new EurekaService(nettyRpcProperties);
-        eurekaService.register(applicationName, String.format("%s:%s", WebUtils.getLocalIp(), nettyRpcProperties.getPort()));
-        return eurekaService;
+    public DiscoveryService discoveryService(@Autowired ApplicationInfoManager applicationInfoManager) throws Exception {
+        if (nettyRpcProperties.isRegisterEureka()) {
+            EurekaService eurekaService = new EurekaService(nettyRpcProperties);
+            eurekaService.setApplicationInfoManager(applicationInfoManager);
+            eurekaService.register(applicationName, String.valueOf(nettyRpcProperties.getPort()));
+            return eurekaService;
+        } else {
+            ZookeeperService zookeeperService = new ZookeeperService(nettyRpcProperties);
+            zookeeperService.register(applicationName, String.format("%s:%s", WebUtils.getLocalIp(), nettyRpcProperties.getPort()));
+            return zookeeperService;
+        }
+
     }
 
     @Override
