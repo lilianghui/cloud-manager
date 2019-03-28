@@ -158,22 +158,22 @@ initializr:
       id: 1.5.17.RELEASE
       default: false
   groupId:
-    title: com.lilianghui
+    title: groupId
     value: com.lilianghui
     description: com.lilianghui
   artifactId:
-    title: application
+    title: artifactId
     value: application
     description: application
   version:
-    title: 1.0-SNAPSHOT
+    title: version
     value: 1.0-SNAPSHOT
     description: 1.0-SNAPSHOT
   name:
-    title: application
+    title: name
     value: application
     description: application
   description:
-    title: Application project for Spring Boot
+    title: description
     value: Application project for Spring Boot
     description: Application project for Spring Boot
