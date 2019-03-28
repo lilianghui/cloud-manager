@@ -22,13 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import io.spring.initializr.InitializrException;
@@ -52,6 +46,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.Assert;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Generate a project based on the configured metadata.
@@ -62,7 +60,7 @@ import org.springframework.util.StreamUtils;
  * @author Andy Wilkinson
  * @author Chris Vogel
  */
-public class ProjectGeneratorEx extends ProjectGenerator{
+public class ProjectGeneratorEx extends ProjectGenerator {
 
     private static final Logger log = LoggerFactory.getLogger(ProjectGeneratorEx.class);
 
@@ -130,6 +128,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
 
     /**
      * Generate a Maven pom for the specified {@link ProjectRequest}.
+     *
      * @param request the project request
      * @return the Maven POM
      */
@@ -143,8 +142,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
             byte[] content = doGenerateMavenPom(model);
             publishProjectGeneratedEvent(request);
             return content;
-        }
-        catch (InitializrException ex) {
+        } catch (InitializrException ex) {
             publishProjectFailedEvent(request, ex);
             throw ex;
         }
@@ -152,6 +150,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
 
     /**
      * Generate a Gradle build file for the specified {@link ProjectRequest}.
+     *
      * @param request the project request
      * @return the gradle build
      */
@@ -166,8 +165,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
             byte[] content = doGenerateGradleBuild(model);
             publishProjectGeneratedEvent(request);
             return content;
-        }
-        catch (InitializrException ex) {
+        } catch (InitializrException ex) {
             publishProjectFailedEvent(request, ex);
             throw ex;
         }
@@ -176,6 +174,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
     /**
      * Generate a project structure for the specified {@link ProjectRequest}. Returns a
      * directory containing the project.
+     *
      * @param request the project request
      * @return the generated project structure
      */
@@ -185,8 +184,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
             File rootDir = generateProjectStructure(request, model);
             publishProjectGeneratedEvent(request);
             return rootDir;
-        }
-        catch (InitializrException ex) {
+        } catch (InitializrException ex) {
             publishProjectFailedEvent(request, ex);
             throw ex;
         }
@@ -195,17 +193,27 @@ public class ProjectGeneratorEx extends ProjectGenerator{
     /**
      * Generate a project structure for the specified {@link ProjectRequest} and resolved
      * model.
+     *
      * @param request the project request
-     * @param model the source model
+     * @param model   the source model
      * @return the generated project structure
      */
+    @Override
     protected File generateProjectStructure(ProjectRequest request,
                                             Map<String, Object> model) {
+        HttpServletRequest servletRequest = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
+        servletRequest.getParameterMap().forEach((key, value) -> {
+            if (value.length == 1) {
+                model.putIfAbsent(key, value[0].toString());
+            } else {
+                model.putIfAbsent(key, value);
+            }
+        });
         File rootDir;
         try {
-            rootDir = File.createTempFile("tmp", "", getTemporaryDirectory());
-        }
-        catch (IOException ex) {
+            File root = getTemporaryDirectory();
+            rootDir = File.createTempFile("tmp", "", root);
+        } catch (IOException ex) {
             throw new IllegalStateException("Cannot create temp dir", ex);
         }
         addTempFile(rootDir.getName(), rootDir);
@@ -220,14 +228,13 @@ public class ProjectGeneratorEx extends ProjectGenerator{
             String settings = new String(doGenerateGradleSettings(model));
             writeText(new File(dir, "settings.gradle"), settings);
             writeGradleWrapper(dir, Version.safeParse(request.getBootVersion()));
-        }
-        else {
+        } else {
             String pom = new String(doGenerateMavenPom(model));
             writeText(new File(dir, "pom.xml"), pom);
-            writeMavenWrapper(dir);
+//            writeMavenWrapper(dir);
         }
 
-        generateGitIgnore(dir, request);
+//        generateGitIgnore(dir, request);
 
         String applicationName = request.getApplicationName();
         String language = request.getLanguage();
@@ -245,16 +252,17 @@ public class ProjectGeneratorEx extends ProjectGenerator{
             write(new File(src, fileName), fileName, model);
         }
 
-        File test = new File(new File(dir, "src/test/" + codeLocation),
+        /*File test = new File(new File(dir, "src/test/" + codeLocation),
                 request.getPackageName().replace(".", "/"));
         test.mkdirs();
         setupTestModel(request, model);
         write(new File(test, applicationName + "Tests." + extension),
-                "ApplicationTests." + extension, model);
+                "ApplicationTests." + extension, model);*/
 
         File resources = new File(dir, "src/main/resources");
         resources.mkdirs();
         writeBinary(new File(resources, "application.yml"), this.templateRenderer.process("starter-application.yml", model).getBytes());
+        writeBinary(new File(resources, "logback-spring.xml"), this.templateRenderer.process("logback-spring.xml", model).getBytes());
 
         if (request.hasWebFacet()) {
             new File(dir, "src/main/resources/templates").mkdirs();
@@ -266,7 +274,8 @@ public class ProjectGeneratorEx extends ProjectGenerator{
     /**
      * Create a distribution file for the specified project structure directory and
      * extension.
-     * @param dir the directory
+     *
+     * @param dir       the directory
      * @param extension the file extension
      * @return the distribution file
      */
@@ -286,6 +295,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
 
     /**
      * Clean all the temporary files that are related to this root directory.
+     *
      * @param dir the directory to clean
      * @see #createDistributionFile
      */
@@ -295,12 +305,12 @@ public class ProjectGeneratorEx extends ProjectGenerator{
             tempFiles.forEach((File file) -> {
                 if (file.isDirectory()) {
                     FileSystemUtils.deleteRecursively(file);
-                }
-                else if (file.exists()) {
+                } else if (file.exists()) {
                     file.delete();
                 }
             });
         }
+        Arrays.asList(dir.getParentFile().listFiles()).forEach(file -> file.delete());
     }
 
     private void publishProjectGeneratedEvent(ProjectRequest request) {
@@ -315,7 +325,8 @@ public class ProjectGeneratorEx extends ProjectGenerator{
 
     /**
      * Generate a {@code .gitignore} file for the specified {@link ProjectRequest}.
-     * @param dir the root directory of the project
+     *
+     * @param dir     the root directory of the project
      * @param request the request to handle
      */
     protected void generateGitIgnore(File dir, ProjectRequest request) {
@@ -323,8 +334,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
         if (isMavenBuild(request)) {
             model.put("build", "maven");
             model.put("mavenBuild", true);
-        }
-        else {
+        } else {
             model.put("build", "gradle");
         }
         write(new File(dir, ".gitignore"), "gitignore.tmpl", model);
@@ -333,6 +343,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
     /**
      * Resolve the specified {@link ProjectRequest} and return the model to use to
      * generate the project.
+     *
      * @param originalRequest the request to handle
      * @return a model for that request
      */
@@ -604,8 +615,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
         if (binary) {
             writeBinary(target, this.projectResourceLocator
                     .getBinaryResource("classpath:project/" + location));
-        }
-        else {
+        } else {
             writeText(target, this.projectResourceLocator
                     .getTextResource("classpath:project/" + location));
         }
@@ -617,8 +627,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
             File dir = new File(rootDir, request.getBaseDir());
             dir.mkdirs();
             return dir;
-        }
-        else {
+        } else {
             return rootDir;
         }
     }
@@ -631,8 +640,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
     private void writeText(File target, String body) {
         try (OutputStream stream = new FileOutputStream(target)) {
             StreamUtils.copy(body, Charset.forName("UTF-8"), stream);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new IllegalStateException("Cannot write file " + target, ex);
         }
     }
@@ -640,8 +648,7 @@ public class ProjectGeneratorEx extends ProjectGenerator{
     private void writeBinary(File target, byte[] body) {
         try (OutputStream stream = new FileOutputStream(target)) {
             StreamUtils.copy(body, stream);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new IllegalStateException("Cannot write file " + target, ex);
         }
     }
