@@ -5,10 +5,18 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Properties;
+
 @Data
 @ConfigurationProperties(prefix = MyBatisExProperties.PREFIX)
 public class MyBatisExProperties {
     public static final String PREFIX = "mybatis";
+    public static final Properties DEFAULT_VENDOR_PROPERTIES = new Properties();
+    static {
+        DEFAULT_VENDOR_PROPERTIES.put("SQL Server","sqlserver");
+        DEFAULT_VENDOR_PROPERTIES.put("DB2","db2");
+        DEFAULT_VENDOR_PROPERTIES.put("Oracle","oracle");
+    }
 
     private String entityScanPackages;
     private Class<? extends TypeHandler<?>> defaultEnumTypeHandler;
@@ -27,6 +35,8 @@ public class MyBatisExProperties {
     private boolean returnInstanceForEmptyRow;
 
     private JdbcType jdbcTypeForNull = JdbcType.OTHER;
+
+    private Properties vendorProperties = null;
 
 
 }

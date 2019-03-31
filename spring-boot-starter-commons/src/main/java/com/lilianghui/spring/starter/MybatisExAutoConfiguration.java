@@ -10,8 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
+import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -31,6 +33,16 @@ import java.util.*;
 @EnableConfigurationProperties({MybatisProperties.class, MyBatisExProperties.class})
 @AutoConfigureBefore(name = "org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration")
 public class MybatisExAutoConfiguration {
+
+    @Resource
+    private MyBatisExProperties myBatisExProperties;
+
+    @Bean
+    public DatabaseIdProvider databaseIdProvider() {
+        VendorDatabaseIdProvider vendorDatabaseIdProvider = new VendorDatabaseIdProvider();
+        vendorDatabaseIdProvider.setProperties(Optional.ofNullable(myBatisExProperties.getVendorProperties()).orElse(MyBatisExProperties.DEFAULT_VENDOR_PROPERTIES));
+        return vendorDatabaseIdProvider;
+    }
 
 
     @Bean

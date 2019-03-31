@@ -43,6 +43,35 @@
         <relativePath/>
     </parent>
 
+    <!-- 私服定义 -->
+    <repositories>
+        <repository>
+            <id>zhuisuyun-saas.repo</id>
+            <url>http://nexus.zhuisuyun.net:819090/repository/zhuisuyun-saas/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    <!-- 发布路径 -->
+    <distributionManagement>
+        <repository>
+            <id>zhuisuyun-saas-release</id>
+            <name>zhuisuyun-saas-release</name>
+            <url>http://nexus.zhuisuyun.net:819090/repository/zhuisuyun-saas-release/</url>
+        </repository>
+        <snapshotRepository>
+            <id>zhuisuyun-saas-snapshot</id>
+            <name>zhuisuyun-saas-snapshot</name>
+            <url>http://nexus.zhuisuyun.net:819090/repository/zhuisuyun-saas-snapshot/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

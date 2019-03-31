@@ -240,9 +240,14 @@ public class ProjectGeneratorEx extends ProjectGenerator {
         String language = request.getLanguage();
 
         String codeLocation = language;
-        File src = new File(new File(dir, "src/main/" + codeLocation),
-                request.getPackageName().replace(".", "/"));
+        File src = new File(new File(dir, "src/main/" + codeLocation), request.getPackageName().replace(".", "/"));
         src.mkdirs();
+
+        Arrays.asList("controller","service","entity","mapper","client").forEach(name -> {
+            File file = new File(new File(dir, "src/main/" + codeLocation), request.getPackageName().replace(".", "/")+"/"+name+"/");
+            file.mkdirs();
+        });
+
         String extension = ("kotlin".equals(language) ? "kt" : language);
         write(new File(src, applicationName + "." + extension),
                 "Application." + extension, model);
@@ -252,21 +257,29 @@ public class ProjectGeneratorEx extends ProjectGenerator {
             write(new File(src, fileName), fileName, model);
         }
 
-        /*File test = new File(new File(dir, "src/test/" + codeLocation),
+        File test = new File(new File(dir, "src/test/" + codeLocation),
                 request.getPackageName().replace(".", "/"));
         test.mkdirs();
         setupTestModel(request, model);
         write(new File(test, applicationName + "Tests." + extension),
-                "ApplicationTests." + extension, model);*/
+                "ApplicationTests." + extension, model);
 
         File resources = new File(dir, "src/main/resources");
         resources.mkdirs();
         writeBinary(new File(resources, "application.yml"), this.templateRenderer.process("starter-application.yml", model).getBytes());
         writeBinary(new File(resources, "logback-spring.xml"), this.templateRenderer.process("logback-spring.xml", model).getBytes());
 
+       try {
+           new File(dir, "src/main/docker/").mkdirs();
+           new File(dir, "src/main/docker/Dockerfile").createNewFile();
+           writeBinary(new File(dir,"src/main/docker/Dockerfile"), this.templateRenderer.process("starter-Dockerfile", model).getBytes());
+       }catch (Exception e){
+           e.printStackTrace();
+       }
         if (request.hasWebFacet()) {
             new File(dir, "src/main/resources/templates").mkdirs();
             new File(dir, "src/main/resources/static").mkdirs();
+            new File(dir, "src/main/resources/mapper").mkdirs();
         }
         return rootDir;
     }

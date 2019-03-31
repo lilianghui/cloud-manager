@@ -153,6 +153,9 @@ initializr:
       default: false
     - name: 2.1.4
       id: 2.1.4.RELEASE
+      default: false
+    - name: 2.0.6.RELEASE
+      id: 2.0.6.RELEASE
       default: true
     - name: 1.5.17
       id: 1.5.17.RELEASE
