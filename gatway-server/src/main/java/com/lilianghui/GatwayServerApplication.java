@@ -1,7 +1,9 @@
 package com.lilianghui;
 
+import cn.springcloud.feign.VenusFeignAutoConfig;
 import com.lilianghui.config.DefaultRibbonConfiguration;
 import com.lilianghui.config.filter.AuthHeaderFilter;
+import com.lilianghui.config.filter.GrayFilter;
 import com.lilianghui.spring.starter.annotation.EnableNettyRpcClients;
 import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import tk.mybatis.spring.annotation.MapperScan;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = VenusFeignAutoConfig.class)
 @EnableZuulProxy
 @MapperScan("com.lilianghui.mapper")
 @EnableFeignClients("com.lilianghui.client")
@@ -47,6 +49,11 @@ public class GatwayServerApplication extends SpringBootServletInitializer {
     @Bean
     public AuthHeaderFilter authHeaderFilter() {
         return new AuthHeaderFilter();
+    }
+
+    @Bean
+    public GrayFilter grayFilter() {
+        return new GrayFilter();
     }
 
 //    @Bean

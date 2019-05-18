@@ -1,5 +1,6 @@
 package com.lilianghui;
 
+import cn.springcloud.feign.VenusFeignAutoConfig;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,6 +13,7 @@ import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import tk.mybatis.spring.annotation.MapperScan;
 
@@ -19,7 +21,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableHystrix
 @EnableHystrixDashboard
 @MapperScan("com.lilianghui.mapper")
-@SpringCloudApplication
+@SpringBootApplication(exclude = VenusFeignAutoConfig.class)
 @EnableFeignClients("com.lilianghui.client")
 public class ShiroServerApplication extends SpringBootServletInitializer {
 

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -57,18 +58,22 @@ public class NettyRpcServerRegistrar implements ApplicationContextAware, Initial
 
 
     @Bean
-    public DiscoveryService discoveryService(@Autowired ApplicationInfoManager applicationInfoManager) throws Exception {
-        if (nettyRpcProperties.isRegisterEureka()) {
+    @ConditionalOnClass(name = "com.netflix.discovery.DiscoveryClient")
+    @ConditionalOnProperty(prefix = NettyRpcProperties.PREFIX,value = "registerEureka",havingValue = "true",matchIfMissing=true)
+    public DiscoveryService eurekaService(@Autowired ApplicationInfoManager applicationInfoManager) throws Exception {
             EurekaService eurekaService = new EurekaService(nettyRpcProperties);
             eurekaService.setApplicationInfoManager(applicationInfoManager);
             eurekaService.register(applicationName, String.valueOf(nettyRpcProperties.getPort()));
             return eurekaService;
-        } else {
-            ZookeeperService zookeeperService = new ZookeeperService(nettyRpcProperties);
-            zookeeperService.register(applicationName, String.format("%s:%s", WebUtils.getLocalIp(), nettyRpcProperties.getPort()));
-            return zookeeperService;
-        }
+    }
 
+    @Bean
+    @ConditionalOnClass(name = "org.apache.zookeeper.ZooKeeper")
+    @ConditionalOnProperty(prefix = NettyRpcProperties.PREFIX,value = "registerEureka",havingValue = "false")
+    public DiscoveryService discoveryService() throws Exception {
+        ZookeeperService zookeeperService = new ZookeeperService(nettyRpcProperties);
+        zookeeperService.register(applicationName, String.format("%s:%s", WebUtils.getLocalIp(), nettyRpcProperties.getPort()));
+        return zookeeperService;
     }
 
     @Override
@@ -107,7 +112,9 @@ public class NettyRpcServerRegistrar implements ApplicationContextAware, Initial
     @Override
     public void destroy() throws Exception {
         try {
-            future.channel().closeFuture().sync();
+            if (future != null) {
+                future.channel().closeFuture().sync();
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
     <contextName>SpringBootDemo</contextName>
     <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
     <property name="LOG_PATH" value="/home"></property>
@@ -28,7 +31,7 @@
         <append>true</append>
         <!-- 日志文件的格式 -->
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger Line:%-3L - %msg%n</pattern>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
             <charset>utf-8</charset>
         </encoder>
         <!-- 此日志文件只记录error级别的 -->
@@ -59,7 +62,7 @@
         <append>true</append>
         <!-- 日志文件的格式 -->
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger Line:%-3L - %msg%n</pattern>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
             <charset>utf-8</charset>
         </encoder>
         <!-- 此日志文件只记录warn级别的 -->
@@ -90,7 +93,7 @@
         <append>true</append>
         <!-- 日志文件的格式 -->
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger Line:%-3L - %msg%n</pattern>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
             <charset>utf-8</charset>
         </encoder>
         <!-- 此日志文件只记录info级别的 -->
@@ -120,7 +123,7 @@
         <append>true</append>
         <!-- 日志文件的格式 -->
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger Line:%-3L - %msg%n</pattern>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
             <charset>utf-8</charset>
         </encoder>
         <!-- 此日志文件只记录warn级别的 -->
@@ -134,7 +137,7 @@
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!--encoder 默认配置为PatternLayoutEncoder-->
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger Line:%-3L - %msg%n</pattern>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             <charset>utf-8</charset>
         </encoder>
         <!--此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息-->
@@ -143,7 +146,7 @@
         </filter>
     </appender>
 
-   <!-- <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+    <!--<appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         &lt;!&ndash;安装logstash机器的ip地址&ndash;&gt;
         <destination>${LOGSTASH-DESTINATION}</destination>
         &lt;!&ndash;引入过滤类&ndash;&gt;
@@ -189,17 +192,19 @@
     <logger name="jdbc.sqltiming" level="OFF"/>
 
 
-    <root level="DEBUG">
-        <appender-ref ref="FILE-ERROR"/>
-        <appender-ref ref="FILE-WARN"/>
-        <appender-ref ref="FILE-INFO"/>
-        <appender-ref ref="FILE-DEBUG"/>
-        <appender-ref ref="STDOUT"/>
-        <!--<appender-ref ref="LOGSTASH"/>-->
-    </root>
+    <springProfile name="default">
+        <!--生产环境下，将此级别配置为适合的级别，以免日志文件太多或影响程序性能-->
+        <root level="INFO">
+            <appender-ref ref="FILE-ERROR"/>
+            <appender-ref ref="FILE-WARN"/>
+            <appender-ref ref="FILE-INFO"/>
+            <appender-ref ref="FILE-DEBUG"/>
+            <appender-ref ref="STDOUT"/>
+            <!--<appender-ref ref="LOGSTASH"/>-->
+        </root>
+    </springProfile>
 
     <!-- OFF、TRACE、DEBUG、INFO、WARN、ERROR -->
-    <include resource="org/springframework/boot/logging/logback/base.xml"/>
     <jmxConfigurator/>
 
     <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />

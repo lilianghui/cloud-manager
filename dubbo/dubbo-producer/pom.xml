@@ -6,7 +6,7 @@
         <artifactId>cloud-manager</artifactId>
         <groupId>com.lilianghui</groupId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>com.lilianghui</groupId>
@@ -40,6 +40,11 @@
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>1.3.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+            <version>1.2.10</version>
+        </dependency>
 
         <dependency>
             <groupId>com.lilianghui</groupId>
@@ -49,6 +54,10 @@
                 <exclusion>
                     <artifactId>spring-boot-starter-jta-atomikos</artifactId>
                     <groupId>org.springframework.boot</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-cloud-netflix-eureka-client</artifactId>
+                    <groupId>org.springframework.cloud</groupId>
                 </exclusion>
             </exclusions>
         </dependency>

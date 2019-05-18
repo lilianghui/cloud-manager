@@ -7,6 +7,7 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 import java.net.Inet4Address;
@@ -21,6 +22,7 @@ public class DefaultRibbonConfiguration {
     private static final String LOCAL_HOST = getIP();
 
     @Bean
+    @ConditionalOnProperty(name = "zuul.ratelimit.enabled", havingValue = "false", matchIfMissing = true)
     public IRule ribbonRule() {
         return StringUtils.isNotBlank(LOCAL_HOST) ? new LocalServerBalancerRule() : new ZoneAvoidanceRule();
     }

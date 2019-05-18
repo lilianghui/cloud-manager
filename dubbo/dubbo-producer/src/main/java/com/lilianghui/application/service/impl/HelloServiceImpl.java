@@ -5,9 +5,11 @@ import com.codingapi.txlcn.tc.annotation.LcnTransaction;
 import com.lilianghui.application.mapper.UserMapper;
 import com.lilianghui.entity.User;
 import com.lilianghui.service.HelloService;
+import org.apache.ibatis.session.RowBounds;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service(version = "1.0.0",interfaceClass = HelloService.class)
 @org.springframework.stereotype.Service
@@ -28,5 +30,10 @@ public class HelloServiceImpl implements HelloService {
     public User selectByPrimaryKey(Object id) {
         userMapper.deleteByPrimaryKey("1");
         return userMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public List<User> selectByRowBounds(int offset, int limit) {
+        return userMapper.selectByRowBounds(new User(),new RowBounds(offset,limit));
     }
 }

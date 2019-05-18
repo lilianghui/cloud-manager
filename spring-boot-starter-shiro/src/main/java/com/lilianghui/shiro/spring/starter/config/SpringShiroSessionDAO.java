@@ -152,7 +152,6 @@ public class SpringShiroSessionDAO extends AbstractSessionDAO {
             if (session instanceof RedisSimpleSession) {
                 Date date = new Date();
                 ((RedisSimpleSession) session).setCreateTimestamp(date);
-                System.err.println("create--"+session.getId() + "--->" + date.toLocaleString());
             }
             memorySessionDAO.create(session);
         } catch (Exception e) {
@@ -173,7 +172,6 @@ public class SpringShiroSessionDAO extends AbstractSessionDAO {
         try {
             session = (RedisSimpleSession) memorySessionDAO.doReadSession(sessionId);
             if (session != null && DateUtils.addSeconds(session.getCreateTimestamp(), timeToLiveSeconds).before(new Date())) {
-                System.err.println("read--"+session.getId() + "--->" + session.getCreateTimestamp().toLocaleString());
                 return null;
             }
         } catch (UnknownSessionException e) {

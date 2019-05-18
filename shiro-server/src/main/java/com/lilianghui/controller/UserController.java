@@ -5,6 +5,7 @@ import com.lilianghui.entity.User;
 import com.lilianghui.mapper.UserMapper;
 import com.lilianghui.service.UserService;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("user")
 public class UserController {

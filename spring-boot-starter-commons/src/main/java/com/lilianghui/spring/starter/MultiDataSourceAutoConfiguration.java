@@ -47,6 +47,8 @@ import org.springframework.util.StringUtils;
 import tk.mybatis.spring.mapper.ClassPathMapperScanner;
 import tk.mybatis.spring.mapper.MapperFactoryBean;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
@@ -95,6 +97,10 @@ public class MultiDataSourceAutoConfiguration implements InitializingBean, Envir
         this.configurationCustomizers = configurationCustomizersProvider.getIfAvailable();
     }
 
+    @Bean
+    public AtomikosTccSpringAdapter atomikosTccSpringAdapter(){
+        return new AtomikosTccSpringAdapter();
+    }
     /**
      * 注入事物管理器
      *
@@ -321,6 +327,19 @@ public class MultiDataSourceAutoConfiguration implements InitializingBean, Envir
         @Override
         public Class<?> getObjectType() {
             return clazz;
+        }
+    }
+
+    public static class AtomikosTccSpringAdapter{
+
+        @PostConstruct
+        public void start(){
+            com.atomikos.icatch.config.Configuration.init();
+        }
+
+        @PreDestroy
+        public void shutdown(){
+            com.atomikos.icatch.config.Configuration.shutdown(false);
         }
     }
 }

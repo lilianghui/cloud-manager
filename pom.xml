@@ -34,6 +34,7 @@
         <module>dubbo</module>
         <module>oauth2-client</module>
         <module>grpc-interface</module>
+        <module>big-data</module>
     </modules>
 
     <parent>

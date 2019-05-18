@@ -50,6 +50,10 @@
                     <artifactId>spring-boot-starter-jta-atomikos</artifactId>
                     <groupId>org.springframework.boot</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>spring-cloud-netflix-eureka-client</artifactId>
+                    <groupId>org.springframework.cloud</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 

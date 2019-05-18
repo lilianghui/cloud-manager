@@ -8,7 +8,9 @@ import com.lilianghui.spring.starter.netty.rpc.server.NettyRpcServerRegistrar;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.client.RestTemplate;
 
 @Import(MultiDataSourceAutoConfiguration.class)
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class, MybatisExAutoConfiguration.class,
@@ -19,4 +21,8 @@ public class AtomikosApplication {
         SpringApplication.run(AtomikosApplication.class, args);
     }
 
+    @Bean
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
+    }
 }

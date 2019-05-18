@@ -11,6 +11,8 @@ import com.lilianghui.service.ItemService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class TransactionalImpl implements TransactionalService {
 
@@ -39,6 +41,11 @@ public class TransactionalImpl implements TransactionalService {
     @Override
     public Item selectItemByPrimaryKey(Long itemId) {
         return lcnService.selectByPrimaryKey(itemId);
+    }
+
+    @Override
+    public List<User> selectByRowBounds(int offset, int limit) {
+        return helloService.selectByRowBounds(offset,limit);
     }
 
 }

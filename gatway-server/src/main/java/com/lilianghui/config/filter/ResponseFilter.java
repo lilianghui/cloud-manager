@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
+
 /**
  *
  */
@@ -22,7 +24,7 @@ public class ResponseFilter extends ZuulFilter {
 
     @Override
     public String filterType() {
-        return "post";
+        return POST_TYPE;
     }
 
     @Override

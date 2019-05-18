@@ -1,5 +1,25 @@
-server:
-  port: 8084
 servlet:
   jsp:
     class-name: org.apache.jasper.servlet.JspServlet
+
+---
+
+server:
+  port: 8084
+spring:
+  profiles: default
+eureka:
+  instance:
+    metadata-map:
+      host-mark: running-host
+
+---
+
+server:
+  port: 8085
+spring:
+  profiles: publish
+eureka:
+  instance:
+    metadata-map:
+      host-mark: gray-host

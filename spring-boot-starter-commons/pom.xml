@@ -29,6 +29,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <additionalparam>-Xdoclint:none</additionalparam>
         <p6spy.version>3.7.0</p6spy.version>
+        <atomikos.version>4.0.6</atomikos.version>
     </properties>
 
     <dependencies>
@@ -83,6 +84,37 @@
             <artifactId>spring-boot-starter-jta-atomikos</artifactId>
             <version>2.1.0.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-tcc-rest</artifactId>
+            <version>${atomikos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-tcc-rest-api</artifactId>
+            <version>${atomikos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-api</artifactId>
+            <version>${atomikos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions</artifactId>
+            <version>${atomikos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>atomikos-util</artifactId>
+            <version>${atomikos.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <version>2.0.1.RELEASE</version>
+        </dependency>
 
         <dependency>
             <groupId>mysql</groupId>
@@ -136,6 +168,13 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-netflix-eureka-server</artifactId>
             <version>2.0.1.RELEASE</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>cn.springcloud.feign</groupId>
+            <artifactId>venus-cloud-starter-feign</artifactId>
+            <version>1.0.0</version>
         </dependency>
 
     </dependencies>

@@ -4,6 +4,7 @@ import com.lilianghui.client.ShiroFeignClient;
 import com.lilianghui.entity.User;
 import com.lilianghui.shiro.spring.starter.core.CaptchaUsernamePasswordToken;
 import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -15,6 +16,7 @@ import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 public class UserRealm extends AuthorizingRealm {
     @Resource
     private ShiroFeignClient shiroFeignClient;
@@ -47,16 +49,22 @@ public class UserRealm extends AuthorizingRealm {
     /* 这里编写用户登录认证代码 */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authcToken) throws AuthenticationException {
-        UsernamePasswordToken token = (UsernamePasswordToken) authcToken;
-        if (authcToken instanceof CaptchaUsernamePasswordToken) {
-            String captcha = ((CaptchaUsernamePasswordToken) authcToken).getCaptcha();
-            if (StringUtils.isBlank(captcha) || !captcha.equalsIgnoreCase("")) {
-                throw new IncorrectCaptchaException();// 验证码错误
+        User user = null;
+        try {
+            UsernamePasswordToken token = (UsernamePasswordToken) authcToken;
+            if (authcToken instanceof CaptchaUsernamePasswordToken) {
+                String captcha = ((CaptchaUsernamePasswordToken) authcToken).getCaptcha();
+                if (StringUtils.isBlank(captcha) || !captcha.equalsIgnoreCase("")) {
+                    throw new IncorrectCaptchaException();// 验证码错误
+                }
             }
+            User record = new User();
+            record.setId(token.getUsername());
+            user = shiroFeignClient.selectByPrimaryKey(record);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new UnknownAccountException(e);
         }
-        User record = new User();
-        record.setId(token.getUsername());
-        User user = shiroFeignClient.selectByPrimaryKey(record);
         if (user == null) {
             throw new UnknownAccountException();// 没找到帐号
         }

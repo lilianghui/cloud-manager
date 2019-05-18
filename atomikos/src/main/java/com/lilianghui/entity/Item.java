@@ -13,9 +13,19 @@ import java.util.Date;
 public class Item {
     @Id
     @Column(name = "id")
-    private Integer id;
+    private Long id;
     @Column(name = "value")
     private Integer value;
     @Column(name = "indate")
     private Date indate ;
+
+    @Column(name = "txId")
+    private String txId;
+
+    @Column(name = "expireTime")
+    private Date expireTime;
+
+    @Column(name = "state")
+    private String state;
+
 }

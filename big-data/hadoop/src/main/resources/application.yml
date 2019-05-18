@@ -1,0 +1,5 @@
+spring:
+  main:
+    show_banner: false
+  hadoop:
+    fsUri: hdfs://192.168.1.106:8020
