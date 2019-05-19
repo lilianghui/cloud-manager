@@ -97,7 +97,7 @@ public class NettyRpcServerRegistrar implements ApplicationContextAware, Initial
                         .option(ChannelOption.SO_BACKLOG, 128)
                         .childOption(ChannelOption.SO_KEEPALIVE, true);
                 future = bootstrap.bind(nettyRpcProperties.getHost(), nettyRpcProperties.getPort()).sync();
-                log.info("Netty RPC Server start success ip:%s port:%d", nettyRpcProperties.getHost(), nettyRpcProperties.getPort());
+                log.info("Netty RPC Server start success ip:{} port:{}", nettyRpcProperties.getHost(), nettyRpcProperties.getPort());
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }

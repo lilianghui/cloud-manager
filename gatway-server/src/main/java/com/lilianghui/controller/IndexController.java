@@ -118,16 +118,15 @@ public class IndexController {
     public Map<String, Object> rpc() {
         Map<String, Object> result = new HashMap<>();
         try {
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 1; i++) {
                 long start = System.currentTimeMillis();
                 System.err.println("-" + i + "-----rpc--" + helloService.hello("aaaaaaaaaaaaaaa") + "------" + new Date(System.currentTimeMillis() - start).toLocaleString());
             }
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 1; i++) {
                 long start = System.currentTimeMillis();
                 User user = new User();
                 user.setId("1");
                 user = shiroService.selectByPrimaryKey(user);
-                System.err.println("------http--------" + new Date(System.currentTimeMillis() - start).toLocaleString());
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);

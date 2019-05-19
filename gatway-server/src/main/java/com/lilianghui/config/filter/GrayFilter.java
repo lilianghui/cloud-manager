@@ -3,11 +3,10 @@ package com.lilianghui.config.filter;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import io.jmnarloch.spring.cloud.ribbon.support.RibbonFilterContextHolder;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
-
+import static com.lilianghui.spring.starter.gray.predicate.MetadataAwarePredicate.GRAY_HEADER_GRAY;
+import static com.lilianghui.spring.starter.gray.predicate.MetadataAwarePredicate.GRAY_HEADER_NAME;
+import static com.lilianghui.spring.starter.gray.predicate.MetadataAwarePredicate.GRAY_HEADER_RUNNUNG;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 public class GrayFilter extends ZuulFilter {
@@ -30,12 +29,12 @@ public class GrayFilter extends ZuulFilter {
 
     @Override
     public Object run() throws ZuulException {
-        HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
-        String mark = request.getHeader("gray_mark");
-        if (!StringUtils.isEmpty(mark) && "enable".equals(mark)) {
-            RibbonFilterContextHolder.getCurrentContext().add("host-mark", "gray-host");
+        RequestContext requestContext = RequestContext.getCurrentContext();
+        String mark = requestContext.getRequest().getHeader(GRAY_HEADER_NAME);
+        if ("enable".equals(mark) || GRAY_HEADER_GRAY.equals(mark)) {
+            requestContext.addZuulRequestHeader(GRAY_HEADER_NAME, GRAY_HEADER_GRAY);
         } else {
-            RibbonFilterContextHolder.getCurrentContext().add("host-mark", "running-host");
+            requestContext.addZuulRequestHeader(GRAY_HEADER_NAME, GRAY_HEADER_RUNNUNG);
         }
         return null;
     }

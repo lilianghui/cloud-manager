@@ -1,6 +1,8 @@
 package com.lilianghui;
 
+import brave.sampler.Sampler;
 import cn.springcloud.feign.VenusFeignAutoConfig;
+import com.lilianghui.config.DefaultFeignConfiguration;
 import com.lilianghui.config.DefaultRibbonConfiguration;
 import com.lilianghui.config.filter.AuthHeaderFilter;
 import com.lilianghui.config.filter.GrayFilter;
@@ -17,14 +19,12 @@ import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import tk.mybatis.spring.annotation.MapperScan;
 
-@SpringBootApplication(exclude = VenusFeignAutoConfig.class)
+@SpringBootApplication(exclude = {VenusFeignAutoConfig.class})
 @EnableZuulProxy
 @MapperScan("com.lilianghui.mapper")
-@EnableFeignClients("com.lilianghui.client")
-//@EnableEurekaClient
+@EnableFeignClients(value = "com.lilianghui.client", defaultConfiguration = DefaultFeignConfiguration.class)
 @RibbonClients(defaultConfiguration = DefaultRibbonConfiguration.class)
 @EnableNettyRpcClients(basePackages = {"com.lilianghui.interfaces"})
 public class GatwayServerApplication extends SpringBootServletInitializer {
@@ -79,4 +79,10 @@ public class GatwayServerApplication extends SpringBootServletInitializer {
         connector.setRedirectPort(httpsPort);
         return connector;
     }
+
+    @Bean
+    public Sampler sleuthTraceSampler() {
+        return Sampler.ALWAYS_SAMPLE;
+    }
+
 }

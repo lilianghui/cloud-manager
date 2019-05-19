@@ -74,16 +74,16 @@
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>-->
 
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-            <version>0.32.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing.brave</groupId>
-            <artifactId>brave-opentracing</artifactId>
-            <version>0.33.11</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.opentracing</groupId>-->
+            <!--<artifactId>opentracing-api</artifactId>-->
+            <!--<version>0.32.0</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>io.opentracing.brave</groupId>-->
+            <!--<artifactId>brave-opentracing</artifactId>-->
+            <!--<version>0.33.11</version>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -105,11 +105,11 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.jmnarloch</groupId>
-            <artifactId>ribbon-discovery-filter-spring-cloud-starter</artifactId>
-            <version>2.1.0</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.jmnarloch</groupId>-->
+            <!--<artifactId>ribbon-discovery-filter-spring-cloud-starter</artifactId>-->
+            <!--<version>2.1.0</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>com.marcosbarbero.cloud</groupId>
             <artifactId>spring-cloud-zuul-ratelimit</artifactId>
@@ -118,7 +118,6 @@
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-okhttp</artifactId>
-            <version>10.2.0</version>
         </dependency>
 
 

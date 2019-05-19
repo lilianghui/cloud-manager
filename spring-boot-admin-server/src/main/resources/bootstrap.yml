@@ -5,11 +5,11 @@ spring:
     #    baseUrl: http://llh:8083
     enabled: true
     sender:
-      type: kafka
-    kafka:
+      type: rocket
+    rocket:
       topic: zipkin
-  kafka:
-    bootstrap-servers: 127.0.0.1:9092
+#  kafka:
+#    bootstrap-servers: 127.0.0.1:9092
   security:
     user:
       name: admin

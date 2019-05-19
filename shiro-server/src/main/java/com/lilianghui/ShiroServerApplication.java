@@ -1,5 +1,6 @@
 package com.lilianghui;
 
+import brave.sampler.Sampler;
 import cn.springcloud.feign.VenusFeignAutoConfig;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import org.springframework.boot.SpringApplication;
@@ -49,4 +50,8 @@ public class ShiroServerApplication extends SpringBootServletInitializer {
         return registrationBean;
     }
 
+    @Bean
+    public Sampler sleuthTraceSampler() {
+        return Sampler.ALWAYS_SAMPLE;
+    }
 }

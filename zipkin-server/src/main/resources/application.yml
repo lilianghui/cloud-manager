@@ -25,10 +25,15 @@ spring:
 #表示zipkin数据存储方式是mysql
 zipkin:
   collector:
-    kafka:
-      bootstrap-servers: 127.0.0.1:9092
-      zookeeper: 127.0.0.1:2181
-      topic: zipkin
+#    kafka:
+#      bootstrap-servers: 127.0.0.1:9092
+#      zookeeper: 127.0.0.1:2181
+#      topic: zipkin
+    rocket:
+      nameServer: llh:9876
+      consumer:
+        consumerGroup: producer-group
+        topic: zipkin
   storage:
     type: mysql
 

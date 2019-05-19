@@ -1,18 +1,17 @@
 package com.lilianghui.controller;
 
+import com.lilianghui.client.GateWayFeignClient;
 import com.lilianghui.client.IndexFeignClient;
 import com.lilianghui.entity.User;
 import com.lilianghui.mapper.UserMapper;
 import com.lilianghui.service.UserService;
+import com.lilianghui.spring.starter.Interceptor.RequestContextHolder;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import tk.mybatis.mapper.entity.Example;
 
@@ -28,6 +27,8 @@ public class UserController {
     private UserService userService;
     @Resource
     private IndexFeignClient indexFeignClient;
+    @Resource
+    private GateWayFeignClient gateWayFeignClient;
 
     @RequestMapping("list")
     public List<User> list(String name) {
@@ -38,7 +39,7 @@ public class UserController {
         return userService.selectByExample(example);
     }
 
-    @RequestMapping("selectByPrimaryKey")
+    @RequestMapping(value = "selectByPrimaryKey" ,method = RequestMethod.POST)
     public User selectByPrimaryKey(@RequestBody User user) {
         return userService.selectByPrimaryKey(user);
     }
