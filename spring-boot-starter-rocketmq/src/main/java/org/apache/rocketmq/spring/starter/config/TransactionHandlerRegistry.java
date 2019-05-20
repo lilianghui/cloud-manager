@@ -19,9 +19,11 @@ package org.apache.rocketmq.spring.starter.config;
 
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -52,7 +54,9 @@ public class TransactionHandlerRegistry implements DisposableBean {
                     handler.getBeanName()));
         }
         listenerContainers.add(handler.getName());
-
-        rocketMQTemplate.createAndStartTransactionMQProducer(handler.getName(), handler.getListener(), handler.getCheckExecutor());
+        TransactionMQProducer transactionMQProducer = rocketMQTemplate.createAndStartTransactionMQProducer(handler.getName(), handler.getListener(), handler.getCheckExecutor());
+        if(handler.getBeanFactory() instanceof DefaultListableBeanFactory){
+            ((DefaultListableBeanFactory) handler.getBeanFactory()).registerSingleton(handler.getName(),transactionMQProducer);
+        }
     }
 }

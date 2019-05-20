@@ -4,7 +4,6 @@ import brave.Span;
 import brave.SpanCustomizer;
 import brave.Tracer;
 import brave.Tracing;
-import brave.kafka.clients.KafkaTags;
 import brave.propagation.TraceContextOrSamplingFlags;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -15,10 +14,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.messaging.MessageHeaders;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.lilianghui.spring.starter.brave.rocket.SleuthRocketPropagation.ROCKET_KEY_TAG;
 import static com.lilianghui.spring.starter.brave.rocket.SleuthRocketPropagation.ROCKET_TOPIC_TAG;
@@ -97,7 +95,9 @@ public class SleuthRocketListenerAspect extends AbstractSleuthRocket {
         }
 
         TraceContextOrSamplingFlags extractAndClearHeaders(MessageExt messageExt) {
-            TraceContextOrSamplingFlags extracted = extractor.extract(messageExt.getProperties());
+            Map<String ,Object> map = new HashMap<>();
+            messageExt.getProperties().forEach((s, s2) -> map.put(s,s2));
+            TraceContextOrSamplingFlags extracted = extractor.extract(new MessageHeaders(map));
             // clear propagation headers if we were able to extract a span
             if (extracted != TraceContextOrSamplingFlags.EMPTY) {
                 tracing.propagation().keys().forEach(key -> messageExt.getProperties().remove(key));

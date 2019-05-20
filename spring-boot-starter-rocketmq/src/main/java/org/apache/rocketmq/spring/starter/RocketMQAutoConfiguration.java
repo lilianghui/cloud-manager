@@ -22,6 +22,7 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
+import org.apache.rocketmq.spring.starter.core.ProducerBeanFactory;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import java.util.Map;
@@ -75,6 +76,12 @@ import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerCon
 @Order
 @Slf4j
 public class RocketMQAutoConfiguration {
+
+    @Bean
+    public ProducerBeanFactory producerBeanFactory(){
+        return new ProducerBeanFactory();
+    }
+
     @Bean
     @ConditionalOnClass(DefaultMQProducer.class)
     @ConditionalOnMissingBean(DefaultMQProducer.class)
@@ -109,12 +116,13 @@ public class RocketMQAutoConfiguration {
     @ConditionalOnBean(DefaultMQProducer.class)
     @ConditionalOnMissingBean(name = "rocketMQTemplate")
     @Order(2)
-    public RocketMQTemplate rocketMQTemplate(DefaultMQProducer mqProducer,
-        @Autowired(required = false)
+    public RocketMQTemplate rocketMQTemplate(DefaultMQProducer mqProducer, ProducerBeanFactory producerBeanFactory,
+                                             @Autowired(required = false)
         @Qualifier("rocketMQMessageObjectMapper")
             ObjectMapper objectMapper) {
         RocketMQTemplate rocketMQTemplate = new RocketMQTemplate();
         rocketMQTemplate.setProducer(mqProducer);
+        rocketMQTemplate.setProducerBeanFactory(producerBeanFactory);
         if (Objects.nonNull(objectMapper)) {
             rocketMQTemplate.setObjectMapper(objectMapper);
         }

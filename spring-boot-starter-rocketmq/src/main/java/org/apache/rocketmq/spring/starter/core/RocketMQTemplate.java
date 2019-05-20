@@ -29,13 +29,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.MessageQueueSelector;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.client.producer.TransactionListener;
-import org.apache.rocketmq.client.producer.TransactionMQProducer;
-import org.apache.rocketmq.client.producer.TransactionSendResult;
+import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.spring.starter.RocketMQConfigUtils;
@@ -58,6 +52,10 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     @Getter
     @Setter
     private DefaultMQProducer producer;
+
+    @Getter
+    @Setter
+    private ProducerBeanFactory producerBeanFactory;
 
     @Setter
     @Getter
@@ -571,6 +569,13 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         return txProducer.sendMessageInTransaction(rocketMsg, arg);
     }
 
+    public TransactionSendResult sendMessageInTransaction(final String txProducerGroup, final String destination, final Message<?> message, final Object arg , LocalTransactionExecuter tranExecuter) throws MQClientException
+    {
+        TransactionMQProducer txProducer = this.stageMQProducer(txProducerGroup);
+        org.apache.rocketmq.common.message.Message rocketMsg = this.convertToRocketMsg(destination, message);
+        return txProducer.sendMessageInTransaction(rocketMsg,tranExecuter, arg);
+    }
+
     /**
      * Remove a TransactionMQProducer from cache by manual.
      * <p>Note: RocketMQTemplate can release all cached producers when bean destroying, it is not recommended to directly
@@ -599,19 +604,19 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      * @return true if producer is created and started; false if the named producer already exists in cache.
      * @throws MQClientException
      */
-    public boolean createAndStartTransactionMQProducer(String txProducerGroup, TransactionListener transactionListener,
+    public TransactionMQProducer createAndStartTransactionMQProducer(String txProducerGroup, TransactionListener transactionListener,
                                                                     ExecutorService executorService) throws MQClientException {
         txProducerGroup = getTxProducerGroupName(txProducerGroup);
         if (cache.containsKey(txProducerGroup)) {
             log.info(String.format("get TransactionMQProducer '%s' from cache", txProducerGroup));
-            return false;
+            return null;
         }
 
         TransactionMQProducer txProducer = createTransactionMQProducer(txProducerGroup, transactionListener, executorService);
         txProducer.start();
         cache.put(txProducerGroup, txProducer);
 
-        return true;
+        return txProducer;
     }
 
     private TransactionMQProducer createTransactionMQProducer(String name, TransactionListener transactionListener,
@@ -633,6 +638,6 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         txProducer.setCompressMsgBodyOverHowmuch(producer.getCompressMsgBodyOverHowmuch());
         txProducer.setRetryAnotherBrokerWhenNotStoreOK(producer.isRetryAnotherBrokerWhenNotStoreOK());
 
-        return txProducer;
+        return producerBeanFactory.createTransactionMQProducer(txProducer);
     }
 }

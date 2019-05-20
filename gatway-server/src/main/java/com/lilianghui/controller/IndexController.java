@@ -21,15 +21,18 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.rocketmq.client.producer.LocalTransactionExecuter;
+import org.apache.rocketmq.client.producer.LocalTransactionState;
+import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.w3c.dom.Document;
@@ -114,10 +117,11 @@ public class IndexController {
 
 
     @ResponseBody
-    @RequestMapping("rpc")
+    @RequestMapping(value = "rpc", method = RequestMethod.POST)
     public Map<String, Object> rpc() {
         Map<String, Object> result = new HashMap<>();
         try {
+            log.error("aaa");
             for (int i = 0; i < 1; i++) {
                 long start = System.currentTimeMillis();
                 System.err.println("-" + i + "-----rpc--" + helloService.hello("aaaaaaaaaaaaaaa") + "------" + new Date(System.currentTimeMillis() - start).toLocaleString());
@@ -131,6 +135,7 @@ public class IndexController {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+        result.put("true","name");
         return result;
     }
 

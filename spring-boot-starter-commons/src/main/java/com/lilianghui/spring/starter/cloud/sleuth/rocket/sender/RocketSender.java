@@ -150,7 +150,7 @@ public final class RocketSender extends Sender {
                     }
                 });
             } catch (Exception e) {
-
+                log.error(e.getMessage(),e);
             }
         }
     }

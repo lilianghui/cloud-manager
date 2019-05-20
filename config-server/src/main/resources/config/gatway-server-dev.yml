@@ -102,10 +102,10 @@ spring:
 #        bindings:
 #          springCloudBusOutput:
 #            producer:
-#              groupName: test
+#              groupName: ${spring.application.name}
 #          springCloudBusInput:
 #            consumer:
-#              groupName: test
+#              groupName: ${spring.application.name}
   redis:
     password:
     database: 0
@@ -130,7 +130,7 @@ spring:
   rocketmq:
     nameServer: llh:9876
     producer:
-      group: producer-group
+      group: ${spring.application.name}
   p6spy:
     logFile: /home/${spring.application.name}/spy.log
 

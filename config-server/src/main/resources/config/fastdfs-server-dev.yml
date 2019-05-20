@@ -3,6 +3,11 @@ spring:
     multipart:
       maxFileSize: 100MB
       maxRequestSize: 100MB
+  rocketmq:
+    nameServer: llh:9876
+    producer:
+      group: ${spring.application.name}
+
 fdfs:
   soTimeout: 1500
   connectTimeout: 600

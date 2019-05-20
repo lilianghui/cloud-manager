@@ -1,6 +1,8 @@
 package com.lilianghui.spring.starter;
 
+import brave.Tracing;
 import com.google.common.collect.Sets;
+import com.lilianghui.spring.starter.brave.rocket.SleuthRocketProducerAspect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
 import org.springframework.boot.web.server.ErrorPage;
@@ -24,6 +26,10 @@ public class WebMveAutoConfiguration {
         };
     }
 
+    @Bean
+    public SleuthRocketProducerAspect producerAspect(Tracing tracing) {
+        return new SleuthRocketProducerAspect(tracing);
+    }
 
 }
 //

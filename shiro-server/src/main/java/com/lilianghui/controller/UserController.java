@@ -36,11 +36,13 @@ public class UserController {
         if (StringUtils.isNotBlank(name)) {
             example.createCriteria().andLike("customer", "%" + name + "%");
         }
+        log.error(String.valueOf(gateWayFeignClient.rpc()));
         return userService.selectByExample(example);
     }
 
     @RequestMapping(value = "selectByPrimaryKey" ,method = RequestMethod.POST)
     public User selectByPrimaryKey(@RequestBody User user) {
+        log.error("aaa");
         return userService.selectByPrimaryKey(user);
     }
 

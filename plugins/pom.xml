@@ -16,6 +16,8 @@
         <module>mybatis-generator</module>
         <module>archetype-maven</module>
         <module>mxgraph</module>
+        <module>open-replicator</module>
+        <module>spring-initializer</module>
     </modules>
 
 

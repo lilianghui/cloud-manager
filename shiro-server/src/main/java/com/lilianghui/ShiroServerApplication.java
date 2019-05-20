@@ -1,20 +1,17 @@
 package com.lilianghui;
 
 import brave.sampler.Sampler;
-import cn.springcloud.feign.VenusFeignAutoConfig;
+import com.lilianghui.spring.starter.feign.DefaultFeignConfiguration;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-import org.springframework.cloud.client.SpringCloudApplication;
-import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import tk.mybatis.spring.annotation.MapperScan;
 
@@ -22,8 +19,8 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableHystrix
 @EnableHystrixDashboard
 @MapperScan("com.lilianghui.mapper")
-@SpringBootApplication(exclude = VenusFeignAutoConfig.class)
-@EnableFeignClients("com.lilianghui.client")
+@SpringBootApplication
+@EnableFeignClients(value = "com.lilianghui.client", defaultConfiguration = DefaultFeignConfiguration.class)
 public class ShiroServerApplication extends SpringBootServletInitializer {
 
     //http://localhost:8084/hystrix

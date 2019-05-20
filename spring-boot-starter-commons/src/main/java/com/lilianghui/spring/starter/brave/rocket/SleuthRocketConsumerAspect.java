@@ -25,7 +25,7 @@ public class SleuthRocketConsumerAspect extends AbstractSleuthRocket{
 
     }
 
-
+/*
     @Pointcut("execution(public * org.springframework.kafka.core.ConsumerFactory.createConsumer(..))")
     private void anyConsumerFactory() {
     } // NOSONAR
@@ -78,5 +78,5 @@ public class SleuthRocketConsumerAspect extends AbstractSleuthRocket{
             span.finish();
         });
         return this.kafkaTracing.consumer(consumer);
-    }
+    }*/
 }
