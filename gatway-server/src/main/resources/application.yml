@@ -1,14 +1,15 @@
-server:
+http:
   port: 8089
-  https-port: 8183
+server:
+  port: 443
   #keytool -genkey -alias cloud-manager  -storetype PKCS12 -keyalg RSA -keysize 2048  -keystore cloud-manager.p12 -validity 3650
-#  ssl:
-#    key-store: classpath:cloud-manager.p12
-#    key-store-password: 1qaz@WSX
-#    keyStoreType: PKCS12
-#    keyAlias: cloud-manager
+  ssl:
+    key-store: classpath:cloud-manager.p12
+    key-store-password: 1qaz@WSX
+    keyStoreType: PKCS12
+    keyAlias: cloud-manager
 servlet:
   jsp:
     class-name: org.apache.jasper.servlet.JspServlet
 
-#java -jar xxx.jar --spring.profiles.active=test 表示使用测试环境的配置
+#java  -server -Xms1024m -Xmx2048m  -jar xxx.jar --spring.profiles.active=test 表示使用测试环境的配置

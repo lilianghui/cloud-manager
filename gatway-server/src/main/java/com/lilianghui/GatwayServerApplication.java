@@ -7,7 +7,10 @@ import com.lilianghui.config.DefaultRibbonConfiguration;
 import com.lilianghui.config.filter.AuthHeaderFilter;
 import com.lilianghui.config.filter.GrayFilter;
 import com.lilianghui.spring.starter.annotation.EnableNettyRpcClients;
+import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
+import org.apache.tomcat.util.descriptor.web.SecurityCollection;
+import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -19,6 +22,7 @@ import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication(exclude = {VenusFeignAutoConfig.class})
@@ -29,10 +33,12 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableNettyRpcClients(basePackages = {"com.lilianghui.interfaces"})
 public class GatwayServerApplication extends SpringBootServletInitializer {
 
-    @Value("${server.port}")
-    private int port;
+    //如果没有使用默认值80
+    @Value("${http.port:80}")
+    private int httpPort;
 
-    @Value("${server.https-port}")
+    //正常启用的https端口 如443
+    @Value("${server.port:443}")
     private int httpsPort;
 
     public static void main(String[] args) {
@@ -62,20 +68,33 @@ public class GatwayServerApplication extends SpringBootServletInitializer {
 //    }
 
 
-    //    @Bean
-//    @Primary
+    @Bean
+    @Primary
     public ServletWebServerFactory servletContainer() {
-        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory() {
+
+            @Override
+            protected void postProcessContext(Context context) {
+
+                SecurityConstraint securityConstraint = new SecurityConstraint();
+                securityConstraint.setUserConstraint("CONFIDENTIAL");
+                SecurityCollection collection = new SecurityCollection();
+                collection.addPattern("/*");
+                securityConstraint.addCollection(collection);
+                context.addConstraint(securityConstraint);
+            }
+        };
         tomcat.addAdditionalTomcatConnectors(createHTTPConnector());
         return tomcat;
     }
 
     private Connector createHTTPConnector() {
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
-        //同时启用http（8080）、https（8443）两个端口
         connector.setScheme("http");
         connector.setSecure(false);
-        connector.setPort(port);
+        //Connector监听的http的端口号
+        connector.setPort(httpPort);
+        //监听到http的端口号后转向到的https的端口号
         connector.setRedirectPort(httpsPort);
         return connector;
     }
