@@ -1,24 +1,24 @@
 package com.lilianghui.spring.starter.brave.rocket;
 
 import brave.propagation.Propagation;
-import org.springframework.messaging.MessageHeaders;
 
 import java.nio.charset.Charset;
+import java.util.Map;
 
 public class SleuthRocketPropagation {
 
 
     static final Charset UTF_8 = Charset.forName("UTF-8");
 
-    static final Propagation.Setter<MessageHeaders, String> HEADER_SETTER = (carrier, key, value) -> {
+    static final Propagation.Setter<Map<String, String>, String> HEADER_SETTER = (carrier, key, value) -> {
         carrier.remove(key);
         carrier.put(key, value);
     };
 
-    static final Propagation.Getter<MessageHeaders, String> HEADER_GETTER = (carrier, key) -> {
-        Object header = carrier.get(key);
+    static final Propagation.Getter<Map<String, String>, String> HEADER_GETTER = (carrier, key) -> {
+        String header = carrier.get(key);
         if (header == null) return null;
-        return header.toString();
+        return header;
     };
 
 

@@ -14,8 +14,10 @@
 package com.lilianghui.spring.starter.cloud.sleuth.rocket.sender;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.spring.starter.RocketMQProperties;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.springframework.messaging.support.GenericMessage;
 import zipkin2.Call;
@@ -28,6 +30,7 @@ import zipkin2.reporter.Sender;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This sends (usually json v2) encoded spans to a Kafka topic.
@@ -44,16 +47,66 @@ public final class RocketSender extends Sender {
     final int messageMaxBytes;
 
     private String topic;
-    private RocketMQTemplate rocketMQTemplate;
+    private RocketMQSender rocketMQSender;
+
+    public RocketSender(String topic) {
+        this(null, topic);
+    }
 
     public RocketSender(RocketMQTemplate rocketMQTemplate, String topic) {
-        this.rocketMQTemplate = rocketMQTemplate;
+        this(rocketMQTemplate,null,topic);
+    }
+
+    public RocketSender(RocketMQTemplate rocketMQTemplate, RocketMQProperties rocketMQProperties, String topic) {
+        this.rocketMQSender = createRocketMQSender(rocketMQTemplate,rocketMQProperties);
         this.topic = topic;
         this.messageMaxBytes = 1000000;
         this.encoding = Encoding.JSON;
         this.encoder = BytesMessageEncoder.forEncoding(this.encoding);
     }
 
+    public interface RocketMQSender {
+        void send(String topic, byte[] message, Callback<Void> callback) throws Exception;
+    }
+
+    private DefaultMQProducer createMQProducer(RocketMQProperties rocketMQProperties){
+
+    }
+
+    private RocketMQSender createRocketMQSender(RocketMQTemplate rocketMQTemplate,RocketMQProperties rocketMQProperties) {
+        if (Objects.isNull(rocketMQTemplate)) {
+            return (topic, message, callBack) -> {
+                createMQProducer(rocketMQProperties).send(topic, new GenericMessage<>(new String(message)), new SendCallback() {
+                    @Override
+                    public void onSuccess(SendResult sendResult) {
+                        System.out.println(sendResult);
+                        callBack.onSuccess(null);
+                    }
+
+                    @Override
+                    public void onException(Throwable e) {
+                        log.error(e.getMessage(), e);
+                        callBack.onError(e);
+                    }
+                });
+            };
+        } else {
+            return (topic, message, callBack) ->
+                    rocketMQTemplate.asyncSend(topic, new GenericMessage<>(new String(message)), new SendCallback() {
+                        @Override
+                        public void onSuccess(SendResult sendResult) {
+                            System.out.println(sendResult);
+                            callBack.onSuccess(null);
+                        }
+
+                        @Override
+                        public void onException(Throwable e) {
+                            log.error(e.getMessage(), e);
+                            callBack.onError(e);
+                        }
+                    });
+        }
+    }
 
     volatile boolean closeCalled;
 
@@ -136,21 +189,9 @@ public final class RocketSender extends Sender {
 
         private void publish(Callback<Void> callback) {
             try {
-                rocketMQTemplate.asyncSend(topic, new GenericMessage<>(new String(message)), new SendCallback() {
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        System.out.println(sendResult);
-                        callback.onSuccess(null);
-                    }
-
-                    @Override
-                    public void onException(Throwable e) {
-                        log.error(e.getMessage(), e);
-                        callback.onError(e);
-                    }
-                });
+                rocketMQSender.send(topic, message, callback);
             } catch (Exception e) {
-                log.error(e.getMessage(),e);
+                log.error(e.getMessage(), e);
             }
         }
     }

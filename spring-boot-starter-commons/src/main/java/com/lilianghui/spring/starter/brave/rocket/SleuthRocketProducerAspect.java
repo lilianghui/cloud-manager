@@ -4,18 +4,15 @@ import brave.Span;
 import brave.Tracer;
 import brave.Tracing;
 import brave.internal.Nullable;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.message.Message;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.springframework.aop.framework.ProxyFactoryBean;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.cloud.sleuth.instrument.messaging.SleuthMessagingProperties;
-import org.springframework.messaging.Message;
 import zipkin2.Endpoint;
 
 import javax.annotation.Resource;
@@ -26,74 +23,53 @@ import static com.lilianghui.spring.starter.brave.rocket.SleuthRocketPropagation
  * TracingProducer
  */
 @Aspect
-public class SleuthRocketProducerAspect extends AbstractSleuthRocket implements BeanPostProcessor, MethodInterceptor {
+public class SleuthRocketProducerAspect extends AbstractSleuthRocket {
 
-    @Resource
-    private SleuthMessagingProperties properties;
 
     public SleuthRocketProducerAspect(Tracing tracing) {
         super(tracing);
 
     }
 
-    @Pointcut("execution(public * org.apache.rocketmq.spring.starter.core.ProducerBeanFactory.create*(..))")
+    @Pointcut("execution(public * org.apache.rocketmq.client.producer.DefaultMQProducer.send*(..))")
     private void anyProducerFactory() {
     }
 
+    @Resource
+    private SleuthMessagingProperties properties;
+
     @Around("anyProducerFactory()")
     public Object wrapProducerFactory(ProceedingJoinPoint pjp) throws Throwable {
-        return createProxy(pjp.proceed());
-    }
+        Span span = tracing.tracer().nextSpan();
 
-//    @Override
-//    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-//        if (bean instanceof DefaultMQProducer) {
-//            return createProxy(bean);
-//        }
-//        return bean;
-//    }
 
-    public Object createProxy(Object bean) {
-        ProxyFactoryBean factory = new ProxyFactoryBean();
-        factory.setProxyTargetClass(true);
-        factory.addAdvice(this);
-        factory.setTarget(bean);
-        return factory.getObject();
-    }
-
-    @Override
-    public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-        if (methodInvocation.getMethod().getName().startsWith("send")) {
-            Span span = tracing.tracer().nextSpan();
-            Result<Message> result = find(methodInvocation.getArguments(), Message.class);
-            if (result.isSuccess()) {
-                Message message = result.getValue();
-                tracing.propagation().keys().forEach(key -> message.getHeaders().remove(key));
-                injector.inject(span.context(), message.getHeaders());
-                if (!span.isNoop()) {
+        Result<Message> messageResult = find(pjp.getArgs(), Message.class);
+        if (messageResult.isSuccess()) {
+            Message message = messageResult.getValue();
+            injector.inject(span.context(), message.getProperties());
+            if (!span.isNoop()) {
 //                if (record.key() instanceof String && !"".equals(record.key())) {
 //                    span.tag(KafkaTags.KAFKA_KEY_TAG, record.key().toString());
 //                }
-                    String remoteServiceName = properties.getMessaging().getKafka().getRemoteServiceName();
-                    if (remoteServiceName != null) {
-                        span.remoteEndpoint(Endpoint.newBuilder().serviceName(remoteServiceName).build());
-                    }
-                    span.tag(ROCKET_TOPIC_TAG, "").name("send").kind(Span.Kind.PRODUCER).start();
+                String remoteServiceName = properties.getMessaging().getKafka().getRemoteServiceName();
+                if (remoteServiceName != null) {
+                    span.remoteEndpoint(Endpoint.newBuilder().serviceName(remoteServiceName).build());
                 }
-            }
-            Result<SendCallback> callBack = find(methodInvocation.getArguments(), SendCallback.class);
-            callBack.set(new TracingCallback(span, (SendCallback) callBack.getValue()));
-
-            try (Tracer.SpanInScope ws = tracing.tracer().withSpanInScope(span)) {
-                return methodInvocation.proceed();
-            } catch (RuntimeException | Error e) {
-                span.error(e).finish(); // finish as an exception means the callback won't finish the span
-                throw e;
+                span.tag(ROCKET_TOPIC_TAG, "").name("send").kind(Span.Kind.PRODUCER).start();
             }
         }
-        return methodInvocation.proceed();
-    }
 
+
+        Result<SendCallback> callBack = find(pjp.getArgs(), SendCallback.class);
+        callBack.set(new TracingCallback(span, (SendCallback) callBack.getValue()));
+
+        try (Tracer.SpanInScope ws = tracing.tracer().withSpanInScope(span)) {
+            return pjp.proceed();
+        } catch (RuntimeException | Error e) {
+            span.error(e).finish(); // finish as an exception means the callback won't finish the span
+            throw e;
+        }
+    }
 
     class TracingCallback implements SendCallback {
         final Span span;

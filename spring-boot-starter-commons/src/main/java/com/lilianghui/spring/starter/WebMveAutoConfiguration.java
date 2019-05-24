@@ -26,10 +26,7 @@ public class WebMveAutoConfiguration {
         };
     }
 
-    @Bean
-    public SleuthRocketProducerAspect producerAspect(Tracing tracing) {
-        return new SleuthRocketProducerAspect(tracing);
-    }
+
 
 }
 //

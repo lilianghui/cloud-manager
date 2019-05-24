@@ -14,7 +14,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.aop.framework.ProxyFactoryBean;
-import org.springframework.messaging.MessageHeaders;
 
 import java.util.*;
 
@@ -95,9 +94,7 @@ public class SleuthRocketListenerAspect extends AbstractSleuthRocket {
         }
 
         TraceContextOrSamplingFlags extractAndClearHeaders(MessageExt messageExt) {
-            Map<String ,Object> map = new HashMap<>();
-            messageExt.getProperties().forEach((s, s2) -> map.put(s,s2));
-            TraceContextOrSamplingFlags extracted = extractor.extract(new MessageHeaders(map));
+            TraceContextOrSamplingFlags extracted = extractor.extract(messageExt.getProperties());
             // clear propagation headers if we were able to extract a span
             if (extracted != TraceContextOrSamplingFlags.EMPTY) {
                 tracing.propagation().keys().forEach(key -> messageExt.getProperties().remove(key));

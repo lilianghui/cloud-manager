@@ -4,13 +4,15 @@ import brave.Tracing;
 import brave.propagation.TraceContext;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.messaging.MessageHeaders;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractSleuthRocket {
 
     protected Tracing tracing;
-    protected TraceContext.Injector<MessageHeaders> injector;
-    protected final TraceContext.Extractor<MessageHeaders> extractor;
+    protected TraceContext.Injector<Map<String, String>> injector;
+    protected final TraceContext.Extractor<Map<String, String>> extractor;
 
 
     protected AbstractSleuthRocket(Tracing tracing) {

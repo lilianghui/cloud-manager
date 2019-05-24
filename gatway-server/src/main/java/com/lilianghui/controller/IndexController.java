@@ -1,45 +1,50 @@
 package com.lilianghui.controller;
 
-import com.hazelcast.client.AuthenticationException;
 import com.lilianghui.entity.CellAttr;
 import com.lilianghui.entity.GatWayConfig;
-import com.lilianghui.entity.User;
 import com.lilianghui.entity.MxCellEx;
+import com.lilianghui.entity.User;
+import com.lilianghui.framework.core.jackson.JacksonUtils;
 import com.lilianghui.interfaces.HelloService;
 import com.lilianghui.service.ContractService;
 import com.lilianghui.service.ShiroService;
-import com.lilianghui.shiro.spring.starter.core.IncorrectCaptchaException;
 import com.lilianghui.spring.starter.utils.RedissLockUtils;
-import com.mxgraph.io.*;
+import com.mxgraph.io.mxCellCodec;
+import com.mxgraph.io.mxCodec;
+import com.mxgraph.io.mxCodecRegistry;
+import com.mxgraph.io.mxObjectCodec;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxXmlUtils;
 import com.mxgraph.view.mxGraph;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.rocketmq.client.producer.LocalTransactionExecuter;
-import org.apache.rocketmq.client.producer.LocalTransactionState;
-import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.*;
-import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.w3c.dom.Document;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -63,6 +68,8 @@ public class IndexController {
     @Value("${extra.user-name}")
     private String userName;
 
+    @Resource
+    private DefaultMQProducer defaultMQProducer;
 
     public IndexController() {
 
@@ -81,7 +88,12 @@ public class IndexController {
     }
 
     @RequestMapping("/")
-    public ModelAndView index(Model model) {
+    public ModelAndView index(Model model) throws Exception {
+        Map<String,Object> map = new HashedMap();
+        map.put("name","李亮辉");
+        Message message = new Message("topic", JacksonUtils.writeValue(map).getBytes());
+        message.putUserProperty("token","lilianghui");
+        defaultMQProducer.send(message);
        /* String key=DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss:S");
         redisTemplate.boundListOps("list").leftPush(key);
         byte[] val = ProtobufUtils.serialize(User.builder().account("account").name("lilianghui").build(), User.class);
