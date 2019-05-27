@@ -14,12 +14,15 @@
 package com.lilianghui.spring.starter.cloud.sleuth.rocket.sender;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.spring.starter.RocketMQProperties;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.Assert;
 import zipkin2.Call;
 import zipkin2.Callback;
 import zipkin2.CheckResult;
@@ -45,6 +48,7 @@ public final class RocketSender extends Sender {
     final Encoding encoding;
     final BytesMessageEncoder encoder;
     final int messageMaxBytes;
+    volatile boolean closeCalled;
 
     private String topic;
     private RocketMQSender rocketMQSender;
@@ -54,61 +58,30 @@ public final class RocketSender extends Sender {
     }
 
     public RocketSender(RocketMQTemplate rocketMQTemplate, String topic) {
-        this(rocketMQTemplate,null,topic);
+        this(rocketMQTemplate, null, topic);
     }
 
     public RocketSender(RocketMQTemplate rocketMQTemplate, RocketMQProperties rocketMQProperties, String topic) {
-        this.rocketMQSender = createRocketMQSender(rocketMQTemplate,rocketMQProperties);
+        this.rocketMQSender = createRocketMQSender(rocketMQTemplate, rocketMQProperties);
         this.topic = topic;
         this.messageMaxBytes = 1000000;
         this.encoding = Encoding.JSON;
         this.encoder = BytesMessageEncoder.forEncoding(this.encoding);
     }
 
-    public interface RocketMQSender {
-        void send(String topic, byte[] message, Callback<Void> callback) throws Exception;
-    }
 
-    private DefaultMQProducer createMQProducer(RocketMQProperties rocketMQProperties){
+    private RocketMQSender createRocketMQSender(RocketMQTemplate rocketMQTemplate, RocketMQProperties rocketMQProperties) {
 
-    }
-
-    private RocketMQSender createRocketMQSender(RocketMQTemplate rocketMQTemplate,RocketMQProperties rocketMQProperties) {
         if (Objects.isNull(rocketMQTemplate)) {
             return (topic, message, callBack) -> {
-                createMQProducer(rocketMQProperties).send(topic, new GenericMessage<>(new String(message)), new SendCallback() {
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        System.out.println(sendResult);
-                        callBack.onSuccess(null);
-                    }
-
-                    @Override
-                    public void onException(Throwable e) {
-                        log.error(e.getMessage(), e);
-                        callBack.onError(e);
-                    }
-                });
+                createMQProducer(rocketMQProperties).send(new Message(topic, message), new SendCallbackEx(callBack));
             };
         } else {
             return (topic, message, callBack) ->
-                    rocketMQTemplate.asyncSend(topic, new GenericMessage<>(new String(message)), new SendCallback() {
-                        @Override
-                        public void onSuccess(SendResult sendResult) {
-                            System.out.println(sendResult);
-                            callBack.onSuccess(null);
-                        }
-
-                        @Override
-                        public void onException(Throwable e) {
-                            log.error(e.getMessage(), e);
-                            callBack.onError(e);
-                        }
-                    });
+                    rocketMQTemplate.asyncSend(topic, new GenericMessage<>(new String(message)), new SendCallbackEx(callBack));
         }
     }
 
-    volatile boolean closeCalled;
 
     @Override
     public int messageSizeInBytes(List<byte[]> encodedSpans) {
@@ -193,6 +166,47 @@ public final class RocketSender extends Sender {
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
+        }
+    }
+
+    private DefaultMQProducer createMQProducer(RocketMQProperties rocketMQProperties) throws MQClientException {
+        RocketMQProperties.Producer producerConfig = rocketMQProperties.getProducer();
+        String groupName = producerConfig.getGroup();
+        Assert.hasText(groupName, "[spring.rocketmq.producer.group] must not be null");
+
+        DefaultMQProducer producer = new DefaultMQProducer(producerConfig.getGroup());
+        producer.setNamesrvAddr(rocketMQProperties.getNameServer());
+        producer.setSendMsgTimeout(producerConfig.getSendMsgTimeout());
+        producer.setRetryTimesWhenSendFailed(producerConfig.getRetryTimesWhenSendFailed());
+        producer.setRetryTimesWhenSendAsyncFailed(producerConfig.getRetryTimesWhenSendAsyncFailed());
+        producer.setMaxMessageSize(producerConfig.getMaxMessageSize());
+        producer.setCompressMsgBodyOverHowmuch(producerConfig.getCompressMsgBodyOverHowmuch());
+        producer.setRetryAnotherBrokerWhenNotStoreOK(producerConfig.isRetryAnotherBrokerWhenNotStoreOk());
+        producer.start();
+        return producer;
+    }
+
+    public interface RocketMQSender {
+        void send(String topic, byte[] message, Callback<Void> callback) throws Exception;
+    }
+
+    public class SendCallbackEx implements SendCallback {
+        private Callback<Void> callback;
+
+        public SendCallbackEx(Callback<Void> callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        public void onSuccess(SendResult sendResult) {
+            System.out.println(sendResult);
+            callback.onSuccess(null);
+        }
+
+        @Override
+        public void onException(Throwable e) {
+            log.error(e.getMessage(), e);
+            callback.onError(e);
         }
     }
 

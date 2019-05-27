@@ -69,8 +69,11 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     @Setter
     private MessageQueueSelector messageQueueSelector = new SelectMessageQueueByHash();
 
-    private final Map<String, TransactionMQProducer> cache = new ConcurrentHashMap<>(); //only put TransactionMQProducer by now!!!
+    private final static Map<String, TransactionMQProducer> cache = new ConcurrentHashMap<>(); //only put TransactionMQProducer by now!!!
 
+    public static final Map<String, TransactionMQProducer> cache(){
+        return cache;
+    }
     /**
      * <p> Send message in synchronous mode. This method returns only when the sending procedure totally completes.
      * Reliable synchronous transmission is used in extensive scenes, such as important notification messages, SMS

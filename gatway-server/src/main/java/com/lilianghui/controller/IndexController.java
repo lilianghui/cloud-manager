@@ -24,6 +24,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -31,6 +32,7 @@ import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,6 +72,10 @@ public class IndexController {
 
     @Resource
     private DefaultMQProducer defaultMQProducer;
+//    @Resource
+//    private DefaultMQPushConsumer consumer;
+    @Resource
+    private ApplicationContext applicationContext;
 
     public IndexController() {
 
@@ -94,6 +100,7 @@ public class IndexController {
         Message message = new Message("topic", JacksonUtils.writeValue(map).getBytes());
         message.putUserProperty("token","lilianghui");
         defaultMQProducer.send(message);
+        System.out.println(applicationContext.getBean(DefaultMQPushConsumer.class));
        /* String key=DateFormatUtils.format(new Date(),"yyyy-MM-dd HH:mm:ss:S");
         redisTemplate.boundListOps("list").leftPush(key);
         byte[] val = ProtobufUtils.serialize(User.builder().account("account").name("lilianghui").build(), User.class);

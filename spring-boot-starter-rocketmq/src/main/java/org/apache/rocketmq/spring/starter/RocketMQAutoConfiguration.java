@@ -18,6 +18,8 @@
 package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
@@ -81,6 +83,16 @@ public class RocketMQAutoConfiguration {
     }
 
     @Bean
+    public MessageListenerOrderly messageListenerOrderly(){
+        return new DefaultRocketMQListenerContainer.DefaultMessageListenerOrderly();
+    }
+
+    @Bean
+    public MessageListenerConcurrently messageListenerConcurrently(){
+        return new DefaultRocketMQListenerContainer.DefaultMessageListenerConcurrently();
+    }
+
+    @Bean
     @ConditionalOnClass(DefaultMQProducer.class)
     @ConditionalOnMissingBean(DefaultMQProducer.class)
     @ConditionalOnProperty(prefix = "spring.rocketmq", value = {"nameServer", "producer.group"})
@@ -128,97 +140,98 @@ public class RocketMQAutoConfiguration {
         return rocketMQTemplate;
     }
 
-    @Configuration
-    @ConditionalOnClass(DefaultMQPushConsumer.class)
-    @EnableConfigurationProperties(RocketMQProperties.class)
-    @ConditionalOnProperty(prefix = "spring.rocketmq", value = "nameServer")
-    @Order
-    public static class ListenerContainerConfiguration implements ApplicationContextAware, InitializingBean {
-        private ConfigurableApplicationContext applicationContext;
-
-        private AtomicLong counter = new AtomicLong(0);
-
-        @Resource
-        private StandardEnvironment environment;
-
-        @Resource
-        private RocketMQProperties rocketMQProperties;
-
-        private ObjectMapper objectMapper;
-
-        public ListenerContainerConfiguration() {
-        }
-
-        @Autowired(required = false)
-        public ListenerContainerConfiguration(
-            @Qualifier("rocketMQMessageObjectMapper") ObjectMapper objectMapper) {
-            this.objectMapper = objectMapper;
-        }
-
-        @Override
-        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-            this.applicationContext = (ConfigurableApplicationContext) applicationContext;
-        }
-
-        @Override
-        public void afterPropertiesSet() {
-            Map<String, Object> beans = this.applicationContext.getBeansWithAnnotation(RocketMQMessageListener.class);
-
-            if (Objects.nonNull(beans)) {
-                beans.forEach(this::registerContainer);
-            }
-        }
-
-        private void registerContainer(String beanName, Object bean) {
-            Class<?> clazz = AopUtils.getTargetClass(bean);
-
-            if (!RocketMQListener.class.isAssignableFrom(bean.getClass())) {
-                throw new IllegalStateException(clazz + " is not instance of " + RocketMQListener.class.getName());
-            }
-
-            RocketMQListener rocketMQListener = (RocketMQListener) bean;
-            RocketMQMessageListener annotation = clazz.getAnnotation(RocketMQMessageListener.class);
-            validate(annotation);
-            BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
-            beanBuilder.addPropertyValue(PROP_NAMESERVER, rocketMQProperties.getNameServer());
-            beanBuilder.addPropertyValue(PROP_TOPIC, environment.resolvePlaceholders(annotation.topic()));
-
-            beanBuilder.addPropertyValue(PROP_CONSUMER_GROUP, environment.resolvePlaceholders(annotation.consumerGroup()));
-            beanBuilder.addPropertyValue(PROP_CONSUME_MODE, annotation.consumeMode());
-            beanBuilder.addPropertyValue(PROP_CONSUME_THREAD_MAX, annotation.consumeThreadMax());
-            beanBuilder.addPropertyValue(PROP_MESSAGE_MODEL, annotation.messageModel());
-            beanBuilder.addPropertyValue(PROP_SELECTOR_EXPRESS, environment.resolvePlaceholders(annotation.selectorExpress()));
-            beanBuilder.addPropertyValue(PROP_SELECTOR_TYPE, annotation.selectorType());
-            beanBuilder.addPropertyValue(PROP_ROCKETMQ_LISTENER, rocketMQListener);
-            if (Objects.nonNull(objectMapper)) {
-                beanBuilder.addPropertyValue(PROP_OBJECT_MAPPER, objectMapper);
-            }
-            beanBuilder.setDestroyMethodName(METHOD_DESTROY);
-
-            String containerBeanName = String.format("%s_%s", DefaultRocketMQListenerContainer.class.getName(), counter.incrementAndGet());
-            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getBeanFactory();
-            beanFactory.registerBeanDefinition(containerBeanName, beanBuilder.getBeanDefinition());
-
-            DefaultRocketMQListenerContainer container = beanFactory.getBean(containerBeanName, DefaultRocketMQListenerContainer.class);
-
-            if (!container.isStarted()) {
-                try {
-                    container.start();
-                } catch (Exception e) {
-                    log.error("started container failed. {}", container, e);
-                    throw new RuntimeException(e);
-                }
-            }
-
-            log.info("register rocketMQ listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
-        }
-
-        private void validate(RocketMQMessageListener annotation) {
-            if (annotation.consumeMode() == ConsumeMode.ORDERLY &&
-                annotation.messageModel() == MessageModel.BROADCASTING)
-                throw new BeanDefinitionValidationException("Bad annotation definition in @RocketMQMessageListener, messageModel BROADCASTING does not support ORDERLY message!");
-        }
-    }
+//    @Configuration
+//    @ConditionalOnClass(DefaultMQPushConsumer.class)
+//    @EnableConfigurationProperties(RocketMQProperties.class)
+//    @ConditionalOnProperty(prefix = "spring.rocketmq", value = "nameServer")
+//    @Order
+//    public static class ListenerContainerConfiguration implements ApplicationContextAware, InitializingBean {
+//        private ConfigurableApplicationContext applicationContext;
+//
+//        private AtomicLong counter = new AtomicLong(0);
+//
+//        @Resource
+//        private StandardEnvironment environment;
+//
+//        @Resource
+//        private RocketMQProperties rocketMQProperties;
+//
+//        private ObjectMapper objectMapper;
+//
+//        public ListenerContainerConfiguration() {
+//        }
+//
+//        @Autowired(required = false)
+//        public ListenerContainerConfiguration(
+//            @Qualifier("rocketMQMessageObjectMapper") ObjectMapper objectMapper) {
+//            this.objectMapper = objectMapper;
+//        }
+//
+//        @Override
+//        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+//            this.applicationContext = (ConfigurableApplicationContext) applicationContext;
+//        }
+//
+//        @Override
+//        public void afterPropertiesSet() {
+//            Map<String, Object> beans = this.applicationContext.getBeansWithAnnotation(RocketMQMessageListener.class);
+//
+//            if (Objects.nonNull(beans)) {
+//                beans.forEach(this::registerContainer);
+//            }
+//        }
+//
+//        private void registerContainer(String beanName, Object bean) {
+//            Class<?> clazz = AopUtils.getTargetClass(bean);
+//
+//            if (!RocketMQListener.class.isAssignableFrom(bean.getClass())) {
+//                throw new IllegalStateException(clazz + " is not instance of " + RocketMQListener.class.getName());
+//            }
+//            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getBeanFactory();
+//
+//            RocketMQListener rocketMQListener = (RocketMQListener) bean;
+//            RocketMQMessageListener annotation = clazz.getAnnotation(RocketMQMessageListener.class);
+//            validate(annotation);
+//            BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
+//            beanBuilder.addPropertyValue(PROP_NAMESERVER, rocketMQProperties.getNameServer());
+//            beanBuilder.addPropertyValue(PROP_TOPIC, environment.resolvePlaceholders(annotation.topic()));
+//
+//            beanBuilder.addPropertyValue(PROP_CONSUMER_GROUP, environment.resolvePlaceholders(annotation.consumerGroup()));
+//            beanBuilder.addPropertyValue(PROP_CONSUME_MODE, annotation.consumeMode());
+//            beanBuilder.addPropertyValue(PROP_CONSUME_THREAD_MAX, annotation.consumeThreadMax());
+//            beanBuilder.addPropertyValue(PROP_MESSAGE_MODEL, annotation.messageModel());
+//            beanBuilder.addPropertyValue(PROP_SELECTOR_EXPRESS, environment.resolvePlaceholders(annotation.selectorExpress()));
+//            beanBuilder.addPropertyValue(PROP_SELECTOR_TYPE, annotation.selectorType());
+//            beanBuilder.addPropertyValue(PROP_ROCKETMQ_LISTENER, rocketMQListener);
+//            beanBuilder.addPropertyValue("beanFactory", beanFactory);
+//            if (Objects.nonNull(objectMapper)) {
+//                beanBuilder.addPropertyValue(PROP_OBJECT_MAPPER, objectMapper);
+//            }
+//            beanBuilder.setDestroyMethodName(METHOD_DESTROY);
+//
+//            String containerBeanName = String.format("%s_%s", DefaultRocketMQListenerContainer.class.getName(), counter.incrementAndGet());
+//            beanFactory.registerBeanDefinition(containerBeanName, beanBuilder.getBeanDefinition());
+//
+//            DefaultRocketMQListenerContainer container = beanFactory.getBean(containerBeanName, DefaultRocketMQListenerContainer.class);
+//
+//            if (!container.isStarted()) {
+//                try {
+//                    container.start();
+//                } catch (Exception e) {
+//                    log.error("started container failed. {}", container, e);
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//
+//            log.info("register rocketMQ listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
+//        }
+//
+//        private void validate(RocketMQMessageListener annotation) {
+//            if (annotation.consumeMode() == ConsumeMode.ORDERLY &&
+//                annotation.messageModel() == MessageModel.BROADCASTING)
+//                throw new BeanDefinitionValidationException("Bad annotation definition in @RocketMQMessageListener, messageModel BROADCASTING does not support ORDERLY message!");
+//        }
+//    }
 
 
 //    @Bean

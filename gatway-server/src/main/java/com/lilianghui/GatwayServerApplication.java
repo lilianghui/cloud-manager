@@ -2,12 +2,12 @@ package com.lilianghui;
 
 import brave.Tracing;
 import brave.sampler.Sampler;
-import com.lilianghui.config.DefaultFeignConfiguration;
-import com.lilianghui.config.DefaultRibbonConfiguration;
 import com.lilianghui.config.filter.AuthHeaderFilter;
 import com.lilianghui.config.filter.GrayFilter;
 import com.lilianghui.spring.starter.annotation.EnableNettyRpcClients;
 import com.lilianghui.spring.starter.brave.rocket.SleuthRocketProducerAspect;
+import com.lilianghui.spring.starter.feign.DefaultFeignConfiguration;
+import com.lilianghui.spring.starter.feign.DefaultRibbonConfiguration;
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;

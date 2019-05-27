@@ -41,6 +41,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.util.Assert;
 
 @SuppressWarnings("WeakerAccess")
@@ -102,6 +103,10 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     @Setter
     @Getter
     private boolean started;
+
+    @Setter
+    @Getter
+    private ConfigurableListableBeanFactory beanFactory;
 
     @Setter
     private RocketMQListener rocketMQListener;
@@ -290,7 +295,10 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         if (rocketMQListener instanceof RocketMQPushConsumerLifecycleListener) {
             ((RocketMQPushConsumerLifecycleListener) rocketMQListener).prepareStart(consumer);
         }
-
+        beanFactory.registerSingleton(String.format("consumer%s",consumer.getInstanceName()),consumer);
     }
 
+    public DefaultMessageListenerOrderly defaultMessageListenerOrderly(){
+        return new DefaultMessageListenerOrderly();
+    }
 }

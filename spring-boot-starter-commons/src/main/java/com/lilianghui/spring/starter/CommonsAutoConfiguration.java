@@ -1,6 +1,7 @@
 package com.lilianghui.spring.starter;
 
 import brave.Tracing;
+import com.lilianghui.spring.starter.brave.rocket.SleuthRocketListenerAspect;
 import com.lilianghui.spring.starter.brave.rocket.SleuthRocketProducerAspect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,11 @@ public class CommonsAutoConfiguration {
     @Bean
     public SleuthRocketProducerAspect producerAspect(Tracing tracing) {
         return new SleuthRocketProducerAspect(tracing);
+    }
+
+    @Bean
+    public SleuthRocketListenerAspect rocketListenerAspect(Tracing tracing) {
+        return new SleuthRocketListenerAspect(tracing);
     }
 
 }
