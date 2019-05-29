@@ -2,22 +2,56 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>plugins</artifactId>
-        <groupId>com.lilianghui</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <groupId>com.lilianghui</groupId>
     <artifactId>mxgraph</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <java-version>1.8</java-version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>mxgraph</id>
+            <url>https://dl.bintray.com/flowtick/jgraphx/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+            <version>6.1.26</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.mxgraph</groupId>-->
+            <!--<artifactId>jgraphx</artifactId>-->
+            <!--<version>3.7.4</version>-->
+        <!--</dependency>-->
+
 
     </dependencies>
+
 
     <build>
         <resources>
@@ -36,8 +70,13 @@
                 <configuration>
                     <source>${java-version}</source>
                     <target>${java-version}</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArguments>
+                        <extdirs>lib</extdirs>
+                    </compilerArguments>
                 </configuration>
             </plugin>
+
         </plugins>
     </build>
 </project>
