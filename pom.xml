@@ -101,7 +101,7 @@
 
         <!-- spring-boot-admin begin-->
         <spring-boot-admin.version>2.0.2</spring-boot-admin.version>
-        <jolokia-core.version>1.6.0</jolokia-core.version>
+        <jolokia-core.version>1.6.1</jolokia-core.version>
         <!-- spring-boot-admin end-->
 
         <docker.repository>llh-tencent-os</docker.repository>
